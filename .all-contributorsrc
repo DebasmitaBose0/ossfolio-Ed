@@ -1,13 +1,33 @@
 {
   "projectName": "ossfolio",
-  "projectOwner": "your-github-username",
+  "projectOwner": "PRODHOSH",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "files": ["README.md"],
+  "files": [
+    "README.md"
+  ],
   "imageSize": 100,
   "commit": true,
   "commitConvention": "angular",
-  "contributors": [],
+  "contributors": [
+    {
+      "login": "PRODHOSH",
+      "name": "PRODHOSH V.S",
+      "avatar_url": "https://avatars.githubusercontent.com/u/213995806?v=4",
+      "profile": "https://prodhosh.me/",
+      "contributions": [
+        "code",
+        "doc",
+        "design",
+        "bug",
+        "review",
+        "ideas",
+        "maintenance",
+        "test",
+        "infra"
+      ]
+    }
+  ],
   "contributionTypes": [
     "code",
     "doc",
@@ -19,5 +39,7 @@
     "test",
     "translation",
     "infra"
-  ]
+  ],
+  "commitType": "docs",
+  "contributorsPerLine": 7
 }
