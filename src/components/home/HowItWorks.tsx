@@ -21,63 +21,79 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="mx-auto max-w-6xl px-5 py-20">
-      {/* Header */}
-      <div className="mb-12 text-center">
-        <p className="mb-3 text-sm font-medium" style={{ color: "#3ecf8e" }}>
-          Simple by design
-        </p>
-        <h2
-          className="font-semibold"
-          style={{ fontSize: "clamp(28px, 3.5vw, 36px)", color: "#171717", letterSpacing: "-0.72px", lineHeight: 1.15 }}
+    <section id="how-it-works" style={{ backgroundColor: "#ffffff" }}>
+      <div
+        style={{
+          maxWidth: "72rem",
+          margin: "0 auto",
+          padding: "80px 20px",
+        }}
+      >
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: "48px" }}>
+          <p
+            style={{ fontSize: "13px", fontWeight: 500, color: "#3ecf8e", marginBottom: "10px" }}
+          >
+            Simple by design
+          </p>
+          <h2
+            style={{
+              fontSize: "clamp(28px, 3.5vw, 36px)",
+              fontWeight: 600,
+              color: "#171717",
+              letterSpacing: "-0.72px",
+              lineHeight: 1.15,
+            }}
+          >
+            Up and running in 30 seconds
+          </h2>
+        </div>
+
+        {/* Steps */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+            gap: "32px",
+          }}
         >
-          Up and running in 30 seconds
-        </h2>
-      </div>
-
-      {/* Steps */}
-      <div className="grid gap-6 md:grid-cols-3">
-        {steps.map(({ number, title, description }, i) => (
-          <div key={number} className="relative flex flex-col gap-4">
-            {/* Connector line */}
-            {i < steps.length - 1 && (
+          {steps.map(({ number, title, description }) => (
+            <div key={number} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               <div
-                className="absolute left-6 top-6 hidden h-px md:block"
                 style={{
-                  width: "calc(100% + 24px)",
-                  backgroundColor: "#ededed",
-                  zIndex: 0,
-                }}
-              />
-            )}
-
-            <div className="relative flex items-start gap-4">
-              {/* Number circle */}
-              <div
-                className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center font-semibold"
-                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: "44px",
+                  width: "44px",
                   border: "1px solid #dfdfdf",
                   borderRadius: "9999px",
                   backgroundColor: "#ffffff",
                   fontSize: "13px",
+                  fontWeight: 600,
                   color: "#3ecf8e",
-                  letterSpacing: "0",
                 }}
               >
                 {number}
               </div>
-
-              <div className="pt-2">
-                <h3 className="text-base font-semibold" style={{ color: "#171717" }}>
+              <div>
+                <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#171717" }}>
                   {title}
                 </h3>
-                <p className="mt-1.5 text-sm leading-relaxed" style={{ color: "#707070" }}>
+                <p
+                  style={{
+                    marginTop: "8px",
+                    fontSize: "14px",
+                    lineHeight: 1.6,
+                    color: "#707070",
+                  }}
+                >
                   {description}
                 </p>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );

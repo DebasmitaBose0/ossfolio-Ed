@@ -62,47 +62,92 @@ const features = [
 
 export function Features() {
   return (
-    <section id="features" style={{ backgroundColor: "#fafafa", borderTop: "1px solid #ededed", borderBottom: "1px solid #ededed" }}>
-      <div className="mx-auto max-w-6xl px-5 py-20">
+    <section
+      id="features"
+      style={{
+        backgroundColor: "#fafafa",
+        borderTop: "1px solid #ededed",
+        borderBottom: "1px solid #ededed",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "72rem",
+          margin: "0 auto",
+          padding: "80px 20px",
+        }}
+      >
         {/* Header */}
-        <div className="mb-12 text-center">
-          <p className="mb-3 text-sm font-medium" style={{ color: "#3ecf8e" }}>
+        <div style={{ textAlign: "center", marginBottom: "48px" }}>
+          <p
+            style={{ fontSize: "13px", fontWeight: 500, color: "#3ecf8e", marginBottom: "10px" }}
+          >
             What you get
           </p>
           <h2
-            className="font-semibold"
-            style={{ fontSize: "clamp(28px, 3.5vw, 36px)", color: "#171717", letterSpacing: "-0.72px", lineHeight: 1.15 }}
+            style={{
+              fontSize: "clamp(28px, 3.5vw, 36px)",
+              fontWeight: 600,
+              color: "#171717",
+              letterSpacing: "-0.72px",
+              lineHeight: 1.15,
+            }}
           >
             Everything GitHub doesn't show
           </h2>
-          <p className="mx-auto mt-3 max-w-lg text-base" style={{ color: "#707070", lineHeight: 1.55 }}>
-            OSSfolio pulls from the GitHub GraphQL API to build a complete picture of your contributions — automatically.
+          <p
+            style={{
+              marginTop: "12px",
+              fontSize: "16px",
+              lineHeight: 1.6,
+              color: "#707070",
+              maxWidth: "480px",
+              margin: "12px auto 0",
+            }}
+          >
+            OSSfolio pulls from the GitHub GraphQL API to build a complete
+            picture of your contributions — automatically.
           </p>
         </div>
 
         {/* Grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+            gap: "16px",
+          }}
+        >
           {features.map(({ icon: Icon, title, description }) => (
             <div
               key={title}
-              className="flex flex-col gap-3"
               style={{
                 backgroundColor: "#ffffff",
                 border: "1px solid #dfdfdf",
                 borderRadius: "12px",
                 padding: "24px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px",
               }}
             >
               <div
-                className="flex h-9 w-9 items-center justify-center"
-                style={{ backgroundColor: "#3ecf8e1a", borderRadius: "8px" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: "36px",
+                  width: "36px",
+                  backgroundColor: "#3ecf8e1a",
+                  borderRadius: "8px",
+                }}
               >
-                <Icon size={18} style={{ color: "#3ecf8e" }} />
+                <Icon size={17} style={{ color: "#3ecf8e" }} />
               </div>
-              <h3 className="text-sm font-semibold" style={{ color: "#171717" }}>
+              <h3 style={{ fontSize: "14px", fontWeight: 600, color: "#171717" }}>
                 {title}
               </h3>
-              <p className="text-sm leading-relaxed" style={{ color: "#707070" }}>
+              <p style={{ fontSize: "13px", lineHeight: 1.6, color: "#707070" }}>
                 {description}
               </p>
             </div>

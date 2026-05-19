@@ -9,45 +9,54 @@ interface NavbarProps {
   onGetStarted: () => void;
 }
 
+const navLinks = ["Features", "How it works", "Leaderboard"];
+
 export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <header
-      className="sticky top-0 z-40 w-full bg-canvas border-b border-hairline"
-      style={{ backgroundColor: "#ffffff", borderColor: "#ededed" }}
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 40,
+        width: "100%",
+        backgroundColor: "#ffffff",
+        borderBottom: "1px solid #ededed",
+      }}
     >
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5">
+      {/* Inner container */}
+      <div
+        style={{
+          maxWidth: "72rem",
+          margin: "0 auto",
+          height: "56px",
+          padding: "0 20px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-1.5">
-          <span
-            className="text-base font-semibold"
-            style={{ color: "#171717", letterSpacing: "-0.3px" }}
-          >
+        <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+          <span style={{ fontSize: "15px", fontWeight: 600, color: "#171717", letterSpacing: "-0.3px" }}>
             OSS
           </span>
-          <span
-            className="text-base font-semibold"
-            style={{ color: "#3ecf8e", letterSpacing: "-0.3px" }}
-          >
+          <span style={{ fontSize: "15px", fontWeight: 600, color: "#3ecf8e", letterSpacing: "-0.3px" }}>
             folio
           </span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-7 md:flex">
-          {["Features", "How it works", "Leaderboard"].map((item) => (
+        {/* Desktop nav links */}
+        <nav style={{ display: "flex", alignItems: "center", gap: "28px" }}
+          className="hide-on-mobile">
+          {navLinks.map((item) => (
             <Link
               key={item}
               href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
-              className="text-sm font-medium transition-colors"
-              style={{ color: "#707070" }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.color = "#171717")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.color = "#707070")
-              }
+              style={{ fontSize: "14px", fontWeight: 500, color: "#707070", textDecoration: "none" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#171717")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#707070")}
             >
               {item}
             </Link>
@@ -55,11 +64,19 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
         </nav>
 
         {/* Desktop CTAs */}
-        <div className="hidden items-center gap-3 md:flex">
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}
+          className="hide-on-mobile">
           <button
             onClick={onSignIn}
-            className="text-sm font-medium transition-colors"
-            style={{ color: "#707070" }}
+            style={{
+              fontSize: "14px",
+              fontWeight: 500,
+              color: "#707070",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: "0",
+            }}
             onMouseEnter={(e) => (e.currentTarget.style.color = "#171717")}
             onMouseLeave={(e) => (e.currentTarget.style.color = "#707070")}
           >
@@ -67,12 +84,15 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
           </button>
           <button
             onClick={onGetStarted}
-            className="text-sm font-medium transition-opacity hover:opacity-90"
             style={{
+              fontSize: "14px",
+              fontWeight: 500,
               backgroundColor: "#3ecf8e",
               color: "#171717",
               padding: "7px 16px",
               borderRadius: "6px",
+              border: "none",
+              cursor: "pointer",
             }}
           >
             Get started
@@ -81,10 +101,17 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
 
         {/* Mobile hamburger */}
         <button
-          className="md:hidden"
           onClick={() => setMobileOpen((v) => !v)}
           aria-label="Toggle menu"
-          style={{ color: "#171717" }}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: "#171717",
+            padding: "4px",
+            display: "none",
+          }}
+          className="show-on-mobile"
         >
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
@@ -93,36 +120,60 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
       {/* Mobile menu */}
       {mobileOpen && (
         <div
-          className="border-t md:hidden"
-          style={{ borderColor: "#ededed", backgroundColor: "#ffffff" }}
+          style={{
+            borderTop: "1px solid #ededed",
+            backgroundColor: "#ffffff",
+            display: "none",
+          }}
+          className="show-on-mobile"
         >
-          <div className="flex flex-col gap-1 px-5 py-4">
-            {["Features", "How it works", "Leaderboard"].map((item) => (
+          <div style={{ padding: "12px 20px 16px", display: "flex", flexDirection: "column", gap: "4px" }}>
+            {navLinks.map((item) => (
               <Link
                 key={item}
                 href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
-                className="py-2 text-sm font-medium"
-                style={{ color: "#707070" }}
+                style={{
+                  padding: "8px 0",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  color: "#707070",
+                  textDecoration: "none",
+                  display: "block",
+                }}
                 onClick={() => setMobileOpen(false)}
               >
                 {item}
               </Link>
             ))}
-            <div className="mt-3 flex flex-col gap-2 border-t pt-3" style={{ borderColor: "#ededed" }}>
+            <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #ededed", display: "flex", flexDirection: "column", gap: "8px" }}>
               <button
                 onClick={() => { setMobileOpen(false); onSignIn(); }}
-                className="w-full py-2 text-sm font-medium text-left"
-                style={{ color: "#171717" }}
+                style={{
+                  width: "100%",
+                  padding: "8px 0",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  color: "#171717",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  textAlign: "left",
+                }}
               >
                 Sign in
               </button>
               <button
                 onClick={() => { setMobileOpen(false); onGetStarted(); }}
-                className="w-full rounded py-2 text-sm font-medium"
                 style={{
+                  width: "100%",
+                  padding: "9px 16px",
+                  fontSize: "14px",
+                  fontWeight: 500,
                   backgroundColor: "#3ecf8e",
                   color: "#171717",
                   borderRadius: "6px",
+                  border: "none",
+                  cursor: "pointer",
                 }}
               >
                 Get started
@@ -131,6 +182,18 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
           </div>
         </div>
       )}
+
+      {/* Responsive styles */}
+      <style>{`
+        @media (min-width: 768px) {
+          .hide-on-mobile { display: flex !important; }
+          .show-on-mobile { display: none !important; }
+        }
+        @media (max-width: 767px) {
+          .hide-on-mobile { display: none !important; }
+          .show-on-mobile { display: block !important; }
+        }
+      `}</style>
     </header>
   );
 }

@@ -8,26 +8,71 @@ interface CTABannerProps {
 
 export function CTABanner({ onGetStarted }: CTABannerProps) {
   return (
-    <section style={{ backgroundColor: "#fafafa", borderTop: "1px solid #ededed" }}>
-      <div className="mx-auto max-w-6xl px-5 py-20 text-center">
+    <section
+      style={{
+        backgroundColor: "#fafafa",
+        borderTop: "1px solid #ededed",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "72rem",
+          margin: "0 auto",
+          padding: "80px 20px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          textAlign: "center",
+        }}
+      >
         <h2
-          className="font-semibold"
-          style={{ fontSize: "clamp(28px, 3.5vw, 36px)", color: "#171717", letterSpacing: "-0.72px", lineHeight: 1.15 }}
+          style={{
+            fontSize: "clamp(28px, 3.5vw, 36px)",
+            fontWeight: 600,
+            color: "#171717",
+            letterSpacing: "-0.72px",
+            lineHeight: 1.15,
+            maxWidth: "560px",
+          }}
         >
           Ready to share your open-source story?
         </h2>
-        <p className="mx-auto mt-4 max-w-md text-base" style={{ color: "#707070", lineHeight: 1.55 }}>
-          It's free, it takes 30 seconds, and your profile is live at ossfolio.me/username the moment you sign in.
+        <p
+          style={{
+            marginTop: "16px",
+            maxWidth: "420px",
+            fontSize: "16px",
+            lineHeight: 1.6,
+            color: "#707070",
+          }}
+        >
+          It's free, takes 30 seconds, and your profile is live at
+          ossfolio.me/username the moment you sign in.
         </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <div
+          style={{
+            marginTop: "32px",
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "12px",
+          }}
+        >
           <button
             onClick={onGetStarted}
-            className="inline-flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-90"
             style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
               backgroundColor: "#3ecf8e",
               color: "#171717",
               padding: "10px 20px",
               borderRadius: "6px",
+              fontSize: "14px",
+              fontWeight: 500,
+              border: "none",
+              cursor: "pointer",
             }}
           >
             Get started for free
@@ -37,16 +82,19 @@ export function CTABanner({ onGetStarted }: CTABannerProps) {
             href="https://github.com/PRODHOSH/ossfolio"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm font-medium transition-colors"
             style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              backgroundColor: "#ffffff",
+              color: "#171717",
               padding: "10px 20px",
               borderRadius: "6px",
+              fontSize: "14px",
+              fontWeight: 500,
               border: "1px solid #dfdfdf",
-              color: "#171717",
-              backgroundColor: "#ffffff",
+              textDecoration: "none",
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#fafafa")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#ffffff")}
           >
             Star on GitHub
           </a>
