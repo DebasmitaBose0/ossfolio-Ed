@@ -68,7 +68,7 @@ npm install
 
 ### 3. Set up the database
 
-OSSfolio uses [Supabase](https://supabase.com) (PostgreSQL). Pick whichever option works for you.
+OSSfolio uses [Supabase](https://supabase.com) (PostgreSQL) as its backend — it provides the database, authentication, and API. Pick whichever option works for you.
 
 ---
 
@@ -86,7 +86,9 @@ This is the recommended path for most contributors.
 
 #### Option B — Supabase CLI (local Docker)
 
-Use this if you want a fully local setup without a cloud Supabase project. Requires [Docker](https://www.docker.com) to be running.
+> **Note:** This option requires [Docker](https://www.docker.com) to be installed and running on your machine before you begin.
+
+Use this if you want a fully local setup without a cloud Supabase project.
 
 ```bash
 # Install the Supabase CLI
@@ -116,7 +118,7 @@ Open `.env.local` and fill in:
 | Variable | Where to find it |
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase dashboard → Project Settings → API |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase dashboard → Project Settings → API |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase dashboard → Project Settings → API → **Project API keys** → `anon` `public` (this is a safe, public key used to access Supabase from the browser) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase dashboard → Project Settings → API |
 | `NEXTAUTH_SECRET` | Run `openssl rand -base64 32` in your terminal |
 | `NEXTAUTH_URL` | `http://localhost:3000` for local dev |
