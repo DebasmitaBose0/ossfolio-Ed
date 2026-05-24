@@ -132,6 +132,7 @@ Everyone who's helped build OSSfolio — code, design, docs, ideas, all of it.
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://prodhosh.me/"><img src="https://avatars.githubusercontent.com/u/213995806?v=4?s=100" width="100px;" alt="PRODHOSH V.S"/><br /><sub><b>PRODHOSH V.S</b></sub></a><br /><a href="https://github.com/PRODHOSH/ossfolio/commits?author=PRODHOSH" title="Code">💻</a> <a href="https://github.com/PRODHOSH/ossfolio/commits?author=PRODHOSH" title="Documentation">📖</a> <a href="#design-PRODHOSH" title="Design">🎨</a> <a href="https://github.com/PRODHOSH/ossfolio/issues?q=author%3APRODHOSH" title="Bug reports">🐛</a> <a href="https://github.com/PRODHOSH/ossfolio/pulls?q=is%3Apr+reviewed-by%3APRODHOSH" title="Reviewed Pull Requests">👀</a> <a href="#ideas-PRODHOSH" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-PRODHOSH" title="Maintenance">🚧</a> <a href="https://github.com/PRODHOSH/ossfolio/commits?author=PRODHOSH" title="Tests">⚠️</a> <a href="#infra-PRODHOSH" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/karishma9142"><img src="https://avatars.githubusercontent.com/u/193392138?v=4?s=100" width="100px;" alt="Karishma Kumari"/><br /><sub><b>Karishma Kumari</b></sub></a><br /><a href="https://github.com/PRODHOSH/ossfolio/commits?author=karishma9142" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
