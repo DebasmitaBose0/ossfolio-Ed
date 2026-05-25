@@ -5,7 +5,9 @@ interface ProfilePageProps {
   params: Promise<{ username: string }>;
 }
 
-export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: ProfilePageProps): Promise<Metadata> {
   const { username } = await params;
   return {
     title: `${username} — OSSfolio`,
