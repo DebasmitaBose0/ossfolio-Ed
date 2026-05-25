@@ -6,8 +6,8 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 
 interface NavbarProps {
-  onSignIn: () => void;
-  onGetStarted: () => void;
+  onSignIn?: () => void;
+  onGetStarted?: () => void;
 }
 
 const navLinks = ["Features", "How it works", "Leaderboard"];
@@ -39,8 +39,19 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
         }}
       >
         {/* Logo */}
-        <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-          <Image src="/logo.png" alt="OSSfolio" width={120} height={32} priority style={{ objectFit: "contain" }} />
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
+          <Image
+            src="/logo.png"
+            alt=""
+            width={28}
+            height={28}
+            priority
+            style={{ borderRadius: "6px", flexShrink: 0 }}
+          />
+          <span style={{ display: "flex", alignItems: "baseline" }}>
+            <span style={{ fontSize: "15px", fontWeight: 600, color: "#171717", letterSpacing: "-0.3px" }}>OSS</span>
+            <span style={{ fontSize: "15px", fontWeight: 600, color: "#3ecf8e", letterSpacing: "-0.3px" }}>folio</span>
+          </span>
         </Link>
 
         {/* Desktop nav links */}
@@ -60,26 +71,35 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
         </nav>
 
         {/* Desktop CTAs */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}
           className="hide-on-mobile">
           <button
-            onClick={onSignIn}
+            onClick={() => onSignIn?.()}
             style={{
               fontSize: "14px",
               fontWeight: 500,
-              color: "#707070",
-              background: "none",
-              border: "none",
+              color: "#171717",
+              background: "#ffffff",
+              border: "1px solid #c7c7c7",
               cursor: "pointer",
-              padding: "0",
+              padding: "7px 16px",
+              borderRadius: "6px",
+              letterSpacing: "0",
+              lineHeight: 1,
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#171717")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "#707070")}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#fafafa";
+              e.currentTarget.style.borderColor = "#b2b2b2";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "#ffffff";
+              e.currentTarget.style.borderColor = "#c7c7c7";
+            }}
           >
             Sign in
           </button>
           <button
-            onClick={onGetStarted}
+            onClick={() => onGetStarted?.()}
             style={{
               fontSize: "14px",
               fontWeight: 500,
@@ -89,7 +109,11 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
               borderRadius: "6px",
               border: "none",
               cursor: "pointer",
+              letterSpacing: "0",
+              lineHeight: 1,
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#24b47e")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#3ecf8e")}
           >
             Get started
           </button>
@@ -143,23 +167,24 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
             ))}
             <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #ededed", display: "flex", flexDirection: "column", gap: "8px" }}>
               <button
-                onClick={() => { setMobileOpen(false); onSignIn(); }}
+                onClick={() => { setMobileOpen(false); if (onSignIn) onSignIn(); }}
                 style={{
                   width: "100%",
-                  padding: "8px 0",
+                  padding: "9px 16px",
                   fontSize: "14px",
                   fontWeight: 500,
                   color: "#171717",
-                  background: "none",
-                  border: "none",
+                  backgroundColor: "#ffffff",
+                  border: "1px solid #c7c7c7",
+                  borderRadius: "6px",
                   cursor: "pointer",
-                  textAlign: "left",
+                  textAlign: "center",
                 }}
               >
                 Sign in
               </button>
               <button
-                onClick={() => { setMobileOpen(false); onGetStarted(); }}
+                onClick={() => { setMobileOpen(false); if (onGetStarted) onGetStarted(); }}
                 style={{
                   width: "100%",
                   padding: "9px 16px",

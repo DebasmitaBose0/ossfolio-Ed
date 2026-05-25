@@ -34,8 +34,18 @@ export function Footer() {
         >
           {/* Brand */}
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-              <Image src="/logo.png" alt="OSSfolio" width={100} height={28} style={{ objectFit: "contain" }} />
+            <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
+              <Image
+                src="/logo.png"
+                alt=""
+                width={24}
+                height={24}
+                style={{ borderRadius: "6px", flexShrink: 0 }}
+              />
+              <span style={{ display: "flex", alignItems: "baseline" }}>
+                <span style={{ fontSize: "14px", fontWeight: 600, color: "#171717" }}>OSS</span>
+                <span style={{ fontSize: "14px", fontWeight: 600, color: "#3ecf8e" }}>folio</span>
+              </span>
             </Link>
             <p style={{ fontSize: "13px", lineHeight: 1.6, color: "#707070", maxWidth: "180px" }}>
               Your open-source identity, beyond GitHub.
