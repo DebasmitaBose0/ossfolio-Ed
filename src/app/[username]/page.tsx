@@ -4,6 +4,8 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ProfileView } from "@/components/profile/ProfileView";
 
+export const runtime = "edge";
+
 interface ProfilePageProps {
   params: Promise<{ username: string }>;
 }
