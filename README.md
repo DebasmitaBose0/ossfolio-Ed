@@ -184,11 +184,6 @@ Everyone who has helped build OSSfolio — code, design, docs, ideas, all of it.
 
 ---
 
-### My ELUSOC 2026 Admin Badges!
-
-<a href="https://edulinkup.dev/elusoc/profile/PRODHOSH">
-
-</a>
 
 ## License
 
