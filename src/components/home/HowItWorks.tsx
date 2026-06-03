@@ -1,3 +1,7 @@
+﻿"use client";
+
+import { motion, type Variants } from "framer-motion";
+
 const steps = [
   {
     number: "01",
@@ -19,6 +23,20 @@ const steps = [
   },
 ];
 
+const containerVariants: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.12 } },
+};
+
+const stepVariants: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" },
+  },
+};
+
 export function HowItWorks() {
   return (
     <section id="how-it-works" style={{ backgroundColor: "#ffffff" }}>
@@ -30,7 +48,13 @@ export function HowItWorks() {
         }}
       >
         {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: "48px" }}>
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          viewport={{ once: true }}
+          style={{ textAlign: "center", marginBottom: "48px" }}
+        >
           <p
             style={{ fontSize: "13px", fontWeight: 500, color: "#3ecf8e", marginBottom: "10px" }}
           >
@@ -47,10 +71,14 @@ export function HowItWorks() {
           >
             Up and running in 30 seconds
           </h2>
-        </div>
+        </motion.div>
 
         {/* Steps */}
-        <div
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={containerVariants}
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
@@ -58,7 +86,11 @@ export function HowItWorks() {
           }}
         >
           {steps.map(({ number, title, description }) => (
-            <div key={number} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <motion.div
+              key={number}
+              variants={stepVariants}
+              style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+            >
               <div
                 style={{
                   display: "flex",
@@ -91,9 +123,9 @@ export function HowItWorks() {
                   {description}
                 </p>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

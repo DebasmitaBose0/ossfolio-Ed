@@ -1,3 +1,5 @@
+﻿"use client";
+
 import {
   GitPullRequest,
   Activity,
@@ -8,6 +10,7 @@ import {
   Share2,
   Flame,
 } from "lucide-react";
+import { motion, type Variants } from "framer-motion";
 
 const features = [
   {
@@ -60,6 +63,20 @@ const features = [
   },
 ];
 
+const containerVariants: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08 } },
+};
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" },
+  },
+};
+
 export function Features() {
   return (
     <section
@@ -78,7 +95,13 @@ export function Features() {
         }}
       >
         {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: "48px" }}>
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          viewport={{ once: true }}
+          style={{ textAlign: "center", marginBottom: "48px" }}
+        >
           <p
             style={{ fontSize: "13px", fontWeight: 500, color: "#3ecf8e", marginBottom: "10px" }}
           >
@@ -108,10 +131,14 @@ export function Features() {
             OSSfolio pulls from the GitHub GraphQL API to build a complete
             picture of your contributions — automatically.
           </p>
-        </div>
+        </motion.div>
 
         {/* Grid */}
-        <div
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={containerVariants}
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
@@ -119,8 +146,9 @@ export function Features() {
           }}
         >
           {features.map(({ icon: Icon, title, description }) => (
-            <div
+            <motion.div
               key={title}
+              variants={cardVariants}
               style={{
                 backgroundColor: "#ffffff",
                 border: "1px solid #dfdfdf",
@@ -150,9 +178,9 @@ export function Features() {
               <p style={{ fontSize: "13px", lineHeight: 1.6, color: "#707070" }}>
                 {description}
               </p>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

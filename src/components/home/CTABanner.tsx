@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 
 import { ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface CTABannerProps {
   onGetStarted: () => void;
@@ -14,7 +15,11 @@ export function CTABanner({ onGetStarted }: CTABannerProps) {
         borderTop: "1px solid #ededed",
       }}
     >
-      <div
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        viewport={{ once: true }}
         style={{
           maxWidth: "72rem",
           margin: "0 auto",
@@ -99,7 +104,7 @@ export function CTABanner({ onGetStarted }: CTABannerProps) {
             Star on GitHub
           </a>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

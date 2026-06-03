@@ -1,15 +1,33 @@
-"use client";
+﻿"use client";
 
 import { ArrowRight } from "lucide-react";
+import { motion, type Variants } from "framer-motion";
 
 interface HeroProps {
   onGetStarted: () => void;
 }
 
+const container: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.12 } },
+};
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: "easeOut" },
+  },
+};
+
 export function Hero({ onGetStarted }: HeroProps) {
   return (
     <section style={{ width: "100%", backgroundColor: "#ffffff" }}>
-      <div
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={container}
         style={{
           maxWidth: "72rem",
           margin: "0 auto",
@@ -21,7 +39,8 @@ export function Hero({ onGetStarted }: HeroProps) {
         }}
       >
         {/* Pill */}
-        <div
+        <motion.div
+          variants={fadeUp}
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -45,10 +64,11 @@ export function Hero({ onGetStarted }: HeroProps) {
             }}
           />
           Open Source · Free Forever
-        </div>
+        </motion.div>
 
         {/* Headline */}
-        <h1
+        <motion.h1
+          variants={fadeUp}
           style={{
             fontSize: "clamp(36px, 5vw, 56px)",
             fontWeight: 600,
@@ -60,10 +80,11 @@ export function Hero({ onGetStarted }: HeroProps) {
         >
           Your open-source identity,{" "}
           <span style={{ color: "#3ecf8e" }}>beyond GitHub.</span>
-        </h1>
+        </motion.h1>
 
         {/* Sub */}
-        <p
+        <motion.p
+          variants={fadeUp}
           style={{
             marginTop: "20px",
             maxWidth: "520px",
@@ -78,10 +99,11 @@ export function Hero({ onGetStarted }: HeroProps) {
           </span>{" "}
           showing your real open-source impact — merged PRs, streaks, orgs,
           badges, and more.
-        </p>
+        </motion.p>
 
         {/* CTAs */}
-        <div
+        <motion.div
+          variants={fadeUp}
           style={{
             marginTop: "32px",
             display: "flex",
@@ -128,10 +150,11 @@ export function Hero({ onGetStarted }: HeroProps) {
           >
             See how it works
           </a>
-        </div>
+        </motion.div>
 
         {/* Stats */}
-        <div
+        <motion.div
+          variants={fadeUp}
           style={{
             marginTop: "56px",
             paddingTop: "32px",
@@ -165,8 +188,8 @@ export function Hero({ onGetStarted }: HeroProps) {
               </p>
             </div>
           ))}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </section>
   );
 }
