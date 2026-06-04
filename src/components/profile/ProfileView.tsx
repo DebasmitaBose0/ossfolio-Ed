@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import type { ContributorStats, Org, TechEntry, HeatmapWeek } from "@/types";
 
 interface GitHubUser {
   login: string;
@@ -47,7 +48,25 @@ const LANG_COLORS: Record<string, string> = {
   PHP: "#4F5D95",
 };
 
-export function ProfileView({ user, repos }: { user: GitHubUser; repos: GitHubRepo[] }) {
+interface ProfileExtras {
+  stats: ContributorStats;
+  techStack: TechEntry[];
+  orgs: Org[];
+  heatmap: HeatmapWeek[];
+  totalContributions: number;
+  score: number;
+}
+
+export function ProfileView({
+  user,
+  repos,
+  stats,
+  techStack,
+  orgs,
+  heatmap,
+  totalContributions,
+  score,
+}: { user: GitHubUser; repos: GitHubRepo[] } & ProfileExtras) {
   const displayName = user.name || user.login;
   const website = user.blog
     ? user.blog.startsWith("http")
@@ -228,6 +247,131 @@ export function ProfileView({ user, repos }: { user: GitHubUser; repos: GitHubRe
               </svg>
             </a>
           </div>
+        </div>
+      )}
+
+      {/* Contribution stats */}
+      <div style={{ marginTop: "44px" }}>
+        <h2 style={{ fontSize: "16px", fontWeight: 600, color: "#171717", margin: "0 0 16px 0", letterSpacing: "-0.2px" }}>
+          Contribution stats
+        </h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "12px" }}>
+          {[
+            { label: "Commits", value: stats.totalCommits },
+            { label: "Pull Requests", value: stats.totalPRs },
+            { label: "Issues", value: stats.totalIssues },
+            { label: "Contributor score", value: score },
+          ].map((item) => (
+            <div
+              key={item.label}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "20px 12px",
+                border: "1px solid #ededed",
+                borderRadius: "12px",
+                backgroundColor: "#ffffff",
+                textAlign: "center",
+              }}
+            >
+              <span style={{ fontSize: "24px", fontWeight: 700, color: "#171717", letterSpacing: "-0.5px" }}>
+                {item.value.toLocaleString()}
+              </span>
+              <span style={{ fontSize: "12px", color: "#707070", marginTop: "4px" }}>{item.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Tech stack */}
+      {techStack.length > 0 && (
+        <div style={{ marginTop: "44px" }}>
+          <h2 style={{ fontSize: "16px", fontWeight: 600, color: "#171717", margin: "0 0 16px 0", letterSpacing: "-0.2px" }}>
+            Tech stack
+          </h2>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+            {techStack.map(({ language, repoCount }) => (
+              <span
+                key={language}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "6px 12px",
+                  border: "1px solid #ededed",
+                  borderRadius: "9999px",
+                  fontSize: "13px",
+                  color: "#171717",
+                  backgroundColor: "#fafafa",
+                }}
+              >
+                {language}
+                <span style={{ color: "#9a9a9a", fontSize: "12px" }}>×{repoCount}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Organizations */}
+      {orgs.length > 0 && (
+        <div style={{ marginTop: "44px" }}>
+          <h2 style={{ fontSize: "16px", fontWeight: 600, color: "#171717", margin: "0 0 16px 0", letterSpacing: "-0.2px" }}>
+            Organizations
+          </h2>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
+            {orgs.map((org) => (
+              <a
+                key={org.login}
+                href={org.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={org.name ?? org.login}
+                style={{ display: "inline-flex", borderRadius: "8px", overflow: "hidden", border: "1px solid #ededed", transition: "border-color 0.15s" }}
+                onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#3ecf8e")}
+                onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#ededed")}
+              >
+                <Image src={org.avatarUrl} alt={org.login} width={36} height={36} style={{ display: "block" }} />
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Contribution heatmap */}
+      {heatmap.length > 0 && (
+        <div style={{ marginTop: "44px" }}>
+          <h2 style={{ fontSize: "16px", fontWeight: 600, color: "#171717", margin: "0 0 16px 0", letterSpacing: "-0.2px" }}>
+            {totalContributions.toLocaleString()} contributions in the last year
+          </h2>
+          <div
+            style={{
+              display: "flex",
+              gap: "3px",
+              overflowX: "auto",
+              padding: "16px",
+              border: "1px solid #ededed",
+              borderRadius: "12px",
+              backgroundColor: "#ffffff",
+            }}
+          >
+            {heatmap.map((week, wi) => (
+              <div key={wi} style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+                {week.days.map((day, di) => (
+                  <div
+                    key={di}
+                    title={`${day.count} contributions on ${day.date}`}
+                    style={{ width: "11px", height: "11px", borderRadius: "2px", backgroundColor: day.color, flexShrink: 0 }}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+          <p style={{ fontSize: "12px", color: "#9a9a9a", margin: "10px 0 0 0" }}>
+            Activity graph is a representative placeholder &mdash; precise daily counts require GitHub&rsquo;s authenticated API.
+          </p>
         </div>
       )}
     </div>
