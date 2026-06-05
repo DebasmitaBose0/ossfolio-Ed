@@ -1,13 +1,12 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { fetchContributorProfile, contributorToScoreInputs } from "@/lib/github";
 import { mapRepos, fetchLiveStats } from "@/lib/profile-data";
 import { calculateScore } from "@/lib/score";
+import type { Session } from "@supabase/supabase-js";
 import type { ContributorStats, Repo } from "@/types";
 
 // Cap how long the post-login score sync may delay the redirect. The sync is
@@ -15,9 +14,10 @@ import type { ContributorStats, Repo } from "@/types";
 // slow GitHub/Supabase response must never hold the user on this screen.
 const SYNC_TIMEOUT_MS = 4000;
 
-// Unauthenticated REST pipeline — the same one the public profile page uses.
-// Reviews aren't visible here (totalReviews stays 0), but it lets the score be
-// stored even when the GraphQL/token path is unavailable or fails.
+// Maximum time to wait for the PKCE code exchange before giving up and
+// redirecting home. Prevents infinite "Signing you in…" spinner.
+const AUTH_WAIT_TIMEOUT_MS = 10000;
+
 async function statsFromRest(
   username: string
 ): Promise<{ stats: ContributorStats; repos: Repo[] }> {
@@ -32,10 +32,6 @@ async function statsFromRest(
   return { repos: mapRepos(filtered), stats: await fetchLiveStats(username) };
 }
 
-// Compute the user's score and persist it to their own profiles row. Prefers
-// the authenticated GraphQL path (which includes review counts) and falls back
-// to REST when the token is absent OR the GraphQL call fails, so a login always
-// stores a score.
 async function syncScore(
   userId: string,
   username: string,
@@ -49,8 +45,6 @@ async function syncScore(
       const contributor = await fetchContributorProfile(username, providerToken);
       ({ stats, repos } = contributorToScoreInputs(contributor));
     } catch {
-      // GraphQL failed (token expired, rate limit, network) — fall back to REST
-      // rather than abandoning persistence for this login.
       ({ stats, repos } = await statsFromRest(username));
     }
   } else {
@@ -59,10 +53,6 @@ async function syncScore(
 
   const score = calculateScore(stats, repos);
 
-  // RLS ("Users can update/insert own profile", auth.uid() = id) permits this
-  // with the anon client — no service-role key needed. upsert() resolves with
-  // { error } rather than throwing, so check it explicitly instead of relying
-  // on a surrounding try/catch.
   const { error } = await supabase.from("profiles").upsert(
     {
       id: userId,
@@ -77,7 +67,6 @@ async function syncScore(
     { onConflict: "id" }
   );
   if (error) {
-    // Non-fatal: surface for debugging but let sign-in proceed.
     console.error("Score sync upsert failed:", error.message);
   }
 }
@@ -88,24 +77,13 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     let cancelled = false;
 
-    async function run() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      const username = session?.user?.user_metadata?.user_name as
-        | string
-        | undefined;
-      const userId = session?.user?.id;
-      // GitHub OAuth access token. Supabase only exposes this right after the
-      // OAuth redirect (it isn't persisted or refreshed), which is why the
-      // score sync runs here, at the callback, while the token is still in hand.
-      const providerToken = session?.provider_token ?? undefined;
+    async function handleSession(session: Session) {
+      const username = session.user.user_metadata?.user_name as string | undefined;
+      const userId = session.user.id;
+      // provider_token is only present immediately after the OAuth redirect.
+      const providerToken = session.provider_token ?? undefined;
 
       if (username && userId) {
-        // Best-effort and time-boxed: race the sync against a timeout so a slow
-        // GitHub/Supabase response can't hold the redirect, and catch any error
-        // so sign-in stays strictly non-blocking.
         await Promise.race([
           syncScore(userId, username, providerToken).catch(() => {}),
           new Promise<void>((resolve) => setTimeout(resolve, SYNC_TIMEOUT_MS)),
@@ -117,10 +95,31 @@ export default function AuthCallbackPage() {
       }
     }
 
-    run();
+    // With PKCE flow (Supabase v2 default), the ?code= in the callback URL is
+    // exchanged asynchronously during client initialization. getSession() can
+    // return null before that exchange completes, so we listen for SIGNED_IN
+    // instead, which fires only after the exchange succeeds and the session is
+    // stored. We also fall back to INITIAL_SESSION in case the session was
+    // already established before the listener attached (e.g., rapid re-mount).
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (cancelled || !session) return;
+        if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
+          await handleSession(session);
+        }
+      }
+    );
+
+    // Safety net: if no auth event arrives within AUTH_WAIT_TIMEOUT_MS, redirect
+    // home so the user isn't stuck on the spinner indefinitely.
+    const timeout = setTimeout(() => {
+      if (!cancelled) router.replace("/");
+    }, AUTH_WAIT_TIMEOUT_MS);
 
     return () => {
       cancelled = true;
+      clearTimeout(timeout);
+      subscription.unsubscribe();
     };
   }, [router]);
 
