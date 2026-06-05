@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 
@@ -82,6 +84,8 @@ export function Footer() {
                     <Link
                       href={href}
                       style={{ fontSize: "13px", color: "#707070", textDecoration: "none" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = "#171717")}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "#707070")}
                     >
                       {label}
                     </Link>
