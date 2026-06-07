@@ -103,9 +103,15 @@ export function generateMockHeatmap(username: string): MockHeatmap {
  * Future-dated padding days (the seeded calendar fills the final partial week)
  * are excluded so they neither break nor pad a streak. YYYY-MM-DD strings sort
  * lexicographically, so string comparison against today is safe.
+ *
+ * `todayKey` is injectable (defaults to the current UTC date) so the value is
+ * deterministic for tests and can be computed once on the server and reused,
+ * avoiding any SSR/hydration drift across a UTC day boundary.
  */
-export function computeStreaks(weeks: HeatmapWeek[]): { current: number; longest: number } {
-  const todayKey = new Date().toISOString().slice(0, 10);
+export function computeStreaks(
+  weeks: HeatmapWeek[],
+  todayKey: string = new Date().toISOString().slice(0, 10)
+): { current: number; longest: number } {
   const days = weeks.flatMap((w) => w.days).filter((d) => d.date <= todayKey);
 
   let longest = 0;

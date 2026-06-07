@@ -9,7 +9,7 @@ import {
   deriveTechStack,
   mapRepos,
 } from "@/lib/profile-data";
-import { generateMockHeatmap } from "@/lib/mock";
+import { generateMockHeatmap, computeStreaks } from "@/lib/mock";
 import { calculateScore } from "@/lib/score";
 import { supabase } from "@/lib/supabase";
 
@@ -71,6 +71,10 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   // placeholder and surface its total as the headline contribution count.
   const { weeks: heatmap, totalContributions } = generateMockHeatmap(username);
 
+  // Streaks are computed on the server (once, with the server's date) and passed
+  // down as plain numbers, so the client never recomputes them — no hydration drift.
+  const { current: currentStreak, longest: longestStreak } = computeStreaks(heatmap);
+
   const stats = { ...liveStats, totalContributions };
   const liveScore = calculateScore(stats, mappedRepos);
 
@@ -102,6 +106,8 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           techStack={techStack}
           orgs={orgs}
           heatmap={heatmap}
+          currentStreak={currentStreak}
+          longestStreak={longestStreak}
           score={score}
         />
       </main>

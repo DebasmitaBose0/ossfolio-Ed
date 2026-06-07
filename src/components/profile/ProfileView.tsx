@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import type { ContributorStats, Org, TechEntry, HeatmapWeek } from "@/types";
-import { computeStreaks } from "@/lib/mock";
 
 interface GitHubUser {
   login: string;
@@ -54,6 +53,8 @@ interface ProfileExtras {
   techStack: TechEntry[];
   orgs: Org[];
   heatmap: HeatmapWeek[];
+  currentStreak: number;
+  longestStreak: number;
   score: number;
 }
 
@@ -64,6 +65,8 @@ export function ProfileView({
   techStack,
   orgs,
   heatmap,
+  currentStreak,
+  longestStreak,
   score,
 }: { user: GitHubUser; repos: GitHubRepo[] } & ProfileExtras) {
   const displayName = user.name || user.login;
@@ -72,9 +75,6 @@ export function ProfileView({
       ? user.blog
       : `https://${user.blog}`
     : null;
-
-  // Current and longest contribution streaks derived from the heatmap calendar.
-  const { current: currentStreak, longest: longestStreak } = computeStreaks(heatmap);
 
   return (
     <div style={{ maxWidth: "56rem", margin: "0 auto", padding: "48px 20px 80px" }}>
