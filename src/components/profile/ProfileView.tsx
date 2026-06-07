@@ -72,7 +72,8 @@ export function ProfileView({
       : `https://${user.blog}`
     : null;
 
-  // Total stars across the fetched repos (same basis calculateScore uses for the score).
+  // Total stars across the repos shown on this page (the top repos fetched for
+  // display). Derived from the `repos` prop already passed in.
   const totalStars = repos.reduce((sum, r) => sum + (r.stargazers_count ?? 0), 0);
 
   return (
