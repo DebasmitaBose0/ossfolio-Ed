@@ -76,6 +76,10 @@ export function ProfileView({
       : `https://${user.blog}`
     : null;
 
+  // Total stars across the repos shown on this page (the top repos fetched for
+  // display). Derived from the `repos` prop already passed in.
+  const totalStars = repos.reduce((sum, r) => sum + (r.stargazers_count ?? 0), 0);
+
   return (
     <div style={{ maxWidth: "56rem", margin: "0 auto", padding: "48px 20px 80px" }}>
 
@@ -262,6 +266,7 @@ export function ProfileView({
             { label: "Commits", value: stats.totalCommits },
             { label: "Pull Requests", value: stats.totalPRs },
             { label: "Issues", value: stats.totalIssues },
+            { label: "Stars", value: totalStars },
             { label: "Contributor score", value: score },
           ].map((item) => (
             <div
