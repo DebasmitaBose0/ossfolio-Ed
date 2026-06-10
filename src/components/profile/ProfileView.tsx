@@ -166,7 +166,7 @@ export function ProfileView({
             <button
               type="button"
               onClick={() => {
-                const profileUrl = `https://ossfolio.vercel.app/${user.login}`;
+                const profileUrl = `https://ossfolio.qzz.io/${user.login}`;
                 const text = `My open source contributor score is ${score} on OSSfolio: ${profileUrl} #opensource`;
                 window.open(
                   `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
