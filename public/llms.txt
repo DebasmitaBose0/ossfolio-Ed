@@ -1,0 +1,13 @@
+# OSSfolio
+
+> OSSfolio is a free, open-source platform that gives every contributor a public profile page showing their full open-source journey - merged PRs, issues, commits, organizations, and program participation like GSoC or GSSoC, all in one shareable link.
+
+## Docs
+
+- [README](https://github.com/PRODHOSH/ossfolio/blob/main/README.md): Project overview, features, tech stack, and setup instructions
+- [CONTRIBUTING](https://github.com/PRODHOSH/ossfolio/blob/main/CONTRIBUTING.md): How to set up the project locally and contribute
+- [DESIGN](https://github.com/PRODHOSH/ossfolio/blob/main/DESIGN.md): Colors, spacing, typography, and component specs
+
+## Site
+
+- [Explore](https://ossfolio.qzz.io/explore): Leaderboard of top contributors ranked by score
