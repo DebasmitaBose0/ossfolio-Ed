@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import type { ContributorStats, Org, TechEntry, HeatmapWeek } from "@/types";
 
@@ -93,6 +94,18 @@ export function ProfileView({
       : `https://${user.blog}`
     : null;
 
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API unavailable — fail silently.
+    }
+  };
+
   // Total stars across the repos shown on this page (the top repos fetched for
   // display). Derived from the `repos` prop already passed in.
   const totalStars = repos.reduce((sum, r) => sum + (r.stargazers_count ?? 0), 0);
@@ -177,9 +190,9 @@ export function ProfileView({
             </a>
           </div>
 
-          {/* Share on X button — opens a pre-filled tweet with the contributor
-              score and profile URL, consistent with DESIGN.md button-secondary-outline */}
-          <div style={{ marginTop: "14px" }}>
+          {/* Action buttons — Share on X and Copy link, consistent with
+              DESIGN.md button-secondary-outline: white bg, ink border, 6px radius */}
+          <div style={{ marginTop: "14px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
             <button
               type="button"
               onClick={() => {
@@ -219,6 +232,60 @@ export function ProfileView({
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
               </svg>
               Share on X
+            </button>
+
+            {/* Copy link button — copies window.location.href to clipboard,
+                shows "Copied!" with green accent for 2 s then resets.
+                Uses {colors.primary} (#3ecf8e) for the confirmed state to
+                signal success without adding a new chromatic event. */}
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "7px 14px",
+                fontSize: "13px",
+                fontWeight: 500,
+                color: copied ? "#3ecf8e" : "#171717",
+                backgroundColor: "#ffffff",
+                border: `1px solid ${copied ? "#3ecf8e" : "#c7c7c7"}`,
+                borderRadius: "6px",
+                cursor: "pointer",
+                lineHeight: 1,
+                transition: "border-color 0.15s, color 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                if (!copied) {
+                  e.currentTarget.style.borderColor = "#171717";
+                  e.currentTarget.style.backgroundColor = "#fafafa";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!copied) {
+                  e.currentTarget.style.borderColor = "#c7c7c7";
+                  e.currentTarget.style.backgroundColor = "#ffffff";
+                }
+              }}
+              aria-label="Copy profile link to clipboard"
+            >
+              {copied ? (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                  Copy link
+                </>
+              )}
             </button>
           </div>
 
