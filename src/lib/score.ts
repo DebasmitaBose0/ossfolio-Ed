@@ -1,7 +1,6 @@
 import type { ContributorStats, Repo } from "@/types";
 
-// Calculates a contributor's overall open-source score from their GitHub activity.
-// Each metric is weighted to reflect the relative effort and impact of that activity type.
+/** Calculates the contributor score from GitHub activity — commits, PRs, issues, reviews, and capped stars. */
 export function calculateScore(stats: ContributorStats, repos: Repo[]): number {
   const totalStars = repos.reduce((sum, r) => sum + r.stars, 0);
   const score =
