@@ -101,8 +101,8 @@ export function ProfileView({
       await navigator.clipboard.writeText(window.location.href);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Clipboard API unavailable — fail silently.
+    } catch (err) {
+      console.error("Copy to clipboard failed:", err);
     }
   };
 
