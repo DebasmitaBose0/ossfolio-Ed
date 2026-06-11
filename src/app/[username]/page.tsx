@@ -82,14 +82,18 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   // signed-out ones — sees the same official number that feeds the leaderboard.
   // Falls back to the live-computed score if this user hasn't synced a row yet.
   let score = liveScore;
+  let updatedAt: string | null = null;
   try {
     const { data: profileRow } = await supabase
       .from("profiles")
-      .select("score")
+      .select("score, updated_at")
       .eq("username", username)
       .maybeSingle();
     if (profileRow && typeof profileRow.score === "number") {
       score = profileRow.score;
+    }
+    if (profileRow && typeof profileRow.updated_at === "string") {
+      updatedAt = profileRow.updated_at;
     }
   } catch {
     // Ignore and use the live score — a Supabase hiccup must not break the page.
@@ -109,6 +113,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           currentStreak={currentStreak}
           longestStreak={longestStreak}
           score={score}
+          updatedAt={updatedAt}
         />
       </main>
       <Footer />

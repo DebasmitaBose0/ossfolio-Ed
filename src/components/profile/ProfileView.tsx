@@ -56,6 +56,22 @@ interface ProfileExtras {
   currentStreak: number;
   longestStreak: number;
   score: number;
+  /** ISO 8601 timestamp from Supabase profiles.updated_at — null if the user has never synced. */
+  updatedAt: string | null;
+}
+
+/** Format an ISO timestamp as a human-readable relative string for the profile header. */
+function formatUpdatedAt(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays <= 0) return "today";
+  if (diffDays === 1) return "1 day ago";
+  if (diffDays < 30) return `${diffDays} days ago`;
+  const months = Math.floor(diffDays / 30);
+  if (months === 1) return "1 month ago";
+  if (months < 12) return `${months} months ago`;
+  const years = Math.floor(diffDays / 365);
+  return years === 1 ? "1 year ago" : `${years} years ago`;
 }
 
 export function ProfileView({
@@ -68,6 +84,7 @@ export function ProfileView({
   currentStreak,
   longestStreak,
   score,
+  updatedAt,
 }: { user: GitHubUser; repos: GitHubRepo[] } & ProfileExtras) {
   const displayName = user.name || user.login;
   const website = user.blog
@@ -216,6 +233,16 @@ export function ProfileView({
               <strong style={{ color: "#171717", fontWeight: 600 }}>{user.public_repos}</strong> repos
             </span>
           </div>
+
+          {/* Last updated timestamp — shown only when a Supabase profile row exists.
+              Uses {typography.micro} (12px/1.45) and {colors.ink-mute-2} (#9a9a9a)
+              — the most subdued text tier in the design system, appropriate for
+              metadata that is helpful but never the focal point. */}
+          {updatedAt && (
+            <p style={{ fontSize: "12px", color: "#9a9a9a", margin: "10px 0 0 0", lineHeight: 1.45 }}>
+              Last updated {formatUpdatedAt(updatedAt)}
+            </p>
+          )}
         </div>
       </div>
 
