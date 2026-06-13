@@ -164,6 +164,7 @@ export function ProfileView({
                 href={website}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label={`Personal website ${website.replace(/^https?:\/\//, "")} (opens in a new tab)`}
                 style={{ fontSize: "13px", color: "#707070", display: "flex", alignItems: "center", gap: "5px", textDecoration: "none" }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = "#171717")}
                 onMouseLeave={(e) => (e.currentTarget.style.color = "#707070")}
@@ -180,6 +181,7 @@ export function ProfileView({
                 href={`https://twitter.com/${user.twitter_username}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label={`Twitter profile of @${user.twitter_username} (opens in a new tab)`}
                 style={{ fontSize: "13px", color: "#707070", display: "flex", alignItems: "center", gap: "5px", textDecoration: "none" }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = "#171717")}
                 onMouseLeave={(e) => (e.currentTarget.style.color = "#707070")}
@@ -194,6 +196,7 @@ export function ProfileView({
               href={user.html_url}
               target="_blank"
               rel="noopener noreferrer"
+              aria-label={`GitHub profile of ${displayName} (opens in a new tab)`}
               style={{ fontSize: "13px", color: "#707070", display: "flex", alignItems: "center", gap: "5px", textDecoration: "none" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = "#171717")}
               onMouseLeave={(e) => (e.currentTarget.style.color = "#707070")}
@@ -397,6 +400,7 @@ export function ProfileView({
               href={`https://github.com/${user.login}?tab=repositories`}
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="View all repositories on GitHub (opens in a new tab)"
               style={{ fontSize: "13px", color: "#707070", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = "#171717")}
               onMouseLeave={(e) => (e.currentTarget.style.color = "#707070")}
@@ -490,6 +494,7 @@ export function ProfileView({
                 target="_blank"
                 rel="noopener noreferrer"
                 title={org.name ?? org.login}
+                aria-label={`Organization ${org.name ?? org.login} (opens in a new tab)`}
                 style={{ display: "inline-flex", borderRadius: "8px", overflow: "hidden", border: "1px solid #ededed", transition: "border-color 0.15s" }}
                 onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#3ecf8e")}
                 onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#ededed")}
