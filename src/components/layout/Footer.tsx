@@ -8,6 +8,7 @@ const links: Record<string, { label: string; href: string; badge?: string }[]> =
     { label: "Features", href: "#features" },
     { label: "How it works", href: "#how-it-works" },
     { label: "Leaderboard", href: "/explore", badge: "New" },
+    { label: "How scoring works", href: "/score-explained" },
   ],
   Developers: [
     { label: "GitHub", href: "https://github.com/PRODHOSH/ossfolio" },
