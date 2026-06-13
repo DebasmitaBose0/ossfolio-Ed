@@ -542,7 +542,7 @@ export function ProfileView({
             ))}
           </div>
           <p style={{ fontSize: "12px", color: "#9a9a9a", margin: "10px 0 0 0" }}>
-            Activity graph is a representative placeholder &mdash; precise daily counts require GitHub&rsquo;s authenticated API.
+            This chart shows an estimate of contribution activity. Exact daily counts are not available for public profiles.
           </p>
         </div>
       )}
