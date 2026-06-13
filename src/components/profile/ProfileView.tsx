@@ -424,6 +424,7 @@ export function ProfileView({
             { label: "Commits", value: stats.totalCommits },
             { label: "Pull Requests", value: stats.totalPRs },
             { label: "Issues", value: stats.totalIssues },
+            { label: "Reviews", value: stats.totalReviews },
             { label: "Stars", value: totalStars },
             { label: "Contributor score", value: score },
           ].map((item) => (
