@@ -562,6 +562,20 @@ export function ProfileView({
               </div>
             ))}
           </div>
+          {/* Color legend — mirrors GitHub's Less→More scale using the same
+              five shades the heatmap cells use (#ebedf0 → #216e39). Kept small
+              and muted per DESIGN.md so it reads as a caption, not a chart element. */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "4px", margin: "10px 0 0 0" }}>
+            <span style={{ fontSize: "12px", color: "#707070", marginRight: "2px" }}>Less</span>
+            {["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"].map((shade) => (
+              <span
+                key={shade}
+                aria-hidden="true"
+                style={{ width: "11px", height: "11px", borderRadius: "2px", backgroundColor: shade, flexShrink: 0 }}
+              />
+            ))}
+            <span style={{ fontSize: "12px", color: "#707070", marginLeft: "2px" }}>More</span>
+          </div>
           <p style={{ fontSize: "12px", color: "#9a9a9a", margin: "10px 0 0 0" }}>
             This chart shows an estimate of contribution activity. Exact daily counts are not available for public profiles.
           </p>
