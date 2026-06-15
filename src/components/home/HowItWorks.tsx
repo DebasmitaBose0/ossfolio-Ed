@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { motion, type Variants } from "framer-motion";
+import { sectionEyebrowStyle } from "@/lib/sectionEyebrowStyle";
 
 const steps = [
   {
@@ -56,7 +57,7 @@ export function HowItWorks() {
           style={{ textAlign: "center", marginBottom: "48px" }}
         >
           <p
-            style={{ fontSize: "13px", fontWeight: 500, color: "#3ecf8e", marginBottom: "10px" }}
+            style={sectionEyebrowStyle}
           >
             Simple by design
           </p>

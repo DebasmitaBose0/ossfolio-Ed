@@ -11,7 +11,7 @@ import {
   Flame,
 } from "lucide-react";
 import { motion, type Variants } from "framer-motion";
-
+import { sectionEyebrowStyle } from "@/lib/sectionEyebrowStyle";
 const features = [
   {
     icon: GitPullRequest,
@@ -103,7 +103,7 @@ export function Features() {
           style={{ textAlign: "center", marginBottom: "48px" }}
         >
           <p
-            style={{ fontSize: "13px", fontWeight: 500, color: "#3ecf8e", marginBottom: "10px" }}
+            style={sectionEyebrowStyle}
           >
             What you get
           </p>
