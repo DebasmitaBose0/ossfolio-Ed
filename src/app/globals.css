@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@theme {
+:root {
   /* Brand Constants */
   --color-primary: #3ecf8e;
   --color-primary-deep: #24b47e;
@@ -45,9 +45,6 @@
   --font-sans: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 }
-
-/* Tailwind v4 Class-Based System Injection Layer */
-@custom-variant dark (&:where(.dark, .dark *));
 
 /* Dynamic Theme Variable Swapping Block */
 :root.dark {
