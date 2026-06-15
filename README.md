@@ -177,6 +177,9 @@ Everyone who has helped build OSSfolio — code, design, docs, ideas, all of it.
       <td align="center" valign="top" width="14.28%"><a href="http://awaisxdevs.vercel.app"><img src="https://avatars.githubusercontent.com/u/236069266?v=4?s=100" width="100px;" alt="Awais  Khan "/><br /><sub><b>Awais  Khan </b></sub></a><br /><a href="https://github.com/PRODHOSH/ossfolio/commits?author=iAwaisKhan" title="Code">💻</a> <a href="#design-iAwaisKhan" title="Design">🎨</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Komal-Sharma03"><img src="https://avatars.githubusercontent.com/u/174271565?v=4?s=100" width="100px;" alt="KOMALSHARMA"/><br /><sub><b>KOMALSHARMA</b></sub></a><br /><a href="https://github.com/PRODHOSH/ossfolio/commits?author=Komal-Sharma03" title="Code">💻</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Ayushganeshi"><img src="https://avatars.githubusercontent.com/u/174295266?v=4?s=100" width="100px;" alt="Ayushganeshi"/><br /><sub><b>Ayushganeshi</b></sub></a><br /><a href="https://github.com/PRODHOSH/ossfolio/commits?author=Ayushganeshi" title="Code">💻</a></td>
+    </tr>
   </tbody>
 </table>
 
