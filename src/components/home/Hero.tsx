@@ -34,7 +34,16 @@ export function Hero({ onGetStarted }: HeroProps) {
   }
 
   return (
-    <section style={{ width: "100%", backgroundColor: "#ffffff" }}>
+    <section style={{ width: "100%", backgroundColor: "var(--color-canvas)", transition: "background-color 0.2s ease" }}>
+      {/* 💡 Explicit pseudo-selector styling to link the placeholder directly to our dynamic theme typography layer */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .hero-search-input::placeholder {
+          color: var(--color-ink-mute) !important;
+          opacity: 0.85;
+          transition: color 0.2s ease;
+        }
+      `}} />
+
       <motion.div
         initial="hidden"
         animate="visible"
@@ -56,13 +65,14 @@ export function Hero({ onGetStarted }: HeroProps) {
             display: "inline-flex",
             alignItems: "center",
             gap: "6px",
-            backgroundColor: "#3ecf8e",
-            color: "#171717",
-            borderRadius: "9999px",
+            backgroundColor: "var(--color-primary)",
+            color: "var(--color-on-primary)",
+            borderRadius: "var(--radius-full)",
             fontSize: "12px",
-            fontWeight: 500,
+            fontWeight: 600,
             padding: "4px 12px",
             marginBottom: "24px",
+            WebkitFontSmoothing: "antialiased",
           }}
         >
           <span
@@ -70,8 +80,8 @@ export function Hero({ onGetStarted }: HeroProps) {
               display: "inline-block",
               height: "6px",
               width: "6px",
-              borderRadius: "9999px",
-              backgroundColor: "#171717",
+              borderRadius: "var(--radius-full)",
+              backgroundColor: "var(--color-on-primary)",
             }}
           />
           Open Source · Free Forever
@@ -85,12 +95,13 @@ export function Hero({ onGetStarted }: HeroProps) {
             fontWeight: 600,
             lineHeight: 1.1,
             letterSpacing: "-1.5px",
-            color: "#171717",
+            color: "var(--color-ink)",
             maxWidth: "720px",
+            transition: "color 0.2s ease",
           }}
         >
           Your open-source identity,{" "}
-          <span style={{ color: "#3ecf8e" }}>beyond GitHub.</span>
+          <span style={{ color: "var(--color-primary)" }}>beyond GitHub.</span>
         </motion.h1>
 
         {/* Sub */}
@@ -101,11 +112,12 @@ export function Hero({ onGetStarted }: HeroProps) {
             maxWidth: "520px",
             fontSize: "18px",
             lineHeight: 1.6,
-            color: "#707070",
+            color: "var(--color-ink-mute)",
+            transition: "color 0.2s ease",
           }}
         >
           Sign in once. Get a shareable profile at{" "}
-          <span style={{ color: "#171717", fontWeight: 500 }}>
+          <span style={{ color: "var(--color-ink)", fontWeight: 500 }}>
             ossfolio.me/username
           </span>{" "}
           showing your real open-source impact — merged PRs, streaks, orgs,
@@ -132,29 +144,34 @@ export function Hero({ onGetStarted }: HeroProps) {
                 left: "12px",
                 top: "50%",
                 transform: "translateY(-50%)",
-                color: "#9a9a9a",
+                color: "var(--color-ink-mute-2)",
                 pointerEvents: "none",
+                zIndex: 10,
+                transition: "color 0.2s ease",
               }}
             />
             <input
               type="text"
               value={query}
+              className="hero-search-input"
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Enter a GitHub username..."
               style={{
                 width: "100%",
                 padding: "10px 12px 10px 36px",
-                fontSize: "16px",
+                fontSize: "15px",
                 fontWeight: 400,
                 lineHeight: 1.5,
-                color: "#171717",
-                backgroundColor: "#ffffff",
-                border: "1px solid #dfdfdf",
-                borderRadius: "6px 0 0 6px",
+                color: "var(--color-ink)",
+                backgroundColor: "var(--color-canvas)",
+                border: "1px solid var(--color-hairline-strong)",
+                borderRadius: "var(--radius-sm) 0 0 var(--radius-sm)",
                 outline: "none",
+                transition: "background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease",
+                boxSizing: "border-box",
               }}
-              onFocus={(e) => (e.currentTarget.style.borderColor = "#c7c7c7")}
-              onBlur={(e) => (e.currentTarget.style.borderColor = "#dfdfdf")}
+              onFocus={(e) => (e.currentTarget.style.borderColor = "var(--color-primary)")}
+              onBlur={(e) => (e.currentTarget.style.borderColor = "var(--color-hairline-strong)")}
             />
           </div>
           <button
@@ -166,21 +183,20 @@ export function Hero({ onGetStarted }: HeroProps) {
               padding: "10px 16px",
               fontSize: "14px",
               fontWeight: 500,
-              color: "#171717",
-              backgroundColor: "#ffffff",
-              border: "1px solid #dfdfdf",
+              color: "var(--color-ink)",
+              backgroundColor: "var(--color-canvas-soft)",
+              border: "1px solid var(--color-hairline-strong)",
               borderLeft: "none",
-              borderRadius: "0 6px 6px 0",
+              borderRadius: "0 var(--radius-sm) var(--radius-sm) 0",
               cursor: "pointer",
               whiteSpace: "nowrap",
+              transition: "background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#fafafa";
-              e.currentTarget.style.borderColor = "#c7c7c7";
+              e.currentTarget.style.backgroundColor = "var(--color-hairline-cool)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#ffffff";
-              e.currentTarget.style.borderColor = "#dfdfdf";
+              e.currentTarget.style.backgroundColor = "var(--color-canvas-soft)";
             }}
           >
             View profile
@@ -205,18 +221,22 @@ export function Hero({ onGetStarted }: HeroProps) {
               display: "inline-flex",
               alignItems: "center",
               gap: "8px",
-              backgroundColor: "#3ecf8e",
-              color: "#171717",
+              backgroundColor: "var(--color-primary)",
+              color: "var(--color-on-primary)", 
               padding: "10px 20px",
-              borderRadius: "6px",
+              borderRadius: "var(--radius-sm)",
               fontSize: "14px",
-              fontWeight: 500,
+              fontWeight: 600,
               border: "none",
               cursor: "pointer",
+              transition: "background-color 0.2s ease",
+              WebkitFontSmoothing: "antialiased",
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--color-primary-deep)")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--color-primary)")}
           >
             Get your profile free
-            <ArrowRight size={15} />
+            <ArrowRight size={15} style={{ color: "var(--color-on-primary)" }} />
           </button>
           <a
             href="#how-it-works"
@@ -224,15 +244,18 @@ export function Hero({ onGetStarted }: HeroProps) {
               display: "inline-flex",
               alignItems: "center",
               gap: "8px",
-              backgroundColor: "#ffffff",
-              color: "#171717",
+              backgroundColor: "var(--color-canvas)",
+              color: "var(--color-ink)",
               padding: "10px 20px",
-              borderRadius: "6px",
+              borderRadius: "var(--radius-sm)",
               fontSize: "14px",
               fontWeight: 500,
-              border: "1px solid #dfdfdf",
+              border: "1px solid var(--color-hairline-strong)",
               textDecoration: "none",
+              transition: "background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease",
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--color-canvas-soft)")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--color-canvas)")}
           >
             See how it works
           </a>
@@ -244,13 +267,14 @@ export function Hero({ onGetStarted }: HeroProps) {
           style={{
             marginTop: "56px",
             paddingTop: "32px",
-            borderTop: "1px solid #ededed",
+            borderTop: "1px solid var(--color-hairline-cool)",
             display: "flex",
             flexWrap: "wrap",
             justifyContent: "center",
             gap: "48px",
             width: "100%",
             maxWidth: "480px",
+            transition: "border-color 0.2s ease",
           }}
         >
           {[
@@ -263,13 +287,14 @@ export function Hero({ onGetStarted }: HeroProps) {
                 style={{
                   fontSize: "22px",
                   fontWeight: 600,
-                  color: "#171717",
+                  color: "var(--color-ink)",
                   letterSpacing: "-0.4px",
+                  transition: "color 0.2s ease",
                 }}
               >
                 {value}
               </p>
-              <p style={{ marginTop: "2px", fontSize: "13px", color: "#707070" }}>
+              <p style={{ marginTop: "2px", fontSize: "13px", color: "var(--color-ink-mute)", transition: "color 0.2s ease" }}>
                 {label}
               </p>
             </div>

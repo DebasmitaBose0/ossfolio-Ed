@@ -11,6 +11,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NODE_ENV === "production"
+      ? "https://ossfolio.me"
+      : "http://localhost:3000"
+  ),
   title: "OSSfolio — Your Open Source Identity",
   description:
     "A public profile platform for open-source contributors. Showcase your merged PRs, contribution streaks, orgs, and more at ossfolio.me/username.",
@@ -49,6 +54,22 @@ export default function RootLayout({
             gtag('config', 'G-7Q6TXP5W7G');
           `}
         </Script>
+
+        {/* 💡 Upgraded theme tracking engine to safely read the Navbar's local storage entries */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const storedTheme = localStorage.getItem('theme');
+                if (storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
       </head>
       <body className={inter.className}>{children}</body>
     </html>

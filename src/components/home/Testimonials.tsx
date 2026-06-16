@@ -76,22 +76,24 @@ function TestimonialCard({ quote, name, username, role }: Testimonial) {
       style={{
         flex: "0 0 auto",
         width: "340px",
-        backgroundColor: "#ffffff",
-        border: "1px solid #dfdfdf",
+        backgroundColor: "var(--color-canvas)",
+        border: "1px solid var(--color-hairline)",
         borderRadius: "12px",
         padding: "24px",
         display: "flex",
         flexDirection: "column",
         gap: "16px",
         whiteSpace: "normal",
+        transition: "background-color 0.2s ease, border-color 0.2s ease",
       }}
     >
       <p
         style={{
           fontSize: "14px",
           lineHeight: 1.6,
-          color: "#171717",
+          color: "var(--color-ink)",
           margin: 0,
+          transition: "color 0.2s ease",
         }}
       >
         &ldquo;{quote}&rdquo;
@@ -107,17 +109,31 @@ function TestimonialCard({ quote, name, username, role }: Testimonial) {
             width: "36px",
             height: "36px",
             borderRadius: "9999px",
-            backgroundColor: "#ededed",
+            backgroundColor: "var(--color-canvas-soft)",
             objectFit: "cover",
+            transition: "background-color 0.2s ease",
           }}
         />
         <div style={{ display: "flex", flexDirection: "column" }}>
           <span
-            style={{ fontSize: "13px", fontWeight: 600, color: "#171717" }}
+            style={{ 
+              fontSize: "13px", 
+              fontWeight: 600, 
+              color: "var(--color-ink)",
+              transition: "color 0.2s ease" 
+            }}
           >
             {name}
           </span>
-          <span style={{ fontSize: "12px", color: "#707070" }}>{role}</span>
+          <span 
+            style={{ 
+              fontSize: "12px", 
+              color: "var(--color-ink-mute)",
+              transition: "color 0.2s ease" 
+            }}
+          >
+            {role}
+          </span>
         </div>
       </div>
     </div>
@@ -128,10 +144,11 @@ export function Testimonials() {
   return (
     <section
       style={{
-        backgroundColor: "#fafafa",
-        borderTop: "1px solid #ededed",
-        borderBottom: "1px solid #ededed",
+        backgroundColor: "var(--color-canvas-soft)",
+        borderTop: "1px solid var(--color-hairline-cool)",
+        borderBottom: "1px solid var(--color-hairline-cool)",
         overflow: "hidden",
+        transition: "background-color 0.2s ease, border-color 0.2s ease",
       }}
     >
       <div
@@ -147,8 +164,9 @@ export function Testimonials() {
             style={{
               fontSize: "13px",
               fontWeight: 500,
-              color: "#3ecf8e",
+              color: "var(--color-primary)",
               marginBottom: "10px",
+              transition: "color 0.2s ease",
             }}
           >
             Loved by contributors
@@ -157,9 +175,10 @@ export function Testimonials() {
             style={{
               fontSize: "clamp(28px, 3.5vw, 36px)",
               fontWeight: 600,
-              color: "#171717",
+              color: "var(--color-ink)",
               letterSpacing: "-0.72px",
               lineHeight: 1.15,
+              transition: "color 0.2s ease",
             }}
           >
             Developers are already sharing their story

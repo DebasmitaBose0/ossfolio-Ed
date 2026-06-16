@@ -1,27 +1,27 @@
 @import "tailwindcss";
 
-@theme {
-  /* Brand */
+:root {
+  /* Brand Constants */
   --color-primary: #3ecf8e;
   --color-primary-deep: #24b47e;
   --color-primary-soft: #4ade80;
   --color-on-primary: #171717;
 
-  /* Text */
+  /* Text & Typography Core Layer */
   --color-ink: #171717;
-  --color-ink-secondary: #212121;
+  --color-ink-subtle: #212121;
   --color-ink-mute: #707070;
   --color-ink-mute-2: #9a9a9a;
   --color-ink-faint: #b2b2b2;
   --color-on-dark: #ffffff;
 
-  /* Surfaces */
+  /* Structural Surfaces Mapping Base */
   --color-canvas: #ffffff;
   --color-canvas-soft: #fafafa;
   --color-canvas-night: #1c1c1c;
   --color-canvas-night-soft: #202020;
 
-  /* Borders */
+  /* Structural Structural Borders Line Layers */
   --color-hairline: #dfdfdf;
   --color-hairline-strong: #c7c7c7;
   --color-hairline-cool: #ededed;
@@ -33,7 +33,7 @@
   --color-accent-tomato: #ff2201;
   --color-accent-pink: #c7007e;
 
-  /* Border radius */
+  /* Border radius configuration elements */
   --radius-xs: 4px;
   --radius-sm: 6px;
   --radius-md: 8px;
@@ -41,9 +41,28 @@
   --radius-xl: 16px;
   --radius-full: 9999px;
 
-  /* Font */
+  /* Structural Typography Font Configurations */
   --font-sans: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+/* Dynamic Theme Variable Swapping Block */
+:root.dark {
+  /* Swap surface roles to keep the system semantic context intact */
+  --color-canvas: var(--color-canvas-night);          
+  --color-canvas-soft: var(--color-canvas-night-soft);     
+  
+  /* Invert Typography text visibility scales */
+  --color-ink: #ffffff;
+  --color-ink-subtle: #f5f5f5; /* 💡 Synchronized variable name from secondary to subtle */
+  --color-ink-mute: #a3a3a3;
+  --color-ink-mute-2: #737373;
+  --color-ink-faint: #404040;
+
+  /* Tighten layout grid contrast dividers */
+  --color-hairline: #2e2e2e;
+  --color-hairline-strong: #444444;
+  --color-hairline-cool: #252525;
 }
 
 * {
@@ -55,12 +74,17 @@
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Sync system scroll element surfaces transitions smoothly */
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 body {
-  background-color: #ffffff;
-  color: #171717;
-  font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.5;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }

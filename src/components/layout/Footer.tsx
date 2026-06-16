@@ -24,7 +24,13 @@ const links: Record<string, { label: string; href: string; badge?: string }[]> =
 
 export function Footer() {
   return (
-    <footer style={{ backgroundColor: "#ffffff", borderTop: "1px solid #ededed" }}>
+    <footer 
+      style={{ 
+        backgroundColor: "var(--color-canvas)", 
+        borderTop: "1px solid var(--color-hairline-cool)",
+        transition: "background-color 0.2s ease, border-color 0.2s ease" 
+      }}
+    >
       <div style={{ maxWidth: "72rem", margin: "0 auto", padding: "56px 20px" }}>
 
         {/* Top grid */}
@@ -46,11 +52,11 @@ export function Footer() {
                 style={{ borderRadius: "6px", flexShrink: 0 }}
               />
               <span style={{ display: "flex", alignItems: "baseline" }}>
-                <span style={{ fontSize: "14px", fontWeight: 600, color: "#171717" }}>OSS</span>
-                <span style={{ fontSize: "14px", fontWeight: 600, color: "#3ecf8e" }}>folio</span>
+                <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--color-ink)", transition: "color 0.2s ease" }}>OSS</span>
+                <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--color-primary)" }}>folio</span>
               </span>
             </Link>
-            <p style={{ fontSize: "13px", lineHeight: 1.6, color: "#707070", maxWidth: "180px" }}>
+            <p style={{ fontSize: "13px", lineHeight: 1.6, color: "var(--color-ink-mute)", maxWidth: "180px", transition: "color 0.2s ease" }}>
               Your open-source identity, beyond GitHub.
             </p>
             <a
@@ -62,9 +68,12 @@ export function Footer() {
                 alignItems: "center",
                 gap: "6px",
                 fontSize: "12px",
-                color: "#9a9a9a",
+                color: "var(--color-ink-mute-2)",
                 textDecoration: "none",
+                transition: "color 0.2s ease"
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-ink)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-ink-mute-2)")}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
@@ -76,24 +85,25 @@ export function Footer() {
           {/* Link cols */}
           {Object.entries(links).map(([section, items]) => (
             <div key={section} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              <p style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "#171717" }}>
+              <p style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--color-ink)", transition: "color 0.2s ease" }}>
                 {section}
               </p>
-              <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "8px" }}>
+              <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "8px", padding: 0, margin: 0 }}>
                 {items.map(({ label, href, badge }) => (
                   <li key={label}>
                     <Link
                       href={href}
                       style={{
                         fontSize: "13px",
-                        color: "#707070",
+                        color: "var(--color-ink-mute)",
                         textDecoration: "none",
                         display: "inline-flex",
                         alignItems: "center",
                         gap: "6px",
+                        transition: "color 0.2s ease"
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = "#171717")}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = "#707070")}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-ink)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-ink-mute)")}
                     >
                       {label}
                       {badge && (
@@ -102,8 +112,8 @@ export function Footer() {
                             fontSize: "10px",
                             fontWeight: 600,
                             lineHeight: 1,
-                            color: "#171717",
-                            backgroundColor: "#3ecf8e",
+                            color: "var(--color-on-primary)",
+                            backgroundColor: "var(--color-primary)",
                             borderRadius: "4px",
                             padding: "2px 5px",
                             letterSpacing: "0.02em",
@@ -125,15 +135,16 @@ export function Footer() {
           style={{
             marginTop: "48px",
             paddingTop: "24px",
-            borderTop: "1px solid #ededed",
+            borderTop: "1px solid var(--color-hairline-cool)",
             display: "flex",
             flexWrap: "wrap",
             alignItems: "center",
             justifyContent: "space-between",
             gap: "16px",
+            transition: "border-color 0.2s ease"
           }}
         >
-          <p style={{ fontSize: "12px", color: "#9a9a9a" }}>
+          <p style={{ fontSize: "12px", color: "var(--color-ink-mute-2)", transition: "color 0.2s ease" }}>
             © {new Date().getFullYear()} OSSfolio. MIT License.
           </p>
 
@@ -147,16 +158,27 @@ export function Footer() {
               gap: "8px",
               textDecoration: "none",
             }}
+            onMouseEnter={(e) => {
+              const textSpan = e.currentTarget.querySelector('.author-name') as HTMLElement;
+              if (textSpan) textSpan.style.color = "var(--color-primary)";
+            }}
+            onMouseLeave={(e) => {
+              const textSpan = e.currentTarget.querySelector('.author-name') as HTMLElement;
+              if (textSpan) textSpan.style.color = "var(--color-ink)";
+            }}
           >
-            <span style={{ fontSize: "12px", color: "#9a9a9a" }}>Built by</span>
+            <span style={{ fontSize: "12px", color: "var(--color-ink-mute-2)", transition: "color 0.2s ease" }}>Built by</span>
             <Image
               src="https://avatars.githubusercontent.com/u/213995806?v=4"
               alt="PRODHOSH V.S"
               width={22}
               height={22}
-              style={{ borderRadius: "9999px", border: "1px solid #ededed" }}
+              style={{ borderRadius: "9999px", border: "1px solid var(--color-hairline)", transition: "border-color 0.2s ease" }}
             />
-            <span style={{ fontSize: "12px", fontWeight: 500, color: "#171717" }}>
+            <span 
+              className="author-name"
+              style={{ fontSize: "12px", fontWeight: 500, color: "var(--color-ink)", transition: "color 0.2s ease" }}
+            >
               PRODHOSH V.S
             </span>
           </a>

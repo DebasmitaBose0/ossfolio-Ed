@@ -4,7 +4,7 @@
  * Next.js App Router loading UI — displayed automatically while page.tsx
  * awaits its GitHub API fetches. Mirrors the ProfileView layout section by
  * section using grey shimmer blocks per the DESIGN.md palette:
- *   canvas  #ffffff · hairline-cool #ededed · hairline #dfdfdf
+ * canvas  var(--color-canvas) · hairline-cool var(--color-hairline) · hairline var(--color-hairline-strong)
  *
  * Rules: inline styles only, no Tailwind, no TypeScript errors. (Issue #42)
  */
@@ -16,7 +16,7 @@ import type { CSSProperties } from "react";
 // produces the left-to-right highlight that reads as a loading state.
 const shimmer: CSSProperties = {
   background:
-    "linear-gradient(90deg, #ededed 25%, #dfdfdf 50%, #ededed 75%)",
+    "linear-gradient(90deg, var(--color-hairline) 25%, var(--color-hairline-strong) 50%, var(--color-hairline) 75%)",
   backgroundSize: "800px 100%",
   animation: "shimmer 1.4s infinite linear",
   borderRadius: "6px",
@@ -40,8 +40,7 @@ function Block({
         width,
         height,
         flexShrink: 0,
-        ...style,
-      }}
+        ...style}}
     />
   );
 }
@@ -58,7 +57,7 @@ export default function ProfileLoading() {
         }
       `}</style>
 
-      <main style={{ backgroundColor: "#ffffff", minHeight: "100vh" }}>
+      <main style={{ backgroundColor: "var(--color-canvas)", minHeight: "100vh" }}>
         {/* Outer container mirrors ProfileView's maxWidth + padding exactly */}
         <div
           style={{
@@ -77,7 +76,7 @@ export default function ProfileLoading() {
               gap: "24px",
               flexWrap: "wrap",
               paddingBottom: "40px",
-              borderBottom: "1px solid #ededed",
+              borderBottom: "1px solid var(--color-hairline)",
             }}
           >
             {/* Avatar — 88×88 circle matching Image dimensions in ProfileView */}
@@ -157,9 +156,9 @@ export default function ProfileLoading() {
                     flexDirection: "column",
                     gap: "10px",
                     padding: "20px",
-                    border: "1px solid #ededed",
+                    border: "1px solid var(--color-hairline)",
                     borderRadius: "12px",
-                    backgroundColor: "#ffffff",
+                    backgroundColor: "var(--color-canvas-soft)",
                   }}
                 >
                   {/* Repo name */}
@@ -207,8 +206,9 @@ export default function ProfileLoading() {
                     flexDirection: "column",
                     gap: "10px",
                     padding: "16px",
-                    border: "1px solid #ededed",
+                    border: "1px solid var(--color-hairline)",
                     borderRadius: "8px",
+                    backgroundColor: "var(--color-canvas-soft)",
                   }}
                 >
                   {/* Stat number */}
@@ -257,8 +257,9 @@ export default function ProfileLoading() {
                     alignItems: "center",
                     gap: "8px",
                     padding: "6px 12px 6px 6px",
-                    border: "1px solid #ededed",
+                    border: "1px solid var(--color-hairline)",
                     borderRadius: "8px",
+                    backgroundColor: "var(--color-canvas-soft)",
                   }}
                 >
                   {/* Org avatar circle — 36×36 matching Image size in ProfileView */}
