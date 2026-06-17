@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { motion, type Variants } from "framer-motion";
+import { sectionEyebrowStyle } from "@/lib/sectionEyebrowStyle";
 
 const steps = [
   {
@@ -39,7 +40,13 @@ const stepVariants: Variants = {
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" style={{ backgroundColor: "#ffffff" }}>
+    <section 
+      id="how-it-works" 
+      style={{ 
+        backgroundColor: "var(--color-canvas)", 
+        transition: "background-color 0.2s ease" 
+      }}
+    >
       <div
         style={{
           maxWidth: "72rem",
@@ -55,18 +62,17 @@ export function HowItWorks() {
           viewport={{ once: true }}
           style={{ textAlign: "center", marginBottom: "48px" }}
         >
-          <p
-            style={{ fontSize: "13px", fontWeight: 500, color: "#3ecf8e", marginBottom: "10px" }}
-          >
+          <p style={sectionEyebrowStyle}>
             Simple by design
           </p>
           <h2
             style={{
               fontSize: "clamp(28px, 3.5vw, 36px)",
               fontWeight: 600,
-              color: "#171717",
+              color: "var(--color-ink)",
               letterSpacing: "-0.72px",
               lineHeight: 1.15,
+              transition: "color 0.2s ease",
             }}
           >
             Up and running in 30 seconds
@@ -98,18 +104,26 @@ export function HowItWorks() {
                   justifyContent: "center",
                   height: "44px",
                   width: "44px",
-                  border: "1px solid #dfdfdf",
+                  border: "1px solid var(--color-hairline)",
                   borderRadius: "9999px",
-                  backgroundColor: "#ffffff",
+                  backgroundColor: "var(--color-canvas)",
                   fontSize: "13px",
                   fontWeight: 600,
-                  color: "#3ecf8e",
+                  color: "var(--color-primary)",
+                  transition: "background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease",
                 }}
               >
                 {number}
               </div>
               <div>
-                <h3 style={{ fontSize: "16px", fontWeight: 600, color: "#171717" }}>
+                <h3 
+                  style={{ 
+                    fontSize: "16px", 
+                    fontWeight: 600, 
+                    color: "var(--color-ink)",
+                    transition: "color 0.2s ease",
+                  }}
+                >
                   {title}
                 </h3>
                 <p
@@ -117,7 +131,8 @@ export function HowItWorks() {
                     marginTop: "8px",
                     fontSize: "14px",
                     lineHeight: 1.6,
-                    color: "#707070",
+                    color: "var(--color-ink-mute)",
+                    transition: "color 0.2s ease",
                   }}
                 >
                   {description}

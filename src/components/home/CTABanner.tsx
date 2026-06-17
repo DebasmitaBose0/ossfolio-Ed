@@ -11,8 +11,9 @@ export function CTABanner({ onGetStarted }: CTABannerProps) {
   return (
     <section
       style={{
-        backgroundColor: "#fafafa",
-        borderTop: "1px solid #ededed",
+        backgroundColor: "var(--color-canvas-soft)",
+        borderTop: "1px solid var(--color-hairline-cool)",
+        transition: "background-color 0.2s ease, border-color 0.2s ease",
       }}
     >
       <motion.div
@@ -34,10 +35,11 @@ export function CTABanner({ onGetStarted }: CTABannerProps) {
           style={{
             fontSize: "clamp(28px, 3.5vw, 36px)",
             fontWeight: 600,
-            color: "#171717",
+            color: "var(--color-ink)",
             letterSpacing: "-0.72px",
             lineHeight: 1.15,
             maxWidth: "560px",
+            transition: "color 0.2s ease",
           }}
         >
           Ready to share your open-source story?
@@ -48,7 +50,8 @@ export function CTABanner({ onGetStarted }: CTABannerProps) {
             maxWidth: "420px",
             fontSize: "16px",
             lineHeight: 1.6,
-            color: "#707070",
+            color: "var(--color-ink-mute)",
+            transition: "color 0.2s ease",
           }}
         >
           It&apos;s free, takes 30 seconds, and your profile is live at
@@ -70,15 +73,18 @@ export function CTABanner({ onGetStarted }: CTABannerProps) {
               display: "inline-flex",
               alignItems: "center",
               gap: "8px",
-              backgroundColor: "#3ecf8e",
-              color: "#171717",
+              backgroundColor: "var(--color-primary)",
+              color: "var(--color-on-primary)",
               padding: "10px 20px",
               borderRadius: "6px",
               fontSize: "14px",
               fontWeight: 500,
               border: "none",
               cursor: "pointer",
+              transition: "background-color 0.2s ease",
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--color-primary-deep)")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--color-primary)")}
           >
             Get started for free
             <ArrowRight size={15} />
@@ -91,14 +97,23 @@ export function CTABanner({ onGetStarted }: CTABannerProps) {
               display: "inline-flex",
               alignItems: "center",
               gap: "8px",
-              backgroundColor: "#ffffff",
-              color: "#171717",
+              backgroundColor: "var(--color-canvas)",
+              color: "var(--color-ink)",
               padding: "10px 20px",
               borderRadius: "6px",
               fontSize: "14px",
               fontWeight: 500,
-              border: "1px solid #dfdfdf",
+              border: "1px solid var(--color-hairline)",
               textDecoration: "none",
+              transition: "background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--color-canvas-soft)";
+              e.currentTarget.style.borderColor = "var(--color-hairline-strong)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--color-canvas)";
+              e.currentTarget.style.borderColor = "var(--color-hairline)";
             }}
           >
             Star on GitHub

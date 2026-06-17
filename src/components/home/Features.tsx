@@ -11,6 +11,7 @@ import {
   Flame,
 } from "lucide-react";
 import { motion, type Variants } from "framer-motion";
+import { sectionEyebrowStyle } from "@/lib/sectionEyebrowStyle";
 
 const features = [
   {
@@ -82,9 +83,10 @@ export function Features() {
     <section
       id="features"
       style={{
-        backgroundColor: "#fafafa",
-        borderTop: "1px solid #ededed",
-        borderBottom: "1px solid #ededed",
+        backgroundColor: "var(--color-canvas-soft)", // Swaps dynamically between light tint & dark layout layer
+        borderTop: "1px solid var(--color-hairline-cool)",
+        borderBottom: "1px solid var(--color-hairline-cool)",
+        transition: "background-color 0.2s ease, border-color 0.2s ease",
       }}
     >
       <div
@@ -102,18 +104,17 @@ export function Features() {
           viewport={{ once: true }}
           style={{ textAlign: "center", marginBottom: "48px" }}
         >
-          <p
-            style={{ fontSize: "13px", fontWeight: 500, color: "#3ecf8e", marginBottom: "10px" }}
-          >
+          <p style={sectionEyebrowStyle}>
             What you get
           </p>
           <h2
             style={{
               fontSize: "clamp(28px, 3.5vw, 36px)",
               fontWeight: 600,
-              color: "#171717",
+              color: "var(--color-ink)",
               letterSpacing: "-0.72px",
               lineHeight: 1.15,
+              transition: "color 0.2s ease",
             }}
           >
             Everything GitHub doesn&apos;t show
@@ -123,9 +124,10 @@ export function Features() {
               marginTop: "12px",
               fontSize: "16px",
               lineHeight: 1.6,
-              color: "#707070",
+              color: "var(--color-ink-mute)",
               maxWidth: "480px",
               margin: "12px auto 0",
+              transition: "color 0.2s ease",
             }}
           >
             OSSfolio pulls from the GitHub GraphQL API to build a complete
@@ -150,13 +152,14 @@ export function Features() {
               key={title}
               variants={cardVariants}
               style={{
-                backgroundColor: "#ffffff",
-                border: "1px solid #dfdfdf",
+                backgroundColor: "var(--color-canvas)", // Switches back to default crisp base background per theme
+                border: "1px solid var(--color-hairline)",
                 borderRadius: "12px",
                 padding: "24px",
                 display: "flex",
                 flexDirection: "column",
                 gap: "12px",
+                transition: "background-color 0.2s ease, border-color 0.2s ease",
               }}
             >
               <div
@@ -166,16 +169,30 @@ export function Features() {
                   justifyContent: "center",
                   height: "36px",
                   width: "36px",
-                  backgroundColor: "#3ecf8e1a",
+                  backgroundColor: "var(--color-primary-soft)", // Replaces hardcoded alpha tint mix
                   borderRadius: "8px",
                 }}
               >
-                <Icon size={17} style={{ color: "#3ecf8e" }} />
+                <Icon size={17} style={{ color: "var(--color-primary)" }} />
               </div>
-              <h3 style={{ fontSize: "14px", fontWeight: 600, color: "#171717" }}>
+              <h3 
+                style={{ 
+                  fontSize: "14px", 
+                  fontWeight: 600, 
+                  color: "var(--color-ink)",
+                  transition: "color 0.2s ease",
+                }}
+              >
                 {title}
               </h3>
-              <p style={{ fontSize: "13px", lineHeight: 1.6, color: "#707070" }}>
+              <p 
+                style={{ 
+                  fontSize: "13px", 
+                  lineHeight: 1.6, 
+                  color: "var(--color-ink-mute)",
+                  transition: "color 0.2s ease",
+                }}
+              >
                 {description}
               </p>
             </motion.div>

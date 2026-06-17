@@ -9,7 +9,7 @@ import {
   deriveTechStack,
   mapRepos,
 } from "@/lib/profile-data";
-import { generateMockHeatmap } from "@/lib/mock";
+import { generateMockHeatmap, computeStreaks } from "@/lib/mock";
 import { calculateScore } from "@/lib/score";
 import { supabase } from "@/lib/supabase";
 
@@ -53,8 +53,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const { username } = await params;
 
   // Base profile + repos (already-working live data) plus the new live extras.
-  // Each extra fetch fails soft (empty / zero) so a rate-limited Search call
-  // never takes down the whole page.
   const [user, repos, liveStats, orgs] = await Promise.all([
     fetchGitHubUser(username),
     fetchGitHubRepos(username),
@@ -67,34 +65,45 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const mappedRepos = mapRepos(repos);
   const techStack = deriveTechStack(repos);
 
-  // Heatmap is not available from unauthenticated REST, so we use a seeded
-  // placeholder and surface its total as the headline contribution count.
+  // Heatmap calculation
   const { weeks: heatmap, totalContributions } = generateMockHeatmap(username);
+
+  // Streaks computation
+  const { current: currentStreak, longest: longestStreak } = computeStreaks(heatmap);
 
   const stats = { ...liveStats, totalContributions };
   const liveScore = calculateScore(stats, mappedRepos);
 
-  // DB-first: prefer the stored (synced) score so every visitor — including
-  // signed-out ones — sees the same official number that feeds the leaderboard.
-  // Falls back to the live-computed score if this user hasn't synced a row yet.
   let score = liveScore;
+  let updatedAt: string | null = null;
   try {
     const { data: profileRow } = await supabase
       .from("profiles")
-      .select("score")
+      .select("score, updated_at")
       .eq("username", username)
       .maybeSingle();
     if (profileRow && typeof profileRow.score === "number") {
       score = profileRow.score;
     }
+    if (profileRow && typeof profileRow.updated_at === "string") {
+      updatedAt = profileRow.updated_at;
+    }
   } catch {
-    // Ignore and use the live score — a Supabase hiccup must not break the page.
+    // Soft isolation fallback
   }
 
   return (
     <>
       <Navbar />
-      <main style={{ backgroundColor: "#ffffff", minHeight: "100vh" }}>
+      {/* 💡 Fixed: Linked layout to design tokens and added transition curves */}
+      <main 
+        style={{ 
+          backgroundColor: "var(--color-canvas)", 
+          color: "var(--color-ink)",
+          minHeight: "100vh",
+          transition: "background-color 0.2s ease, color 0.2s ease"
+        }}
+      >
         <ProfileView
           user={user}
           repos={repos}
@@ -102,7 +111,10 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           techStack={techStack}
           orgs={orgs}
           heatmap={heatmap}
+          currentStreak={currentStreak}
+          longestStreak={longestStreak}
           score={score}
+          updatedAt={updatedAt}
         />
       </main>
       <Footer />
