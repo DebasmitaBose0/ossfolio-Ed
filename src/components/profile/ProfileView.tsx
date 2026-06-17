@@ -320,12 +320,17 @@ export function ProfileView({
       </div>
 
       {/* Repos */}
-      {repos.length > 0 && (
-        <div style={{ marginTop: "40px" }}>
-          <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--color-ink)", margin: "0 0 20px 0", letterSpacing: "-0.2px" }}>
-            Popular repositories
-          </h2>
+      <div style={{ marginTop: "40px" }}>
+        <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--color-ink)", margin: "0 0 20px 0", letterSpacing: "-0.2px" }}>
+          Popular repositories
+        </h2>
 
+        {repos.length === 0 ? (
+          <p style={{ fontSize: "13px", color: "var(--color-ink-mute)", margin: 0 }}>
+            No public repositories yet.
+          </p>
+        ) : (
+          <>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
             {repos.map((repo) => (
               <a
@@ -399,8 +404,9 @@ export function ProfileView({
               </svg>
             </a>
           </div>
-        </div>
-      )}
+          </>
+        )}
+      </div>
 
       {/* Contribution stats */}
       <div style={{ marginTop: "44px" }}>
