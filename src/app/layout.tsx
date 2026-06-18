@@ -11,28 +11,31 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NODE_ENV === "production"
-      ? "https://ossfolio.me"
-      : "http://localhost:3000"
-  ),
-  title: "OSSfolio — Your Open Source Identity",
-  description:
-    "A public profile platform for open-source contributors. Showcase your merged PRs, contribution streaks, orgs, and more at ossfolio.me/username.",
+metadataBase: new URL("https://ossfolio.qzz.io"),
+
+title: "OSSfolio — Your Open Source Identity",
+description:
+"A public profile platform for open-source contributors. Showcase your merged PRs, contribution streaks, orgs, and more at ossfolio.me/username.",
+
   icons: {
     icon: "/logo.png",
     shortcut: "/logo.png",
     apple: "/logo.png",
   },
-  openGraph: {
-    title: "OSSfolio — Your Open Source Identity",
-    description: "Your open-source identity, beyond GitHub.",
-    type: "website",
-    images: ["/logo.png"],
-  },
-  verification: {
-    google: "mu6Hv6N121feTO3NCBM4W1n8IFPSRrIxIQ5NHGJCD6k",
-  },
+
+openGraph: {
+title: "OSSfolio — Your Open Source Identity",
+description: "Your open-source identity, beyond GitHub.",
+type: "website",
+images: ["/og-image.png"],
+},
+
+twitter: {
+card: "summary_large_image",
+title: "OSSfolio — Your Open Source Identity",
+description: "Your open-source identity, beyond GitHub.",
+images: ["/og-image.png"],
+},
 };
 
 export default function RootLayout({
@@ -41,36 +44,41 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Google tag (gtag.js) */}
         <Script
           async
           src="https://www.googletagmanager.com/gtag/js?id=G-7Q6TXP5W7G"
         />
+
         <Script id="google-analytics">
           {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-7Q6TXP5W7G');
-          `}
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-7Q6TXP5W7G');
+      `}
         </Script>
 
-        {/* 💡 Upgraded theme tracking engine to safely read the Navbar's local storage entries */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              try {
-                const storedTheme = localStorage.getItem('theme');
-                if (storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                  document.documentElement.classList.add('dark');
-                } else {
-                  document.documentElement.classList.remove('dark');
-                }
-              } catch (_) {}
-            `,
+          try {
+            const storedTheme = localStorage.getItem('theme');
+
+            if (
+              storedTheme === 'dark' ||
+              (!storedTheme &&
+                window.matchMedia('(prefers-color-scheme: dark)').matches)
+            ) {
+              document.documentElement.classList.add('dark');
+            } else {
+              document.documentElement.classList.remove('dark');
+            }
+          } catch (_) {}
+        `,
           }}
         />
       </head>
+
       <body className={inter.className}>{children}</body>
     </html>
   );
