@@ -179,6 +179,7 @@ Everyone who has helped build OSSfolio — code, design, docs, ideas, all of it.
     </tr>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Ayushganeshi"><img src="https://avatars.githubusercontent.com/u/174295266?v=4?s=100" width="100px;" alt="Ayushganeshi"/><br /><sub><b>Ayushganeshi</b></sub></a><br /><a href="https://github.com/PRODHOSH/ossfolio/commits?author=Ayushganeshi" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://my-portfolio-3d-d9c6.onrender.com/"><img src="https://avatars.githubusercontent.com/u/258796947?v=4?s=100" width="100px;" alt="Saurabh Singh"/><br /><sub><b>Saurabh Singh</b></sub></a><br /><a href="https://github.com/PRODHOSH/ossfolio/commits?author=saurabhsingh72487-hub" title="Code">💻</a> <a href="#design-saurabhsingh72487-hub" title="Design">🎨</a></td>
     </tr>
   </tbody>
 </table>
