@@ -11,15 +11,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NODE_ENV === "production"
-      ? "https://ossfolio.me"
-      : "http://localhost:3000",
-  ),
+metadataBase: new URL("https://ossfolio.qzz.io"),
 
-  title: "OSSfolio — Your Open Source Identity",
-  description:
-    "A public profile platform for open-source contributors. Showcase your merged PRs, contribution streaks, orgs, and more at ossfolio.me/username.",
+title: "OSSfolio — Your Open Source Identity",
+description:
+"A public profile platform for open-source contributors. Showcase your merged PRs, contribution streaks, orgs, and more at ossfolio.me/username.",
 
   icons: {
     icon: "/logo.png",
@@ -27,23 +23,19 @@ export const metadata: Metadata = {
     apple: "/logo.png",
   },
 
-  openGraph: {
-    title: "OSSfolio — Your Open Source Identity",
-    description: "Your open-source identity, beyond GitHub.",
-    type: "website",
-    images: ["/og-image.png"],
-  },
+openGraph: {
+title: "OSSfolio — Your Open Source Identity",
+description: "Your open-source identity, beyond GitHub.",
+type: "website",
+images: ["/og-image.png"],
+},
 
-  twitter: {
-    card: "summary_large_image",
-    title: "OSSfolio — Your Open Source Identity",
-    description: "Your open-source identity, beyond GitHub.",
-    images: ["/og-image.png"],
-  },
-
-  verification: {
-    google: "mu6Hv6N121feTO3NCBM4W1n8IFPSRrIxIQ5NHGJCD6k",
-  },
+twitter: {
+card: "summary_large_image",
+title: "OSSfolio — Your Open Source Identity",
+description: "Your open-source identity, beyond GitHub.",
+images: ["/og-image.png"],
+},
 };
 
 export default function RootLayout({
