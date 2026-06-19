@@ -51,6 +51,48 @@ OSSfolio is built to fix that — for students applying to GSoC, for developers 
 
 ---
 
+## How the Score Works
+
+OSSfolio calculates a contributor score to provide a quick summary of a developer's open-source activity.
+
+The score combines different types of contributions across GitHub and assigns a weight to each activity type. Higher scores generally indicate more contribution activity, but the score should be viewed as a summary rather than a measure of skill or developer quality.
+
+### Scoring Weights
+
+| Activity         | Weight                                |
+| ---------------- | ------------------------------------- |
+| Commits          | 1 point each                          |
+| Pull Requests    | 3 points each                         |
+| Issues           | 2 points each                         |
+| Reviews          | 2 points each                         |
+| Repository Stars | 0.1 point each (capped at 1000 stars) |
+
+### What the Score Measures
+
+The score is designed to capture a mix of:
+
+* Code contributions through commits
+* Collaboration through pull requests and reviews
+* Community participation through issues
+* Project impact through repository stars
+
+### What the Score Does Not Measure
+
+The contributor score is **not a ranking system** and should not be treated as a definitive measure of developer skill, experience, or value.
+
+It is simply a lightweight summary of publicly visible open-source activity.
+
+### Implementation Details
+
+Contributors who want to understand the exact implementation can review:
+
+```text
+src/lib/score.ts
+```
+
+---
+
+
 ## Tech Stack
 
 | Layer | Tech |
