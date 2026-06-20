@@ -118,7 +118,7 @@ export function Hero({ onGetStarted }: HeroProps) {
         >
           Sign in once. Get a shareable profile at{" "}
           <span style={{ color: "var(--color-ink)", fontWeight: 500 }}>
-            ossfolio.me/username
+            ossfolio.qzz.io/username
           </span>{" "}
           showing your real open-source impact — merged PRs, streaks, orgs,
           badges, and more.
