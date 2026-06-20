@@ -13,8 +13,8 @@ interface NavbarProps {
 }
 
 const navLinks = [
-  { label: "Features", href: "#features" },
-  { label: "How it works", href: "#how-it-works" },
+  { label: "Features", href: "/#features" },
+  { label: "How it works", href: "/#how-it-works" },
   { label: "Leaderboard", href: "/explore" },
 ];
 
