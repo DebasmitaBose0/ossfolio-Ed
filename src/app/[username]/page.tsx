@@ -10,6 +10,7 @@ import {
   mapRepos,
 } from "@/lib/profile-data";
 import { generateMockHeatmap, computeStreaks } from "@/lib/mock";
+import { fetchContributionCalendar } from "@/lib/github";
 import { calculateScore } from "@/lib/score";
 import { supabase } from "@/lib/supabase";
 
@@ -53,11 +54,12 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const { username } = await params;
 
   // Base profile + repos (already-working live data) plus the new live extras.
-  const [user, repos, liveStats, orgs] = await Promise.all([
+  const [user, repos, liveStats, orgs, contributionCalendar] = await Promise.all([
     fetchGitHubUser(username),
     fetchGitHubRepos(username),
     fetchLiveStats(username),
     fetchOrganizations(username),
+    fetchContributionCalendar(username),
   ]);
 
   if (!user) notFound();
@@ -65,8 +67,12 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const mappedRepos = mapRepos(repos);
   const techStack = deriveTechStack(repos);
 
-  // Heatmap calculation
-  const { weeks: heatmap, totalContributions } = generateMockHeatmap(username);
+  // Heatmap calculation — use the user's real contribution calendar parsed from
+  // GitHub's public endpoint. If that request failed (network error, rate limit,
+  // markup change), fall back to the seeded placeholder so the page still renders.
+  const { weeks: heatmap, totalContributions } = contributionCalendar
+    ? contributionCalendar
+    : generateMockHeatmap(username);
 
   // Streaks computation
   const { current: currentStreak, longest: longestStreak } = computeStreaks(heatmap);
