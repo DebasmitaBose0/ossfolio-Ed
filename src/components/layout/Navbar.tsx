@@ -12,7 +12,11 @@ interface NavbarProps {
   onGetStarted?: () => void;
 }
 
-const navLinks = ["Features", "How it works", "Leaderboard"];
+const navLinks = [
+  { label: "Features", href: "#features" },
+  { label: "How it works", href: "#how-it-works" },
+  { label: "Leaderboard", href: "/explore" },
+];
 
 // System Theme Design Tokens Mapping
 const tokens = {
@@ -176,11 +180,11 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
         <nav style={{ display: "flex", alignItems: "center", gap: "28px" }} className="hide-on-mobile">
           {navLinks.map((item) => (
             <Link
-              key={item}
-              href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
+              key={item.label}
+              href={item.href}
               style={{ fontSize: "14px", fontWeight: 500, color: isDarkMode ? tokens.textMutedDark : tokens.textMutedLight, textDecoration: "none" }}
             >
-              {item}
+              {item.label}
             </Link>
           ))}
         </nav>
