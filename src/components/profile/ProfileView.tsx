@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import type { ContributorStats, Org, TechEntry, HeatmapWeek } from "@/types";
 
 interface GitHubUser {
@@ -440,6 +441,14 @@ export function ProfileView({
                 {item.value.toLocaleString("en-US")}
               </span>
               <span style={{ fontSize: "12px", color: "var(--color-ink-mute)", marginTop: "4px" }}>{item.label}</span>
+              {item.label === "Contributor score" && (
+                <Link
+                  href="/score-explained"
+                  style={{ fontSize: "11px", color: "var(--color-ink-mute-2)", marginTop: "4px", textDecoration: "none" }}
+                >
+                  Score explained →
+                </Link>
+              )}
             </div>
           ))}
         </div>
