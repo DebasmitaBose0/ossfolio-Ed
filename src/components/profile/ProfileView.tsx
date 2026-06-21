@@ -460,6 +460,42 @@ export function ProfileView({
           <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--color-ink)", margin: "0 0 16px 0", letterSpacing: "-0.2px" }}>
             Tech stack
           </h2>
+          {(() => {
+            const totalRepoCount = techStack.reduce((sum, t) => sum + t.repoCount, 0);
+            if (totalRepoCount === 0) return null;
+            const summary = techStack
+              .map((t) => `${t.language} ${Math.round((t.repoCount / totalRepoCount) * 100)}%`)
+              .join(", ");
+            return (
+              <div
+                role="img"
+                aria-label={`Language breakdown: ${summary}`}
+                style={{
+                  display: "flex",
+                  width: "100%",
+                  height: "8px",
+                  borderRadius: "9999px",
+                  overflow: "hidden",
+                  marginBottom: "16px",
+                  backgroundColor: "var(--color-canvas-soft)",
+                }}
+              >
+                {techStack.map(({ language, repoCount }, i) => (
+                  <div
+                    key={language}
+                    style={{
+                      width: `${(repoCount / totalRepoCount) * 100}%`,
+                      backgroundColor: LANG_COLORS[language] ?? "#9a9a9a",
+                      borderTopLeftRadius: i === 0 ? "9999px" : 0,
+                      borderBottomLeftRadius: i === 0 ? "9999px" : 0,
+                      borderTopRightRadius: i === techStack.length - 1 ? "9999px" : 0,
+                      borderBottomRightRadius: i === techStack.length - 1 ? "9999px" : 0,
+                    }}
+                  />
+                ))}
+              </div>
+            );
+          })()}
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
             {techStack.map(({ language, repoCount }) => (
               <span
