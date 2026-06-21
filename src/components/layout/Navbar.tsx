@@ -1,11 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+
+// useLayoutEffect runs synchronously before the browser paints (client only);
+// fall back to useEffect on the server to avoid React's SSR warning. This lets
+// us re-assert the theme class before any light frame can reach the screen.
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 interface NavbarProps {
   onSignIn?: () => void;
@@ -33,7 +39,7 @@ const tokens = {
 };
 
 /** Circular GitHub avatar with a graceful initial-letter fallback. */
-function Avatar({ src, name, size, isDark }: { src?: string; name?: string; size: number; isDark: boolean }) {
+function Avatar({ src, name, size }: { src?: string; name?: string; size: number }) {
   if (src) {
     return (
       <Image
@@ -43,7 +49,7 @@ function Avatar({ src, name, size, isDark }: { src?: string; name?: string; size
         height={size}
         style={{ 
           borderRadius: "9999px", 
-          border: `1px solid ${isDark ? tokens.borderDark : tokens.borderLight}`, 
+          border: "1px solid var(--color-hairline)", 
           flexShrink: 0 
         }}
       />
@@ -57,8 +63,8 @@ function Avatar({ src, name, size, isDark }: { src?: string; name?: string; size
         width: size,
         height: size,
         borderRadius: "9999px",
-        backgroundColor: isDark ? tokens.canvasNightSoft : "#ededed",
-        color: isDark ? "#ffffff" : tokens.ink,
+        backgroundColor: "var(--color-canvas-soft)",
+        color: "var(--color-ink)",
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
@@ -78,14 +84,16 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // ✅ FIXED: Lazy Initializer to resolve linting error
+  // Theme state drives only the toggle glyph (Sun/Moon). All navbar colours are
+  // CSS-variable driven (see styles below), so the bar follows the `.dark` class
+  // on <html> from the very first paint - no SSR/hydration colour mismatch.
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== "undefined") {
       const savedTheme = localStorage.getItem("theme");
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      
+
       const shouldBeDark = savedTheme === "dark" || (!savedTheme && prefersDark);
-      
+
       if (shouldBeDark) {
         document.documentElement.classList.add("dark");
         return true;
@@ -93,6 +101,16 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
     }
     return false;
   });
+
+  // Re-assert <html>.dark BEFORE paint, so the frame React drops during
+  // hydration never reaches the screen (eliminates the dark-mode reload flash).
+  useIsomorphicLayoutEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [isDarkMode]);
 
   const toggleTheme = () => {
     const newDarkMode = !isDarkMode;
@@ -153,8 +171,8 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
         top: 0,
         zIndex: 40,
         width: "100%",
-        backgroundColor: isDarkMode ? tokens.canvasNight : tokens.canvas,
-        borderBottom: `1px solid ${isDarkMode ? tokens.borderDark : tokens.borderLight}`,
+        backgroundColor: "var(--color-canvas)",
+        borderBottom: "1px solid var(--color-hairline)",
         transition: "background-color 0.2s ease, border-color 0.2s ease",
       }}
     >
@@ -172,7 +190,7 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
           <Image src="/logo.png" alt="" width={28} height={28} priority style={{ borderRadius: "6px", flexShrink: 0 }} />
           <span style={{ display: "flex", alignItems: "baseline" }}>
-            <span style={{ fontSize: "15px", fontWeight: 600, color: isDarkMode ? "#ffffff" : tokens.ink, letterSpacing: "-0.3px" }}>OSS</span>
+            <span style={{ fontSize: "15px", fontWeight: 600, color: "var(--color-ink)", letterSpacing: "-0.3px" }}>OSS</span>
             <span style={{ fontSize: "15px", fontWeight: 600, color: tokens.primary, letterSpacing: "-0.3px" }}>folio</span>
           </span>
         </Link>
@@ -182,7 +200,7 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
             <Link
               key={item.label}
               href={item.href}
-              style={{ fontSize: "14px", fontWeight: 500, color: isDarkMode ? tokens.textMutedDark : tokens.textMutedLight, textDecoration: "none" }}
+              style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-ink-mute)", textDecoration: "none" }}
             >
               {item.label}
             </Link>
@@ -191,33 +209,36 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
 
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }} className="hide-on-mobile">
           <button
+            type="button"
             onClick={toggleTheme}
             aria-label="Toggle theme mode"
-            style={{ background: "none", border: "none", cursor: "pointer", color: isDarkMode ? tokens.textMutedDark : tokens.textMutedLight, display: "flex", alignItems: "center", justifyContent: "center", padding: "6px", borderRadius: "6px" }}
+            style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-ink-mute)", display: "flex", alignItems: "center", justifyContent: "center", padding: "6px", borderRadius: "6px" }}
           >
-            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+            <Moon size={18} className="nav-theme-moon" />
+            <Sun size={18} className="nav-theme-sun" />
           </button>
 
           {user ? (
             <div ref={menuRef} style={{ position: "relative", display: "flex", alignItems: "center" }}>
               <button
+                type="button"
                 onClick={() => setMenuOpen((v) => !v)}
-                style={{ display: "flex", alignItems: "center", gap: "8px", background: isDarkMode ? tokens.canvasNightSoft : tokens.canvas, border: `1px solid ${isDarkMode ? tokens.borderDark : "#c7c7c7"}`, borderRadius: "9999px", padding: "4px 12px 4px 4px", cursor: "pointer" }}
+                style={{ display: "flex", alignItems: "center", gap: "8px", background: "var(--color-canvas-soft)", border: "1px solid var(--color-hairline-strong)", borderRadius: "9999px", padding: "4px 12px 4px 4px", cursor: "pointer" }}
               >
-                <Avatar src={avatarUrl} name={username} size={28} isDark={isDarkMode} />
-                <span style={{ fontSize: "14px", fontWeight: 500, color: isDarkMode ? "#ffffff" : tokens.ink }}>{username ?? "Account"}</span>
+                <Avatar src={avatarUrl} name={username} size={28} />
+                <span style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-ink)" }}>{username ?? "Account"}</span>
               </button>
 
               {menuOpen && (
-                <div role="menu" style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, minWidth: "180px", backgroundColor: isDarkMode ? tokens.canvasNightSoft : tokens.canvas, border: `1px solid ${isDarkMode ? tokens.borderDark : tokens.borderLight}`, borderRadius: "8px", boxShadow: isDarkMode ? "0 4px 24px rgba(0, 0, 0, 0.4)" : "0 4px 16px rgba(0, 0, 0, 0.08)", padding: "6px", zIndex: 50 }}>
-                  <Link href={profileHref} role="menuitem" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "8px 10px", fontSize: "14px", fontWeight: 500, color: isDarkMode ? "#ffffff" : tokens.ink, textDecoration: "none" }}>My Portfolio</Link>
-                  <button role="menuitem" onClick={handleLogout} style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 10px", fontSize: "14px", fontWeight: 500, color: isDarkMode ? "#ffffff" : tokens.ink, background: "none", border: "none", cursor: "pointer" }}>Log out</button>
+                <div role="menu" style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, minWidth: "180px", backgroundColor: "var(--color-canvas-soft)", border: "1px solid var(--color-hairline)", borderRadius: "8px", boxShadow: "0 4px 16px rgba(0, 0, 0, 0.08)", padding: "6px", zIndex: 50 }}>
+                  <Link href={profileHref} role="menuitem" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "8px 10px", fontSize: "14px", fontWeight: 500, color: "var(--color-ink)", textDecoration: "none" }}>My Portfolio</Link>
+                  <button type="button" role="menuitem" onClick={handleLogout} style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 10px", fontSize: "14px", fontWeight: 500, color: "var(--color-ink)", background: "none", border: "none", cursor: "pointer" }}>Log out</button>
                 </div>
               )}
             </div>
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <button onClick={() => onSignIn?.()} style={{ fontSize: "14px", fontWeight: 500, color: isDarkMode ? "#ffffff" : tokens.ink, background: isDarkMode ? "transparent" : tokens.canvas, border: `1px solid ${isDarkMode ? tokens.borderDark : "#c7c7c7"}`, cursor: "pointer", padding: "7px 16px", borderRadius: "6px" }}>Sign in</button>
+              <button type="button" onClick={() => onSignIn?.()} style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-ink)", background: "transparent", border: "1px solid var(--color-hairline-strong)", cursor: "pointer", padding: "7px 16px", borderRadius: "6px" }}>Sign in</button>
               <button onClick={() => onGetStarted?.()} style={{ fontSize: "14px", fontWeight: 500, backgroundColor: tokens.primary, color: tokens.ink, padding: "7px 16px", borderRadius: "6px", border: "none", cursor: "pointer" }}>Get started</button>
             </div>
           )}
@@ -228,6 +249,9 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
       <style>{`
         @media (min-width: 768px) { .hide-on-mobile { display: flex !important; } .show-on-mobile { display: none !important; } }
         @media (max-width: 767px) { .hide-on-mobile { display: none !important; } .show-on-mobile { display: flex !important; } }
+        .nav-theme-sun { display: none; }
+        :root.dark .nav-theme-sun { display: inline-block; }
+        :root.dark .nav-theme-moon { display: none; }
       `}</style>
     </header>
   );
