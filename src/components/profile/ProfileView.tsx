@@ -112,10 +112,11 @@ export function ProfileView({
 
   useEffect(() => {
     const onScroll = () => setShowBackToTop(window.scrollY > 400);
-    onScroll(); 
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
 
   const scrollToTop = () =>
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -123,8 +124,11 @@ export function ProfileView({
   // Total stars across the repos shown on this page
   const totalStars = repos.reduce((sum, r) => sum + (r.stargazers_count ?? 0), 0);
 
+  const totalForks = repos.reduce((sum, r) => sum + (r.forks_count ?? 0), 0);
+
   return (
     <div style={{ maxWidth: "56rem", margin: "0 auto", padding: "48px 20px 80px" }}>
+
 
       {/* Profile header */}
       <div style={{ display: "flex", alignItems: "flex-start", gap: "24px", flexWrap: "wrap", paddingBottom: "40px", borderBottom: "1px solid var(--color-hairline)" }}>
@@ -421,6 +425,7 @@ export function ProfileView({
             { label: "Issues", value: stats.totalIssues },
             { label: "Reviews", value: stats.totalReviews },
             { label: "Stars", value: totalStars },
+            { label: "Forks", value: totalForks },
             { label: "Contributor score", value: score },
           ].map((item) => (
             <div
