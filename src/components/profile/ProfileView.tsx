@@ -281,6 +281,82 @@ export function ProfileView({
               </svg>
               Share on X
             </button>
+            {/* Facebook Share Button */}
+            <button
+              type="button"
+              onClick={() => {
+                const profileUrl = `https://ossfolio.qzz.io/${user.login}`;
+                const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(profileUrl)}`;
+                window.open(fbUrl, "_blank", "noopener,noreferrer");
+              }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "7px 14px",
+                fontSize: "13px",
+                fontWeight: 500,
+                color: "var(--color-ink)",
+                backgroundColor: "var(--color-canvas-soft)",
+                border: "1px solid var(--color-hairline-strong)",
+                borderRadius: "6px",
+                cursor: "pointer",
+                lineHeight: 1,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--color-ink)";
+                e.currentTarget.style.backgroundColor = "var(--color-hairline)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--color-hairline-strong)";
+                e.currentTarget.style.backgroundColor = "var(--color-canvas-soft)";
+              }}
+              aria-label="Share profile on Facebook"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.99 3.66 9.12 8.44 9.88v-6.99h-2.54V12h2.54V9.69c0-2.5 1.5-3.89 3.8-3.89 1.1 0 2.24.2 2.24.2v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99C18.34 21.12 22 16.99 22 12z" />
+              </svg>
+              Share on Facebook
+            </button>
+
+            {/* Reddit Share Button */}
+            <button
+              type="button"
+              onClick={() => {
+                const profileUrl = `https://ossfolio.qzz.io/${user.login}`;
+                const title = `My open source score on OSSfolio`;
+                const redditUrl = `https://www.reddit.com/submit?url=${encodeURIComponent(profileUrl)}&title=${encodeURIComponent(title)}`;
+                window.open(redditUrl, "_blank", "noopener,noreferrer");
+              }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "7px 14px",
+                fontSize: "13px",
+                fontWeight: 500,
+                color: "var(--color-ink)",
+                backgroundColor: "var(--color-canvas-soft)",
+                border: "1px solid var(--color-hairline-strong)",
+                borderRadius: "6px",
+                cursor: "pointer",
+                lineHeight: 1,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--color-ink)";
+                e.currentTarget.style.backgroundColor = "var(--color-hairline)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--color-hairline-strong)";
+                e.currentTarget.style.backgroundColor = "var(--color-canvas-soft)";
+              }}
+              aria-label="Share profile on Reddit"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M6.167 8a.83.83 0 0 0-.83.83c0 .459.372.84.83.831a.831.831 0 0 0 0-1.661m1.843 3.647c.315 0 1.403-.038 1.976-.611a.23.23 0 0 0 0-.306.213.213 0 0 0-.306 0c-.353.363-1.126.487-1.67.487-.545 0-1.308-.124-1.671-.487a.213.213 0 0 0-.306 0 .213.213 0 0 0 0 .306c.564.563 1.652.61 1.977.61zm.992-2.807c0 .458.373.83.831.83s.83-.381.83-.83a.831.831 0 0 0-1.66 0z" />
+              </svg>
+              Share on Reddit
+            </button>
 
             <button
               type="button"
