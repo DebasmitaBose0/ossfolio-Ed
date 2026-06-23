@@ -281,6 +281,82 @@ export function ProfileView({
               </svg>
               Share on X
             </button>
+            {/* Facebook Share Button */}
+            <button
+              type="button"
+              onClick={() => {
+                const profileUrl = `https://ossfolio.qzz.io/${user.login}`;
+                const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(profileUrl)}`;
+                window.open(fbUrl, "_blank", "noopener,noreferrer");
+              }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "7px 14px",
+                fontSize: "13px",
+                fontWeight: 500,
+                color: "var(--color-ink)",
+                backgroundColor: "var(--color-canvas-soft)",
+                border: "1px solid var(--color-hairline-strong)",
+                borderRadius: "6px",
+                cursor: "pointer",
+                lineHeight: 1,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--color-ink)";
+                e.currentTarget.style.backgroundColor = "var(--color-hairline)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--color-hairline-strong)";
+                e.currentTarget.style.backgroundColor = "var(--color-canvas-soft)";
+              }}
+              aria-label="Share profile on Facebook"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.99 3.66 9.12 8.44 9.88v-6.99h-2.54V12h2.54V9.69c0-2.5 1.5-3.89 3.8-3.89 1.1 0 2.24.2 2.24.2v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99C18.34 21.12 22 16.99 22 12z" />
+              </svg>
+              Share on Facebook
+            </button>
+
+            {/* Reddit Share Button */}
+            <button
+              type="button"
+              onClick={() => {
+                const profileUrl = `https://ossfolio.qzz.io/${user.login}`;
+                const title = `My open source score on OSSfolio`;
+                const redditUrl = `https://www.reddit.com/submit?url=${encodeURIComponent(profileUrl)}&title=${encodeURIComponent(title)}`;
+                window.open(redditUrl, "_blank", "noopener,noreferrer");
+              }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                padding: "7px 14px",
+                fontSize: "13px",
+                fontWeight: 500,
+                color: "var(--color-ink)",
+                backgroundColor: "var(--color-canvas-soft)",
+                border: "1px solid var(--color-hairline-strong)",
+                borderRadius: "6px",
+                cursor: "pointer",
+                lineHeight: 1,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = "var(--color-ink)";
+                e.currentTarget.style.backgroundColor = "var(--color-hairline)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = "var(--color-hairline-strong)";
+                e.currentTarget.style.backgroundColor = "var(--color-canvas-soft)";
+              }}
+              aria-label="Share profile on Reddit"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.387 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
+              </svg>
+              Share on Reddit
+            </button>
 
             <button
               type="button"
