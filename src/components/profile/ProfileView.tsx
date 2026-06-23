@@ -420,6 +420,7 @@ export function ProfileView({
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "12px" }}>
           {[
+            { label: "Contributions", value: stats.totalContributions },
             { label: "Commits", value: stats.totalCommits },
             { label: "Pull Requests", value: stats.totalPRs },
             { label: "Issues", value: stats.totalIssues },
