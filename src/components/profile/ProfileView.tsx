@@ -752,6 +752,16 @@ export function ProfileView({
               backgroundColor: "var(--color-canvas-soft)",
             }}
           >
+            {/* Month labels */}
+            <div style={{ display: "flex", gap: "3px", marginBottom: "4px", fontSize: "11px", color: "var(--color-ink-mute)" }}>
+              {heatmap.map((week, wi) => {
+                const month = new Date(week.days[0].date).toLocaleString('en-US', { month: 'short' });
+                const show = wi === 0 || month !== new Date(heatmap[wi - 1].days[0].date).toLocaleString('en-US', { month: 'short' });
+                return (
+                  <span key={wi} style={{ width: "11px", textAlign: "center" }}>{show ? month : ""}</span>
+                );
+              })}
+            </div>
             {heatmap.map((week, wi) => (
               <div key={wi} style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
                 {week.days.map((day, di) => (
