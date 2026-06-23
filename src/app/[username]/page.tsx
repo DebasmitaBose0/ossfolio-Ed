@@ -26,26 +26,34 @@ type UserFetchResult =
   | { status: "error"; code: number };
 
 async function fetchGitHubUser(username: string): Promise<UserFetchResult> {
-  const res = await fetch(`https://api.github.com/users/${username}`, {
-    headers: { Accept: "application/vnd.github.v3+json" },
-    next: { revalidate: 3600 },
-  });
-  if (res.status === 404) return { status: "not_found" };
-  if (!res.ok) return { status: "error", code: res.status };
-  return { status: "ok", data: await res.json() };
+  try {
+    const res = await fetch(`https://api.github.com/users/${username}`, {
+      headers: { Accept: "application/vnd.github.v3+json" },
+      next: { revalidate: 3600 },
+    });
+    if (res.status === 404) return { status: "not_found" };
+    if (!res.ok) return { status: "error", code: res.status };
+    return { status: "ok", data: await res.json() };
+  } catch {
+    return { status: "error", code: 0 };
+  }
 }
 
 async function fetchGitHubRepos(username: string) {
-  const res = await fetch(
-    `https://api.github.com/users/${username}/repos?sort=stars&per_page=12&type=owner`,
-    {
-      headers: { Accept: "application/vnd.github.v3+json" },
-      next: { revalidate: 3600 },
-    }
-  );
-  if (!res.ok) return [];
-  const repos = await res.json();
-  return repos.filter((r: { fork: boolean }) => !r.fork).slice(0, 6);
+  try {
+    const res = await fetch(
+      `https://api.github.com/users/${username}/repos?sort=stars&per_page=12&type=owner`,
+      {
+        headers: { Accept: "application/vnd.github.v3+json" },
+        next: { revalidate: 3600 },
+      }
+    );
+    if (!res.ok) return [];
+    const repos = await res.json();
+    return repos.filter((r: { fork: boolean }) => !r.fork).slice(0, 6);
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
@@ -58,7 +66,7 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
     };
   }
   const user = result.data;
-  const displayName = (user.name as string) || username;
+  const displayName = (typeof user.name === "string" && user.name) || username;
   return {
     title: `${displayName} - OSSfolio`,
     description: `View ${displayName}'s open-source profile on OSSfolio.`,
