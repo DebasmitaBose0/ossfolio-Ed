@@ -109,7 +109,10 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   if (userResult.status === "not_found") notFound();
   if (userResult.status === "error") {
-    throw new Error(`GitHub API returned ${userResult.code} for ${username}`);
+    const msg = userResult.code === 0
+      ? `Network error while fetching profile for ${username}`
+      : `GitHub API returned ${userResult.code} for ${username}`;
+    throw new Error(msg);
   }
   const user = userResult.data;
 
