@@ -44,9 +44,36 @@ async function fetchGitHubRepos(username: string) {
 
 export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
   const { username } = await params;
+
+  const user = await fetchGitHubUser(username);
+  if (!user) {
+    return {
+      title: `${username} - OSSfolio`,
+      description: `Open-source profile for ${username}.`,
+    };
+  }
+
+  const displayName = user.name || username;
+  const description = user.bio
+    ? `${user.bio} | ${user.public_repos} repos, ${user.followers} followers`
+    : `${displayName} has ${user.public_repos} public repos and ${user.followers} followers on GitHub.`;
+
   return {
-    title: `${username} — OSSfolio`,
-    description: `View ${username}'s open-source profile on OSSfolio.`,
+    title: `${displayName} - OSSfolio`,
+    description,
+    openGraph: {
+      title: `${displayName} - OSSfolio`,
+      description,
+      images: [{ url: user.avatar_url, width: 400, height: 400, alt: `${displayName}'s avatar` }],
+      type: "profile",
+      siteName: "OSSfolio",
+    },
+    twitter: {
+      card: "summary",
+      title: `${displayName} - OSSfolio`,
+      description,
+      images: [user.avatar_url],
+    },
   };
 }
 
