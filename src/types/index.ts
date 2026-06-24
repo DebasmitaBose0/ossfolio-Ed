@@ -33,6 +33,7 @@ export interface Repo {
   language: string | null;
   languageColor: string | null;
   url: string;
+  topics: string[];
 }
 
 export interface Org {

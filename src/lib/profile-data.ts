@@ -54,6 +54,7 @@ interface GitHubRepoLike {
   stargazers_count: number;
   forks_count: number;
   language: string | null;
+  topics?: string[];
 }
 
 /** Map raw REST repos into the `Repo` type the TopRepos component consumes. */
@@ -66,6 +67,7 @@ export function mapRepos(repos: GitHubRepoLike[]): Repo[] {
     language: r.language,
     languageColor: languageColor(r.language),
     url: r.html_url,
+    topics: r.topics ?? [],
   }));
 }
 

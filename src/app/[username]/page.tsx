@@ -59,7 +59,7 @@ async function fetchGitHubRepos(username: string) {
     const res = await fetch(
       `https://api.github.com/users/${username}/repos?sort=stars&per_page=12&type=owner`,
       {
-        headers: { Accept: "application/vnd.github.v3+json" },
+        headers: { Accept: "application/vnd.github.mercy-preview+json" },
         next: { revalidate: 3600 },
       }
     );

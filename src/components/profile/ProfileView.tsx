@@ -28,6 +28,7 @@ interface GitHubRepo {
   stargazers_count: number;
   forks_count: number;
   language: string | null;
+  topics?: string[];
 }
 
 const LANG_COLORS: Record<string, string> = {
@@ -525,6 +526,30 @@ export function ProfileView({
                 <p style={{ fontSize: "13px", color: "var(--color-ink-mute)", margin: 0, lineHeight: 1.45, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", minHeight: "38px" }}>
                   {repo.description || "No description"}
                 </p>
+                {repo.topics && repo.topics.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "8px" }}>
+                    {repo.topics.slice(0, 3).map((topic) => (
+                      <span
+                        key={topic}
+                        style={{
+                          fontSize: "11px",
+                          padding: "2px 8px",
+                          borderRadius: "9999px",
+                          backgroundColor: "var(--color-canvas-soft)",
+                          color: "var(--color-ink-mute)",
+                          border: "1px solid var(--color-hairline)",
+                        }}
+                      >
+                        {topic}
+                      </span>
+                    ))}
+                    {repo.topics.length > 3 && (
+                      <span style={{ fontSize: "11px", padding: "2px 6px", color: "var(--color-ink-mute)" }}>
+                        +{repo.topics.length - 3}
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "auto", paddingTop: "8px" }}>
                   {repo.language && (
                     <span style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "12px", color: "var(--color-ink-mute)" }}>
