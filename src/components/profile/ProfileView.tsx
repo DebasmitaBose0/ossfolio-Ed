@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { HeatmapWithYearNav } from "@/components/profile/HeatmapWithYearNav";
 import type { ContributorStats, Org, TechEntry, HeatmapWeek } from "@/types";
 import { toPng } from "html-to-image";
 
@@ -675,7 +676,7 @@ export function ProfileView({
                   backgroundColor: "var(--color-canvas-soft)",
                 }}
               >
-                <span style={{ width: "10px", height: "10px", backgroundColor: LANG_COLORS[language] ?? "#9a9a9a", borderRadius: "9999px", flexShrink: 0, marginRight: "4px", display: "inline-block" }}></span>{language}
+                <span style={{ width: "10px", height: "10px", backgroundColor: LANG_COLORS[language] ?? "#9a9aa", borderRadius: "9999px", flexShrink: 0, display: "inline-block" }}></span>{language}
                 <span style={{ color: "var(--color-ink-mute)", fontSize: "12px" }}>×{repoCount}</span>
               </span>
             ))}
@@ -709,7 +710,7 @@ export function ProfileView({
         </div>
       )}
 
-      {/* Contribution heatmap */}
+      {/* Contribution heatmap with year navigation */}
       {heatmap.length > 0 && (
         <div style={{ marginTop: "44px" }}>
           <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--color-ink)", margin: "0 0 16px 0", letterSpacing: "-0.2px" }}>
