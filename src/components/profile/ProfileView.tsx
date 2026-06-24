@@ -70,7 +70,16 @@ export function ProfileView({
   longestStreak,
   score,
   updatedAt,
-}: { user: GitHubUser; repos: GitHubRepo[] } & ProfileExtras) {
+  rateLimited,
+
+}: { user: GitHubUser; repos: GitHubRepo[] } & ProfileExtras & { rateLimited?: boolean }) {
+  if (rateLimited) {
+    return (
+      <div style={{ color: 'var(--color-ink-mute)', backgroundColor: 'var(--color-canvas-soft)', padding: '16px', borderRadius: '8px', textAlign: 'center', marginBottom: '24px' }}>
+        GitHub data is temporarily unavailable. Please try again later.
+      </div>
+    );
+  }
   const displayName = user.name || user.login;
   const website = user.blog
     ? user.blog.startsWith("http")

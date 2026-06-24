@@ -25,13 +25,22 @@ async function fetchGitHubUser(username: string) {
     headers: { Accept: "application/vnd.github.v3+json" },
     next: { revalidate: 3600 },
   });
-  if (!res.ok) return null;
+  if (!res.ok) {
+    // Detect rate limit based on GitHub response
+    try {
+      const err = await res.json();
+      if (err.message && err.message.toLowerCase().includes("rate limit")) {
+        throw new Error("RateLimit");
+      }
+    } catch {}
+    return null;
+  }
   return res.json();
 }
 
 async function fetchGitHubRepos(username: string) {
   const res = await fetch(
-    `https://api.github.com/users/${username}/repos?sort=stars&per_page=12&type=owner`,
+    `https://api.github.com/users/${username}/repos?sort=stars&per_page=100&type=owner`,
     {
       headers: { Accept: "application/vnd.github.v3+json" },
       next: { revalidate: 3600 },
@@ -81,13 +90,24 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const { username } = await params;
 
   // Base profile + repos (already-working live data) plus the new live extras.
-  const [user, repos, liveStats, orgs, contributionCalendar] = await Promise.all([
-    fetchGitHubUser(username),
-    fetchGitHubRepos(username),
-    fetchLiveStats(username),
-    fetchOrganizations(username),
-    fetchContributionCalendar(username),
-  ]);
+  let rateLimited = false;
+  let user: any = null;
+  let repos: any = [];
+  let liveStats: any = null;
+  let orgs: any = [];
+  let contributionCalendar: any = null;
+
+  try {
+    user = await fetchGitHubUser(username);
+  } catch (e) {
+    if (e instanceof Error && e.message === "RateLimit") rateLimited = true;
+    user = null;
+  }
+  // Other fetches can also error on rate limit; we treat them similarly.
+  try { repos = await fetchGitHubRepos(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
+  try { liveStats = await fetchLiveStats(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
+  try { orgs = await fetchOrganizations(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
+  try { contributionCalendar = await fetchContributionCalendar(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
 
   if (!user) notFound();
 
@@ -148,6 +168,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           longestStreak={longestStreak}
           score={score}
           updatedAt={updatedAt}
+          rateLimited={rateLimited}
         />
       </main>
       <Footer />
