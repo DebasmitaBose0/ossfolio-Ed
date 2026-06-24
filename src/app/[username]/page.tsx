@@ -64,15 +64,15 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
     openGraph: {
       title: `${displayName} - OSSfolio`,
       description,
-      images: [{ url: user.avatar_url, width: 400, height: 400, alt: `${displayName}'s avatar` }],
+      // og:image is auto-injected by opengraph-image.tsx
       type: "profile",
       siteName: "OSSfolio",
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: `${displayName} - OSSfolio`,
       description,
-      images: [user.avatar_url],
+      // twitter:image is auto-injected by twitter-image.tsx
     },
   };
 }
