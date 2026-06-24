@@ -132,7 +132,8 @@ export function ProfileView({
   const [authUser, setAuthUser] = useState<any>(null);
   const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState("GSSoC");
-  const [selectedYear, setSelectedYear] = useState(2026);
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
   const [isSavingBadge, setIsSavingBadge] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -203,8 +204,11 @@ export function ProfileView({
 
 
   const handleAddBadge = async () => {
-    const targetProfileId = profileId || authUser?.id;
-    if (!targetProfileId) return;
+    if (!profileId) {
+      alert("Please sync your profile first before adding badges.");
+      return;
+    }
+    const targetProfileId = profileId;
     setIsSavingBadge(true);
     try {
       // Create new list of badges
@@ -253,8 +257,11 @@ export function ProfileView({
   };
 
   const handleRemoveBadge = async (program: string) => {
-    const targetProfileId = profileId || authUser?.id;
-    if (!targetProfileId) return;
+    if (!profileId) {
+      alert("Please sync your profile first before removing badges.");
+      return;
+    }
+    const targetProfileId = profileId;
     const confirmRemove = confirm(`Are you sure you want to remove the ${program} badge?`);
     if (!confirmRemove) return;
 
@@ -1041,7 +1048,7 @@ export function ProfileView({
           >
             <div style={{ display: "flex", flexDirection: "column", minWidth: "max-content" }}>
               {/* Month labels */}
-              <div style={{ display: "flex", gap: "3px", marginBottom: "4px", fontSize: "11px", color: "var(--color-ink-mute)" }}>
+              <div style={{ display: "flex", gap: "3px", marginBottom: "4px", fontSize: "12px", color: "var(--color-ink-mute)" }}>
                 {heatmap.map((week, wi) => {
                   const month = new Date(week.days[0].date).toLocaleString('en-US', { month: 'short' });
                   const show = wi === 0 || month !== new Date(heatmap[wi - 1].days[0].date).toLocaleString('en-US', { month: 'short' });
@@ -1302,7 +1309,7 @@ export function ProfileView({
                   width: "100%",
                 }}
               >
-                {[2026, 2025, 2024, 2023, 2022, 2021, 2020].map((y) => (
+                {Array.from({ length: 7 }, (_, i) => currentYear - i).map((y) => (
                   <option key={y} value={y}>{y}</option>
                 ))}
               </select>
