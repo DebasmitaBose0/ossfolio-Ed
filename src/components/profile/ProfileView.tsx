@@ -6,7 +6,11 @@ import Link from "next/link";
 import { HeatmapWithYearNav } from "@/components/profile/HeatmapWithYearNav";
 import type { ContributorStats, Org, TechEntry, HeatmapWeek, BadgeItem } from "@/types";
 import { toPng } from "html-to-image";
+<<<<<<< HEAD
 import { supabase } from "@/lib/supabase";
+=======
+import { LANG_COLORS } from "@/lib/languages";
+>>>>>>> upstream/main
 
 interface GitHubUser {
   login: string;
@@ -32,26 +36,6 @@ interface GitHubRepo {
   language: string | null;
 }
 
-const LANG_COLORS: Record<string, string> = {
-  TypeScript: "#3178c6",
-  JavaScript: "#f1e05a",
-  Python: "#3572A5",
-  Go: "#00ADD8",
-  Rust: "#dea584",
-  Java: "#b07219",
-  "C++": "#f34b7d",
-  C: "#555555",
-  HTML: "#e34c26",
-  CSS: "#563d7c",
-  Ruby: "#701516",
-  Swift: "#F05138",
-  Kotlin: "#A97BFF",
-  Dart: "#00B4AB",
-  Shell: "#89e051",
-  Vue: "#41b883",
-  Svelte: "#ff3e00",
-  PHP: "#4F5D95",
-};
 
 const PROGRAM_STYLING: Record<string, { gradient: string; text: string; bg: string }> = {
   GSSoC: {
@@ -988,7 +972,7 @@ export function ProfileView({
                   backgroundColor: "var(--color-canvas-soft)",
                 }}
               >
-                {language}
+                <span style={{ width: "10px", height: "10px", backgroundColor: LANG_COLORS[language] ?? "#9a9aa", borderRadius: "9999px", flexShrink: 0, display: "inline-block" }}></span>{language}
                 <span style={{ color: "var(--color-ink-mute)", fontSize: "12px" }}>×{repoCount}</span>
               </span>
             ))}
@@ -1024,12 +1008,84 @@ export function ProfileView({
 
       {/* Contribution heatmap with year navigation */}
       {heatmap.length > 0 && (
-        <HeatmapWithYearNav
-          username={user.login}
-          initialWeeks={heatmap}
-          initialCurrentStreak={currentStreak}
-          initialLongestStreak={longestStreak}
-        />
+        <div style={{ marginTop: "44px" }}>
+          <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--color-ink)", margin: "0 0 16px 0", letterSpacing: "-0.2px" }}>
+            Contribution activity
+          </h2>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", margin: "0 0 12px 0" }}>
+            {[
+              { label: "Current streak", value: currentStreak },
+              { label: "Longest streak", value: longestStreak },
+            ].map(({ label, value }) => (
+              <span
+                key={label}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "baseline",
+                  gap: "6px",
+                  padding: "6px 12px",
+                  border: "1px solid var(--color-hairline)",
+                  borderRadius: "9999px",
+                  fontSize: "13px",
+                  color: "var(--color-ink-mute)",
+                  backgroundColor: "var(--color-canvas-soft)",
+                }}
+              >
+                <strong style={{ color: "var(--color-ink)", fontWeight: 600 }}>
+                  {value} {value === 1 ? "day" : "days"}
+                </strong>
+                {label}
+              </span>
+            ))}
+          </div>
+          <div
+            style={{
+              display: "flex",
+              gap: "3px",
+              overflowX: "auto",
+              padding: "16px",
+              border: "1px solid var(--color-hairline)",
+              borderRadius: "12px",
+              backgroundColor: "var(--color-canvas-soft)",
+            }}
+          >
+            {/* Month labels */}
+            <div style={{ display: "flex", gap: "3px", marginBottom: "4px", fontSize: "11px", color: "var(--color-ink-mute)" }}>
+              {heatmap.map((week, wi) => {
+                const month = new Date(week.days[0].date).toLocaleString('en-US', { month: 'short' });
+                const show = wi === 0 || month !== new Date(heatmap[wi - 1].days[0].date).toLocaleString('en-US', { month: 'short' });
+                return (
+                  <span key={wi} style={{ width: "11px", textAlign: "center" }}>{show ? month : ""}</span>
+                );
+              })}
+            </div>
+            {heatmap.map((week, wi) => (
+              <div key={wi} style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+                {week.days.map((day, di) => (
+                  <div
+                    key={di}
+                    title={`${day.count} contributions on ${day.date}`}
+                    style={{ width: "11px", height: "11px", borderRadius: "2px", backgroundColor: day.color, flexShrink: 0 }}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "4px", margin: "10px 0 0 0" }}>
+            <span style={{ fontSize: "12px", color: "var(--color-ink-mute)", marginRight: "2px" }}>Less</span>
+            {["var(--color-hairline)", "#9be9a8", "#40c463", "#30a14e", "#216e39"].map((shade) => (
+              <span
+                key={shade}
+                aria-hidden="true"
+                style={{ width: "11px", height: "11px", borderRadius: "2px", backgroundColor: shade.startsWith("var") ? "rgba(128, 128, 128, 0.1)" : shade, flexShrink: 0 }}
+              />
+            ))}
+            <span style={{ fontSize: "12px", color: "var(--color-ink-mute)", marginLeft: "2px" }}>More</span>
+          </div>
+          <p style={{ fontSize: "12px", color: "var(--color-ink-mute)", margin: "10px 0 0 0" }}>
+            This chart shows an estimate of contribution activity. Exact daily counts are not available for public profiles.
+          </p>
+        </div>
       )}
 
       {/* Back to top */}
