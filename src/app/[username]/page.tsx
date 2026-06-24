@@ -126,7 +126,20 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         updatedAt = profileRow.updated_at;
       }
       if (Array.isArray(profileRow.badges)) {
-        badges = profileRow.badges;
+        badges = profileRow.badges
+          .filter(
+            (b: any) =>
+              b &&
+              typeof b.program === "string" &&
+              b.program.trim() !== "" &&
+              Array.isArray(b.years)
+          )
+          .map((b: any) => ({
+            program: b.program,
+            years: b.years
+              .map((y: any) => Number(y))
+              .filter((y: number) => !isNaN(y)),
+          }));
       }
     }
   } catch {

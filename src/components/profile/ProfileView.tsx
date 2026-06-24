@@ -121,12 +121,30 @@ export function ProfileView({
   const cardRef = useRef<HTMLDivElement>(null);
 
   // Program Badges State
-  const [badgesList, setBadgesList] = useState<BadgeItem[]>(badges);
+  const sanitizeBadges = (raw: any[]): BadgeItem[] => {
+    if (!Array.isArray(raw)) return [];
+    return raw
+      .filter(
+        (b) =>
+          b &&
+          typeof b.program === "string" &&
+          b.program.trim() !== "" &&
+          Array.isArray(b.years)
+      )
+      .map((b) => ({
+        program: b.program,
+        years: b.years
+          .map((y: any) => Number(y))
+          .filter((y: number) => !isNaN(y)),
+      }));
+  };
+
+  const [badgesList, setBadgesList] = useState<BadgeItem[]>(() => sanitizeBadges(badges));
   const [prevBadges, setPrevBadges] = useState<BadgeItem[]>(badges);
 
   if (badges !== prevBadges) {
     setPrevBadges(badges);
-    setBadgesList(badges);
+    setBadgesList(sanitizeBadges(badges));
   }
 
   const [authUser, setAuthUser] = useState<any>(null);
@@ -136,6 +154,13 @@ export function ProfileView({
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [isSavingBadge, setIsSavingBadge] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
+
+  const isOwner = !!(
+    authUser && (
+      (profileId && authUser.id === profileId) ||
+      (!profileId && authUser.user_metadata?.user_name?.toLowerCase() === user.login?.toLowerCase())
+    )
+  );
 
   // Resolve the current session on mount and keep it in sync with auth changes
   useEffect(() => {
@@ -152,21 +177,16 @@ export function ProfileView({
     };
   }, []);
 
-  // Sync native dialog element with state
+  // Sync native dialog element with state and setup event listeners
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
+
     if (isBadgeModalOpen) {
       if (!dialog.open) dialog.showModal();
     } else {
       if (dialog.open) dialog.close();
     }
-  }, [isBadgeModalOpen]);
-
-  // Modal events setup for native close & backdrop click fallback
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
 
     const handleClose = () => {
       setIsBadgeModalOpen(false);
@@ -192,14 +212,7 @@ export function ProfileView({
       dialog.removeEventListener("close", handleClose);
       dialog.removeEventListener("click", handleClick);
     };
-  }, []);
-
-  const isOwner = !!(
-    authUser && (
-      (profileId && authUser.id === profileId) ||
-      (!profileId && authUser.user_metadata?.user_name?.toLowerCase() === user.login?.toLowerCase())
-    )
-  );
+  }, [isBadgeModalOpen, isOwner]);
 
 
 
@@ -711,6 +724,7 @@ export function ProfileView({
           ) : (
             <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
               {badgesList.map((badge) => {
+                if (!badge || !badge.program || !Array.isArray(badge.years)) return null;
                 const style = PROGRAM_STYLING[badge.program] || {
                   gradient: "linear-gradient(135deg, #707070 0%, #9a9a9a 100%)",
                   text: "#ffffff",
@@ -1309,7 +1323,7 @@ export function ProfileView({
                   width: "100%",
                 }}
               >
-                {Array.from({ length: 7 }, (_, i) => currentYear - i).map((y) => (
+                {Array.from({ length: currentYear - 2000 + 1 }, (_, i) => currentYear - i).map((y) => (
                   <option key={y} value={y}>{y}</option>
                 ))}
               </select>
