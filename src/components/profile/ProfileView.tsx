@@ -6,11 +6,8 @@ import Link from "next/link";
 import { HeatmapWithYearNav } from "@/components/profile/HeatmapWithYearNav";
 import type { ContributorStats, Org, TechEntry, HeatmapWeek, BadgeItem } from "@/types";
 import { toPng } from "html-to-image";
-<<<<<<< HEAD
 import { supabase } from "@/lib/supabase";
-=======
 import { LANG_COLORS } from "@/lib/languages";
->>>>>>> upstream/main
 
 interface GitHubUser {
   login: string;
