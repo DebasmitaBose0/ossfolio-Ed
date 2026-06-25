@@ -57,3 +57,8 @@ export interface TechEntry {
   language: string;
   repoCount: number;
 }
+
+export interface BadgeItem {
+  program: string;
+  years: number[];
+}
