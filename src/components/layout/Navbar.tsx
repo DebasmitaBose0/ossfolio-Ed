@@ -84,6 +84,12 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Theme state drives only the toggle glyph (Sun/Moon). All navbar colours are
   // CSS-variable driven (see styles below), so the bar follows the `.dark` class
   // on <html> from the very first paint - no SSR/hydration colour mismatch.
@@ -211,7 +217,7 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
           <button
             type="button"
             onClick={toggleTheme}
-            aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+            aria-label={!mounted ? "Toggle theme" : isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
             style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-ink-mute)", display: "flex", alignItems: "center", justifyContent: "center", padding: "6px", borderRadius: "6px" }}
           >
             <Moon size={18} className="nav-theme-moon" />
