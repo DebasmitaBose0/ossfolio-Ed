@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
@@ -117,9 +117,8 @@ export function ProfileView({
   const searchRef = useRef<HTMLInputElement>(null);
   const [repoFilter, setRepoFilter] = useState("");
 
-  useKeyboardShortcuts({
-    onSlash: () => searchRef.current?.focus(),
-  });
+  const focusSearch = useCallback(() => searchRef.current?.focus(), []);
+  useKeyboardShortcuts({ onSlash: focusSearch });
   const cardRef = useRef<HTMLDivElement>(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
 
@@ -817,6 +816,7 @@ export function ProfileView({
           <input
             ref={searchRef}
             type="text"
+            aria-label="Filter repositories by name or description"
             placeholder="Filter repositories... (press / to focus)"
             value={repoFilter}
             onChange={(e) => setRepoFilter(e.target.value)}

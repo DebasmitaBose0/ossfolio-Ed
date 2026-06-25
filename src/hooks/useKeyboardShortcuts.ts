@@ -16,7 +16,10 @@ export function useKeyboardShortcuts({ onSlash, onEscape }: UseKeyboardShortcuts
         target.tagName === "TEXTAREA" ||
         target.isContentEditable;
 
-      if (e.key === "/" && !isTyping) {
+      const isCtrlSlash = e.ctrlKey && e.key === "/";
+      const isBareSlash = e.key === "/" && !e.ctrlKey && !isTyping;
+
+      if (isCtrlSlash || isBareSlash) {
         e.preventDefault();
         onSlash?.();
       }
