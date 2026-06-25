@@ -809,11 +809,12 @@ export function ProfileView({
           <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--color-ink)", margin: 0, letterSpacing: "-0.2px" }}>
             Popular repositories
           </h2>
-          <div style={{ display: "flex", gap: "6px" }}>
+          <div role="group" aria-label="Sort popular repositories" style={{ display: "flex", gap: "6px" }}>
             {(["stars", "forks", "updated"] as const).map((option) => (
               <button
                 key={option}
                 type="button"
+                aria-pressed={repoSort === option}
                 onClick={() => setRepoSort(option)}
                 style={{
                   padding: "4px 10px",
