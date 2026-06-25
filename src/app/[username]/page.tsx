@@ -42,7 +42,7 @@ async function fetchGitHubRepos(username: string) {
   const res = await fetch(
     `https://api.github.com/users/${username}/repos?sort=stars&per_page=100&type=owner`,
     {
-      headers: { Accept: "application/vnd.github.v3+json" },
+      headers: { Accept: "application/vnd.github.mercy-preview+json" },
       next: { revalidate: 3600 },
     }
   );
@@ -53,19 +53,23 @@ async function fetchGitHubRepos(username: string) {
 
 export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
   const { username } = await params;
-
-  const user = await fetchGitHubUser(username);
-  if (!user) {
+  const result = await fetchGitHubUser(username);
+  if (result.status !== "ok") {
     return {
       title: `${username} - OSSfolio`,
       description: `Open-source profile for ${username}.`,
     };
   }
-
+  const user = result.data;
   const displayName = user.name || username;
-  const description = user.bio
-    ? `${user.bio} | ${user.public_repos} repos, ${user.followers} followers`
-    : `${displayName} has ${user.public_repos} public repos and ${user.followers} followers on GitHub.`;
+  const bio = user.bio || "";
+  const publicRepos = user.public_repos;
+  const followers = user.followers;
+  const avatarUrl = user.avatar_url;
+
+  const description = bio
+    ? `${bio} | ${publicRepos} repos, ${followers} followers`
+    : `${displayName} has ${publicRepos} public repos and ${followers} followers on GitHub.`;
 
   return {
     title: `${displayName} - OSSfolio`,
