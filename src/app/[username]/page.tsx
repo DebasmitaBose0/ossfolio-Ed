@@ -113,14 +113,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   try { orgs = await fetchOrganizations(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
   try { contributionCalendar = await fetchContributionCalendar(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
 
-  if (userResult.status === "not_found") notFound();
-  if (userResult.status === "error") {
-    const msg = userResult.code === 0
-      ? `Network error while fetching profile for ${username}`
-      : `GitHub API returned ${userResult.code} for ${username}`;
-    throw new Error(msg);
-  }
-  const user = userResult.data;
+  if (!user) notFound();
 
   const mappedRepos = mapRepos(repos);
   const techStack = deriveTechStack(repos);
