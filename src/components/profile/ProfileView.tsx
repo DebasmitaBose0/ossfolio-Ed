@@ -152,6 +152,7 @@ export function ProfileView({
 
   // Sync badges from props in effect (instead of setState during render)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBadgesList(sanitizeBadges(badges));
   }, [badges]);
 
