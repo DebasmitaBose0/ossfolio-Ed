@@ -53,6 +53,20 @@ export function AuthModal({ open, onClose, defaultMode = "signin" }: AuthModalPr
     setLoading(true);
     setError("");
 
+    // Form inputs client side validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address.");
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long.");
+      setLoading(false);
+      return;
+    }
+
     if (mode === "signin") {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
@@ -62,6 +76,11 @@ export function AuthModal({ open, onClose, defaultMode = "signin" }: AuthModalPr
         onClose();
       }
     } else {
+      if (!name.trim()) {
+        setError("Please enter your full name.");
+        setLoading(false);
+        return;
+      }
       const { error } = await supabase.auth.signUp({
         email,
         password,
