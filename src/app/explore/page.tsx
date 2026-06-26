@@ -26,7 +26,7 @@ interface LeaderboardRow {
 }
 
 interface ExplorePageProps {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; q?: string; sortBy?: string }>;
 }
 
 // Fetch one page of contributors ordered by stored score. Reads the same public
@@ -36,20 +36,36 @@ interface ExplorePageProps {
 // query. Fails soft to an empty array so a Supabase hiccup renders the empty
 // state instead of crashing the page.
 async function fetchPage(
-  page: number
+  page: number,
+  searchQuery: string,
+  sortBy: string
 ): Promise<{ rows: LeaderboardRow[]; hasNext: boolean }> {
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE; // inclusive range of PAGE_SIZE + 1 rows
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from("profiles")
       .select(
         "username, name, avatar_url, score, total_prs, total_issues, total_commits"
-      )
-      .order("score", { ascending: false })
+      );
+
+    if (searchQuery) {
+      query = query.or(`username.ilike.%${searchQuery}%,name.ilike.%${searchQuery}%`);
+    }
+
+    // Determine ordering column based on sort parameter
+    let orderColumn = "score";
+    if (sortBy === "prs") orderColumn = "total_prs";
+    else if (sortBy === "commits") orderColumn = "total_commits";
+    else if (sortBy === "issues") orderColumn = "total_issues";
+
+    query = query
+      .order(orderColumn, { ascending: false })
       .order("updated_at", { ascending: false })
       .order("username", { ascending: true })
       .range(from, to);
+
+    const { data, error } = await query;
     if (error || !Array.isArray(data)) return { rows: [], hasNext: false };
     const hasNext = data.length > PAGE_SIZE;
     return { rows: (data as LeaderboardRow[]).slice(0, PAGE_SIZE), hasNext };
@@ -59,9 +75,12 @@ async function fetchPage(
 }
 
 export default async function ExplorePage({ searchParams }: ExplorePageProps) {
-  const { page: pageParam } = await searchParams;
+  const { page: pageParam, q: qParam, sortBy: sortByParam } = await searchParams;
   const page = Math.max(1, Math.floor(Number(pageParam)) || 1);
-  const { rows, hasNext } = await fetchPage(page);
+  const searchQuery = typeof qParam === "string" ? qParam.trim() : "";
+  const sortBy = typeof sortByParam === "string" ? sortByParam : "score";
+
+  const { rows, hasNext } = await fetchPage(page, searchQuery, sortBy);
   const hasPrev = page > 1;
   const rankOffset = (page - 1) * PAGE_SIZE;
 
@@ -85,50 +104,107 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
     padding: "8px 16px",
   };
 
+
   return (
     <>
       <Navbar />
-      <main style={{ backgroundColor: "#ffffff", minHeight: "100vh" }}>
+      <main style={{ backgroundColor: "var(--color-canvas)", color: "var(--color-ink)", minHeight: "100vh", transition: "background-color 0.2s ease, color 0.2s ease" }}>
         <div style={{ maxWidth: "56rem", margin: "0 auto", padding: "56px 20px" }}>
           {/* Header */}
           <header style={{ marginBottom: "32px" }}>
             <h1
               style={{
                 fontSize: "28px",
-                fontWeight: 500,
-                color: "#171717",
+                fontWeight: 600,
+                color: "var(--color-ink)",
                 letterSpacing: "-0.42px",
                 margin: 0,
               }}
             >
               Explore Contributors
             </h1>
-            <p style={{ fontSize: "15px", color: "#707070", margin: "8px 0 0 0" }}>
+            <p style={{ fontSize: "15px", color: "var(--color-ink-mute)", margin: "8px 0 0 0" }}>
               The top open-source contributors on OSSfolio, ranked by contribution score.
             </p>
           </header>
 
+          {/* Search and Sort controls */}
+          <form method="GET" action="/explore" style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap" }}>
+            <input
+              type="text"
+              name="q"
+              defaultValue={searchQuery}
+              placeholder="Search by username or name..."
+              style={{
+                flex: "1",
+                minWidth: "200px",
+                padding: "10px 14px",
+                fontSize: "14px",
+                border: "1px solid var(--color-hairline)",
+                borderRadius: "6px",
+                backgroundColor: "var(--color-canvas)",
+                color: "var(--color-ink)",
+                outline: "none",
+              }}
+            />
+            <select
+              name="sortBy"
+              defaultValue={sortBy}
+              style={{
+                padding: "10px 14px",
+                fontSize: "14px",
+                border: "1px solid var(--color-hairline)",
+                borderRadius: "6px",
+                backgroundColor: "var(--color-canvas)",
+                color: "var(--color-ink)",
+                outline: "none",
+                cursor: "pointer",
+              }}
+            >
+              <option value="score">Sort by Score</option>
+              <option value="prs">Sort by PRs</option>
+              <option value="commits">Sort by Commits</option>
+              <option value="issues">Sort by Issues</option>
+            </select>
+            <button
+              type="submit"
+              style={{
+                backgroundColor: "var(--color-primary)",
+                color: "var(--color-on-primary)",
+                border: "none",
+                borderRadius: "6px",
+                padding: "10px 20px",
+                fontSize: "14px",
+                fontWeight: 500,
+                cursor: "pointer",
+              }}
+            >
+              Apply
+            </button>
+          </form>
+
           {rows.length === 0 ? (
             <div
               style={{
-                border: "1px solid #ededed",
+                border: "1px solid var(--color-hairline)",
                 borderRadius: "12px",
                 padding: "48px 24px",
                 textAlign: "center",
+                backgroundColor: "var(--color-canvas-soft)",
               }}
             >
-              <p style={{ fontSize: "15px", fontWeight: 500, color: "#171717", margin: 0 }}>
-                {page > 1 ? "Nothing more to show" : "No contributors yet"}
+              <p style={{ fontSize: "15px", fontWeight: 500, color: "var(--color-ink)", margin: 0 }}>
+                {page > 1 ? "Nothing more to show" : "No contributors found"}
               </p>
-              <p style={{ fontSize: "14px", color: "#9a9a9a", margin: "6px 0 0 0" }}>
+              <p style={{ fontSize: "14px", color: "var(--color-ink-mute)", margin: "6px 0 0 0" }}>
                 {page > 1
                   ? "You have reached the end of the leaderboard."
-                  : "Sign in with GitHub to be the first on the leaderboard."}
+                  : "Try clearing your search filters to find contributors."}
               </p>
               {page > 1 && (
                 <p style={{ margin: "16px 0 0 0" }}>
-                  <Link href="/explore" style={{ fontSize: "14px", fontWeight: 500, color: "#171717" }}>
-                    Back to the top
+                  <Link href={`/explore?q=${encodeURIComponent(searchQuery)}&sortBy=${sortBy}`} style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-ink)", textDecoration: "underline" }}>
+                    Back to page 1
                   </Link>
                 </p>
               )}
@@ -168,10 +244,11 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                         alignItems: "center",
                         gap: "16px",
                         padding: "14px 18px",
-                        border: "1px solid #ededed",
+                        border: "1px solid var(--color-hairline)",
                         borderRadius: "12px",
                         textDecoration: "none",
-                        backgroundColor: "#ffffff",
+                        backgroundColor: "var(--color-canvas-soft)",
+                        transition: "border-color 0.2s ease, transform 0.2s ease",
                       }}
                     >
                       {/* Rank */}
@@ -180,7 +257,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                           minWidth: "32px",
                           fontSize: "16px",
                           fontWeight: 600,
-                          color: isTop ? "#24b47e" : "#9a9a9a",
+                          color: isTop ? "var(--color-primary)" : "var(--color-ink-mute)",
                           textAlign: "center",
                           flexShrink: 0,
                         }}
@@ -196,7 +273,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                         height={40}
                         style={{
                           borderRadius: "9999px",
-                          border: "1px solid #ededed",
+                          border: "1px solid var(--color-hairline)",
                           flexShrink: 0,
                         }}
                       />
@@ -215,7 +292,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                           style={{
                             fontSize: "14px",
                             fontWeight: 600,
-                            color: "#171717",
+                            color: "var(--color-ink)",
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
@@ -226,7 +303,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                         <span
                           style={{
                             fontSize: "13px",
-                            color: "#9a9a9a",
+                            color: "var(--color-ink-mute)",
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
@@ -234,7 +311,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                         >
                           @{row.username}
                         </span>
-                        <span style={{ fontSize: "12px", color: "#b2b2b2" }}>
+                        <span style={{ fontSize: "12px", color: "var(--color-ink-mute-2)" }}>
                           {prs} PRs, {issues} issues, {commits} commits
                         </span>
                       </span>
@@ -249,10 +326,10 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                           flexShrink: 0,
                         }}
                       >
-                        <span style={{ fontSize: "18px", fontWeight: 600, color: "#171717", lineHeight: 1 }}>
+                        <span style={{ fontSize: "18px", fontWeight: 600, color: "var(--color-ink)", lineHeight: 1 }}>
                           {score}
                         </span>
-                        <span style={{ fontSize: "11px", color: "#9a9a9a", marginTop: "3px" }}>
+                        <span style={{ fontSize: "11px", color: "var(--color-ink-mute)", marginTop: "3px" }}>
                           score
                         </span>
                       </span>
@@ -275,7 +352,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
               }}
             >
               {hasPrev ? (
-                <Link href={`/explore?page=${page - 1}`} style={pagerLinkStyle}>
+                <Link href={`/explore?page=${page - 1}&q=${encodeURIComponent(searchQuery)}&sortBy=${sortBy}`} style={pagerLinkStyle}>
                   Previous
                 </Link>
               ) : (
@@ -284,10 +361,10 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                 </span>
               )}
 
-              <span style={{ fontSize: "13px", color: "#9a9a9a" }}>Page {page}</span>
+              <span style={{ fontSize: "13px", color: "var(--color-ink-mute)" }}>Page {page}</span>
 
               {hasNext ? (
-                <Link href={`/explore?page=${page + 1}`} style={pagerLinkStyle}>
+                <Link href={`/explore?page=${page + 1}&q=${encodeURIComponent(searchQuery)}&sortBy=${sortBy}`} style={pagerLinkStyle}>
                   Next
                 </Link>
               ) : (
@@ -303,3 +380,4 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
     </>
   );
 }
+
