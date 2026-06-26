@@ -48,9 +48,10 @@ function Avatar({ src, name, size }: { src?: string; name?: string; size: number
         width={size}
         height={size}
         style={{ 
-          borderRadius: "9999px", 
-          border: "1px solid var(--color-hairline)", 
-          flexShrink: 0 
+          borderRadius: "50%", 
+          border: "1px solid var(--color-hairline-strong)", 
+          flexShrink: 0,
+          objectFit: "cover"
         }}
       />
     );
@@ -62,15 +63,16 @@ function Avatar({ src, name, size }: { src?: string; name?: string; size: number
       style={{
         width: size,
         height: size,
-        borderRadius: "9999px",
-        backgroundColor: "var(--color-canvas-soft)",
-        color: "var(--color-ink)",
+        borderRadius: "50%",
+        backgroundColor: "var(--color-primary-soft)",
+        color: "var(--color-on-primary)",
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
         fontSize: Math.round(size * 0.45),
         fontWeight: 600,
         flexShrink: 0,
+        border: "1px solid var(--color-primary)"
       }}
     >
       {initial}
