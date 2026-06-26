@@ -835,9 +835,14 @@ export function ProfileView({
         </div>
 
         {repos.length === 0 ? (
-          <p style={{ fontSize: "13px", color: "var(--color-ink-mute)", margin: 0 }}>
-            No public repositories yet.
-          </p>
+          <div style={{ padding: "40px", border: "1px dashed var(--color-hairline-strong)", borderRadius: "12px", textAlign: "center", backgroundColor: "var(--color-canvas-soft)", margin: "16px 0" }}>
+            <svg style={{ margin: "0 auto 12px", color: "var(--color-ink-mute-2)" }} width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="2" y="2" width="20" height="20" rx="2" ry="2" />
+              <path d="M12 18H12.01" />
+            </svg>
+            <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--color-ink)", margin: 0 }}>No public repositories found</p>
+            <p style={{ fontSize: "13px", color: "var(--color-ink-mute)", margin: "4px 0 0 0" }}>Create public repositories on GitHub to display them here.</p>
+          </div>
         ) : (
           <>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
