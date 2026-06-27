@@ -739,7 +739,7 @@ export function ProfileView({
             )}
           </div>
           {badgesList.length === 0 ? (
-            <p style={{ fontSize: "13px", color: "var(--color-ink-mute)", margin: 0 }}>No badges claimed yet. Click "Add badge" to show your participation.</p>
+            <p style={{ fontSize: "13px", color: "var(--color-ink-mute)", margin: 0 }}>No badges claimed yet. Click &quot;Add badge&quot; to show your participation.</p>
           ) : (
             <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
               {badgesList.map((badge) => {
