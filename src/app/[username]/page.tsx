@@ -135,12 +135,14 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   let updatedAt: string | null = null;
   let badges: any[] = [];
   let profileId: string | null = null;
+  let profileRow: any = null;
   try {
-    const { data: profileRow } = await supabase
+    const { data } = await supabase
       .from("profiles")
-      .select("id, score, updated_at, badges")
+      .select("id, score, updated_at, badges, headline, pinned_repos, custom_links, visibility")
       .eq("username", username)
       .maybeSingle();
+    profileRow = data;
     if (profileRow) {
       profileId = profileRow.id;
       if (typeof profileRow.score === "number") {
@@ -168,6 +170,17 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     }
   } catch {
     // Soft isolation fallback
+  }
+
+  const customization = profileRow ? {
+    headline: typeof profileRow.headline === "string" ? profileRow.headline : null,
+    pinnedRepos: Array.isArray(profileRow.pinned_repos) ? profileRow.pinned_repos as string[] : [],
+    customLinks: Array.isArray(profileRow.custom_links) ? profileRow.custom_links as Array<{ label: string; url: string }> : [],
+    visibility: profileRow.visibility as string,
+  } : null;
+
+  if (customization?.headline && user) {
+    user.bio = customization.headline;
   }
 
   return (
