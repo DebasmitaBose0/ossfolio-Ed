@@ -1,0 +1,73 @@
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
+import { DiscoverContent } from "./content";
+
+export const metadata: Metadata = {
+  title: "Discover Contributors - OSSfolio",
+  description:
+    "Search and discover open-source contributors by username, language, or contribution score.",
+};
+
+export default function DiscoverPage() {
+  return (
+    <>
+      <Navbar />
+      <main style={{ backgroundColor: "#ffffff", minHeight: "100vh" }}>
+        <div style={{ maxWidth: "72rem", margin: "0 auto", padding: "56px 20px" }}>
+          <header style={{ marginBottom: "32px" }}>
+            <h1
+              style={{
+                fontSize: "28px",
+                fontWeight: 500,
+                color: "#171717",
+                letterSpacing: "-0.42px",
+                margin: 0,
+              }}
+            >
+              Discover Contributors
+            </h1>
+            <p style={{ fontSize: "15px", color: "#707070", margin: "8px 0 0 0" }}>
+              Search profiles by name, username, or language. Filter by score and sort by what matters
+              to you.
+            </p>
+          </header>
+          <Suspense fallback={<DiscoverSkeleton />}>
+            <DiscoverContent />
+          </Suspense>
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+}
+
+function DiscoverSkeleton() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div style={{ height: "48px", borderRadius: "8px", backgroundColor: "#f5f5f5" }} />
+      <div style={{ height: "40px", borderRadius: "6px", backgroundColor: "#f5f5f5", width: "60%" }} />
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+          gap: "16px",
+          marginTop: "8px",
+        }}
+      >
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            style={{
+              height: "180px",
+              borderRadius: "12px",
+              backgroundColor: "#fafafa",
+              border: "1px solid #ededed",
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
