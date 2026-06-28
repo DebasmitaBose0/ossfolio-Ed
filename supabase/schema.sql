@@ -36,7 +36,9 @@ create table public.profiles (
     )
   ) stored,
   created_at timestamptz default now(),
-  updated_at timestamptz default now()
+  updated_at timestamptz default now(),
+  view_count integer not null default 0,
+  last_refreshed_at timestamptz default now()
 );
 
 alter table public.profiles enable row level security;
