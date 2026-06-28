@@ -475,7 +475,7 @@ export function ProfileView({
           )}
 
           {/* Profile Freshness Indicator */}
-          <ProfileFreshness username={user.login} updatedAt={updatedAt} />
+          <ProfileFreshness username={user.login} updatedAt={updatedAt ?? undefined} />
 
           {/* Dynamic Contributor Tier Badge */}
           {(() => {
