@@ -75,21 +75,24 @@ function TestimonialCard({ quote, name, username, role }: Testimonial) {
     <div
       style={{
         flex: "0 0 auto",
-        width: "340px",
+        width: "360px",
+        minHeight: "210px",
         backgroundColor: "var(--color-canvas)",
         border: "1px solid var(--color-hairline)",
+        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.06)",
         borderRadius: "12px",
         padding: "24px",
         display: "flex",
         flexDirection: "column",
-        gap: "16px",
+        gap: "24px",
         whiteSpace: "normal",
-        transition: "background-color 0.2s ease, border-color 0.2s ease",
+        transition: "transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease",
       }}
     >
       <p
         style={{
-          fontSize: "14px",
+          fontSize: "16px",
+          fontStyle: "italic",
           lineHeight: 1.6,
           color: "var(--color-ink)",
           margin: 0,
@@ -103,11 +106,11 @@ function TestimonialCard({ quote, name, username, role }: Testimonial) {
         <img
           src={`https://github.com/${username}.png`}
           alt={name}
-          width={36}
-          height={36}
+          width={40}
+          height={40}
           style={{
-            width: "36px",
-            height: "36px",
+            width: "40px",
+            height: "40px",
             borderRadius: "9999px",
             backgroundColor: "var(--color-canvas-soft)",
             objectFit: "cover",
@@ -117,7 +120,7 @@ function TestimonialCard({ quote, name, username, role }: Testimonial) {
         <div style={{ display: "flex", flexDirection: "column" }}>
           <span
             style={{ 
-              fontSize: "13px", 
+              fontSize: "14px", 
               fontWeight: 600, 
               color: "var(--color-ink)",
               transition: "color 0.2s ease" 
@@ -128,10 +131,19 @@ function TestimonialCard({ quote, name, username, role }: Testimonial) {
           <span 
             style={{ 
               fontSize: "12px", 
-              color: "var(--color-ink-mute)",
+              color: "var(--color-ink-mute-2)",
               transition: "color 0.2s ease" 
             }}
           >
+            @{username}
+            </span>
+            <span
+            style={{
+              fontSize: "12px",
+              color: "var(--color-ink-mute)",
+              transition: "color 0.2s ease",
+            }}
+            >
             {role}
           </span>
         </div>
