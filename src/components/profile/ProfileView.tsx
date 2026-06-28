@@ -102,6 +102,7 @@ function ProfileFreshness({ username, updatedAt }: { username: string; updatedAt
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(updatedAt);
   const [tick, setTick] = useState(0);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     const interval = setInterval(() => setTick((t) => t + 1), 60000);
@@ -123,22 +124,29 @@ function ProfileFreshness({ username, updatedAt }: { username: string; updatedAt
 
   const handleRefresh = async () => {
     setRefreshing(true);
+    setErrorMsg(null);
     try {
       const res = await fetch(`/api/${username}/refresh`, { method: "POST" });
       if (res.ok) {
         const data = await res.json();
         setLastRefresh(data.refreshedAt);
-        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        const payload = await res.json().catch(() => ({ error: "Refresh failed" }));
+        if (res.status === 429 && payload.retryAfterSeconds) {
+          setErrorMsg(`Try again in ${Math.ceil(payload.retryAfterSeconds / 60)} min`);
+        } else {
+          setErrorMsg(payload.error || "Refresh failed");
+        }
       }
     } catch {
-      // Silently fail - the page will show stale data which is fine
+      setErrorMsg("Network error");
     } finally {
       setRefreshing(false);
     }
   };
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px", flexWrap: "wrap" }}>
       <span style={{ fontSize: "12px", color: "var(--color-ink-mute)" }}>
         Updated {relativeTime}
       </span>
@@ -159,6 +167,9 @@ function ProfileFreshness({ username, updatedAt }: { username: string; updatedAt
       >
         {refreshing ? "Refreshing..." : "Refresh"}
       </button>
+      {errorMsg && (
+        <span style={{ fontSize: "11px", color: "var(--color-error, #dc2626)" }}>{errorMsg}</span>
+      )}
     </div>
   );
 }
@@ -803,11 +814,6 @@ export function ProfileView({
             </span>
           </div>
 
-          {updatedAt && (
-            <p style={{ fontSize: "12px", color: "var(--color-ink-mute)", margin: "10px 0 0 0", lineHeight: 1.45 }}>
-              Last updated {formatUpdatedAt(updatedAt)}
-            </p>
-          )}
         </div>
       </div>
 

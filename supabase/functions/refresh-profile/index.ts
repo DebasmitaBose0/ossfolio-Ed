@@ -2,12 +2,14 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const GITHUB_API = "https://api.github.com";
+const GITHUB_USERNAME_REGEX = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/;
+const RATE_LIMIT_MS = 10 * 60 * 1000;
 
 serve(async (req) => {
   try {
     const { username } = await req.json();
-    if (!username) {
-      return new Response(JSON.stringify({ error: "username is required" }), {
+    if (!username || !GITHUB_USERNAME_REGEX.test(username) || username.length > 39) {
+      return new Response(JSON.stringify({ error: "Invalid username format" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
@@ -17,7 +19,30 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const ghRes = await fetch(`${GITHUB_API}/users/${username}`, {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("username, last_refreshed_at")
+      .eq("username", username)
+      .single();
+
+    if (!profile) {
+      return new Response(JSON.stringify({ error: "Profile not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (profile.last_refreshed_at) {
+      const elapsed = Date.now() - new Date(profile.last_refreshed_at).getTime();
+      if (elapsed < RATE_LIMIT_MS) {
+        return new Response(JSON.stringify({ error: "Rate limited", retryAfterSeconds: Math.ceil((RATE_LIMIT_MS - elapsed) / 1000) }), {
+          status: 429,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    const ghRes = await fetch(`${GITHUB_API}/users/${encodeURIComponent(username)}`, {
       headers: { Accept: "application/vnd.github.v3+json" },
     });
 
@@ -30,7 +55,7 @@ serve(async (req) => {
 
     const ghUser = await ghRes.json();
 
-    const { error } = await supabase
+    const { error, count } = await supabase
       .from("profiles")
       .update({
         name: ghUser.name,

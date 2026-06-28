@@ -4,7 +4,7 @@
 
 alter table public.profiles
   add column if not exists view_count integer not null default 0,
-  add column if not exists last_refreshed_at timestamptz default now();
+  add column if not exists last_refreshed_at timestamptz;
 
 create index if not exists idx_profiles_view_count_desc
   on public.profiles (view_count desc nulls last);

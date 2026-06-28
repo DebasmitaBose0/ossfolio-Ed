@@ -4,7 +4,18 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const GITHUB_API = "https://api.github.com";
 const BATCH_SIZE = 50;
 
-serve(async (_req) => {
+serve(async (req) => {
+  const schedulerSecret = Deno.env.get("SCHEDULER_SECRET");
+  if (schedulerSecret) {
+    const authHeader = req.headers.get("Authorization") || "";
+    if (authHeader !== `Bearer ${schedulerSecret}`) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+  }
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -27,7 +38,7 @@ serve(async (_req) => {
 
     for (const profile of profiles) {
       try {
-        const ghRes = await fetch(`${GITHUB_API}/users/${profile.username}`, {
+        const ghRes = await fetch(`${GITHUB_API}/users/${encodeURIComponent(profile.username)}`, {
           headers: { Accept: "application/vnd.github.v3+json" },
         });
 
@@ -38,7 +49,7 @@ serve(async (_req) => {
 
         const ghUser = await ghRes.json();
 
-        await supabase
+        const { error: updateError } = await supabase
           .from("profiles")
           .update({
             name: ghUser.name,
@@ -50,7 +61,11 @@ serve(async (_req) => {
           })
           .eq("username", profile.username);
 
-        results.push({ username: profile.username, status: "refreshed" });
+        if (updateError) {
+          results.push({ username: profile.username, status: "db_write_failed" });
+        } else {
+          results.push({ username: profile.username, status: "refreshed" });
+        }
       } catch {
         results.push({ username: profile.username, status: "error" });
       }
