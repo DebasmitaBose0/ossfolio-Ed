@@ -62,3 +62,11 @@ export interface BadgeItem {
   program: string;
   years: number[];
 }
+
+/** Represents a merged pull request */
+export interface MergedPR {
+  title: string;
+  url: string;
+  repoName: string;
+  mergedAt: string;
+}

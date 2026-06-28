@@ -8,6 +8,7 @@ import {
   fetchOrganizations,
   deriveTechStack,
   mapRepos,
+  fetchMergedPRs,
 } from "@/lib/profile-data";
 import { generateMockHeatmap, computeStreaks } from "@/lib/mock";
 import { fetchContributionCalendar } from "@/lib/github";
@@ -127,6 +128,8 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   // Other fetches can also error on rate limit; we treat them similarly.
   try { repos = await fetchGitHubRepos(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
   try { liveStats = await fetchLiveStats(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
+  let mergedPRs: any[] = [];
+  try { mergedPRs = await fetchMergedPRs(username, 10); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
   try { orgs = await fetchOrganizations(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
   try { contributionCalendar = await fetchContributionCalendar(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
 
@@ -254,6 +257,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           badges={badges}
           profileId={profileId}
           rateLimited={rateLimited}
+          mergedPRs={mergedPRs}
         />
       </main>
       <Footer />

@@ -1,4 +1,4 @@
-import type { ContributorStats, Org, Repo, TechEntry } from "@/types";
+import type { ContributorStats, Org, Repo, TechEntry, MergedPR } from "@/types";
 import { LANG_COLORS } from "@/lib/languages";
 
 /**
@@ -132,6 +132,28 @@ export async function fetchOrganizations(username: string): Promise<Org[]> {
       name: o.description,
       avatarUrl: o.avatar_url,
       url: `https://github.com/${o.login}`,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/** Fetch recent merged pull requests for a user */
+export async function fetchMergedPRs(username: string, limit: number = 10): Promise<MergedPR[]> {
+  const query = `search/issues?q=author:${encodeURIComponent(username)}+type:pr+is:merged&sort=updated&order=desc&per_page=${limit}`;
+  try {
+    const res = await fetch(`https://api.github.com/${query}`, {
+      headers: { Accept: "application/vnd.github.v3+json" },
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    if (!Array.isArray(json.items)) return [];
+    return json.items.map((item: any) => ({
+      title: item.title,
+      url: item.html_url,
+      repoName: item.repository_url.split('/').slice(-1)[0],
+      mergedAt: item.closed_at,
     }));
   } catch {
     return [];
