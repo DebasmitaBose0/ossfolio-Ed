@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
@@ -101,26 +101,25 @@ function formatUpdatedAt(iso: string): string {
 function ProfileFreshness({ username, updatedAt }: { username: string; updatedAt?: string }) {
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(updatedAt);
-  const [tick, setTick] = useState(0);
+  const [relativeTime, setRelativeTime] = useState("...");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    const interval = setInterval(() => setTick((t) => t + 1), 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const relativeTime = useMemo(() => {
-    void tick;
-    if (!lastRefresh) return "Unknown";
-    const diff = Date.now() - new Date(lastRefresh).getTime();
-    const minutes = Math.floor(diff / 60000);
-    if (minutes < 1) return "Just now";
-    if (minutes < 60) return `${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    return `${days}d ago`;
-  }, [lastRefresh, tick]);
+    const compute = () => {
+      if (!lastRefresh) return "Unknown";
+      const diff = Date.now() - new Date(lastRefresh).getTime();
+      const minutes = Math.floor(diff / 60000);
+      if (minutes < 1) return "Just now";
+      if (minutes < 60) return `${minutes}m ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      return `${days}d ago`;
+    };
+    const id = setTimeout(() => setRelativeTime(compute()), 0);
+    const interval = setInterval(() => setRelativeTime(compute()), 60000);
+    return () => { clearTimeout(id); clearInterval(interval); };
+  }, [lastRefresh]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
