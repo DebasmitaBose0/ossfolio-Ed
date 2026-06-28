@@ -19,27 +19,40 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { data: profile } = await supabase
+    const { data: profile, error: fetchError } = await supabase
       .from("profiles")
       .select("username, last_refreshed_at")
       .eq("username", username)
       .single();
 
-    if (!profile) {
-      return new Response(JSON.stringify({ error: "Profile not found" }), {
-        status: 404,
+    if (fetchError) {
+      if (fetchError.code === "PGRST116") {
+        return new Response(JSON.stringify({ error: "Profile not found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ error: fetchError.message }), {
+        status: 500,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    if (profile.last_refreshed_at) {
-      const elapsed = Date.now() - new Date(profile.last_refreshed_at).getTime();
-      if (elapsed < RATE_LIMIT_MS) {
-        return new Response(JSON.stringify({ error: "Rate limited", retryAfterSeconds: Math.ceil((RATE_LIMIT_MS - elapsed) / 1000) }), {
-          status: 429,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
+    const cutoff = new Date(Date.now() - RATE_LIMIT_MS).toISOString();
+
+    const { data: claimed, error: claimError } = await supabase
+      .from("profiles")
+      .update({ last_refreshed_at: new Date().toISOString() })
+      .eq("username", username)
+      .or(`last_refreshed_at.is.null,last_refreshed_at.lt.${cutoff}`)
+      .select("username")
+      .single();
+
+    if (claimError || !claimed) {
+      return new Response(JSON.stringify({ error: "Rate limited", retryAfterSeconds: 600 }), {
+        status: 429,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const ghRes = await fetch(`${GITHUB_API}/users/${encodeURIComponent(username)}`, {
@@ -55,14 +68,13 @@ serve(async (req) => {
 
     const ghUser = await ghRes.json();
 
-    const { error, count } = await supabase
+    const { error } = await supabase
       .from("profiles")
       .update({
         name: ghUser.name,
         avatar_url: ghUser.avatar_url,
         bio: ghUser.bio,
         followers: ghUser.followers,
-        last_refreshed_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
       .eq("username", username);

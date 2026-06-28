@@ -6,14 +6,19 @@ const BATCH_SIZE = 50;
 
 serve(async (req) => {
   const schedulerSecret = Deno.env.get("SCHEDULER_SECRET");
-  if (schedulerSecret) {
-    const authHeader = req.headers.get("Authorization") || "";
-    if (authHeader !== `Bearer ${schedulerSecret}`) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
+  if (!schedulerSecret) {
+    return new Response(JSON.stringify({ error: "SCHEDULER_SECRET not configured" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const authHeader = req.headers.get("Authorization") || "";
+  if (authHeader !== `Bearer ${schedulerSecret}`) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   try {

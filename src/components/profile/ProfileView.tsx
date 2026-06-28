@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { HeatmapWithYearNav } from "@/components/profile/HeatmapWithYearNav";
 import type { ContributorStats, Org, TechEntry, HeatmapWeek, BadgeItem } from "@/types";
@@ -99,6 +100,7 @@ function formatUpdatedAt(iso: string): string {
 }
 
 function ProfileFreshness({ username, updatedAt }: { username: string; updatedAt?: string }) {
+  const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(updatedAt);
   const [relativeTime, setRelativeTime] = useState("...");
@@ -129,6 +131,7 @@ function ProfileFreshness({ username, updatedAt }: { username: string; updatedAt
       if (res.ok) {
         const data = await res.json();
         setLastRefresh(data.refreshedAt);
+        router.refresh();
       } else {
         const payload = await res.json().catch(() => ({ error: "Refresh failed" }));
         if (res.status === 429 && payload.retryAfterSeconds) {
