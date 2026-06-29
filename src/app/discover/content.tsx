@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { SearchFilters } from "@/components/discover/SearchFilters";
 import { ProfileCard } from "@/components/discover/ProfileCard";
-import Link from "next/link";
+import { Pagination } from "@/components/ui/pagination";
 
 interface DiscoverProfile {
   username: string;
@@ -72,30 +72,7 @@ export function DiscoverContent() {
     return () => { controller.abort(); };
   }, [searchParams]);
 
-  const pagerStyle: React.CSSProperties = {
-    fontSize: "14px",
-    fontWeight: 500,
-    color: "#171717",
-    backgroundColor: "#ffffff",
-    border: "1px solid #c7c7c7",
-    borderRadius: "6px",
-    padding: "8px 16px",
-    textDecoration: "none",
-  };
-
-  const pagerDisabledStyle: React.CSSProperties = {
-    ...pagerStyle,
-    color: "#b2b2b2",
-    borderColor: "#ededed",
-    pointerEvents: "none",
-  };
-
   const currentPage = data?.page || 1;
-  const buildPageUrl = (page: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(page));
-    return `/discover?${params.toString()}`;
-  };
 
   return (
     <>
@@ -141,16 +118,16 @@ export function DiscoverContent() {
       {!loading && !error && data && data.profiles.length === 0 && (
         <div
           style={{
-            border: "1px solid #ededed",
+            border: "1px solid var(--color-hairline)",
             borderRadius: "12px",
             padding: "48px 24px",
             textAlign: "center",
           }}
         >
-          <p style={{ fontSize: "15px", fontWeight: 500, color: "#171717", margin: 0 }}>
+          <p style={{ fontSize: "15px", fontWeight: 500, color: "var(--color-ink)", margin: 0 }}>
             No contributors found
           </p>
-          <p style={{ fontSize: "14px", color: "#9a9a9a", margin: "6px 0 0 0" }}>
+          <p style={{ fontSize: "14px", color: "var(--color-ink-mute)", margin: "6px 0 0 0" }}>
             Try adjusting your search or filters.
           </p>
         </div>
@@ -183,31 +160,13 @@ export function DiscoverContent() {
           </div>
 
           {(data.hasPrev || data.hasNext) && (
-            <nav
-              style={{
-                marginTop: "24px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "12px",
-              }}
-            >
-              {data.hasPrev ? (
-                <Link href={buildPageUrl(currentPage - 1)} style={pagerStyle}>
-                  Previous
-                </Link>
-              ) : (
-                <span style={pagerDisabledStyle}>Previous</span>
-              )}
-              <span style={{ fontSize: "13px", color: "#9a9a9a" }}>Page {currentPage}</span>
-              {data.hasNext ? (
-                <Link href={buildPageUrl(currentPage + 1)} style={pagerStyle}>
-                  Next
-                </Link>
-              ) : (
-                <span style={pagerDisabledStyle}>Next</span>
-              )}
-            </nav>
+            <Pagination
+              currentPage={currentPage}
+              hasNext={data.hasNext}
+              hasPrev={data.hasPrev}
+              baseUrl="/discover"
+              searchParams={Object.fromEntries(searchParams.entries())}
+            />
           )}
         </>
       )}

@@ -14,21 +14,21 @@ export default function DiscoverPage() {
   return (
     <>
       <Navbar />
-      <main style={{ backgroundColor: "#ffffff", minHeight: "100vh" }}>
+      <main id="main-content" style={{ backgroundColor: "var(--color-canvas)", color: "var(--color-ink)", minHeight: "100vh", transition: "background-color 0.2s ease, color 0.2s ease" }}>
         <div style={{ maxWidth: "72rem", margin: "0 auto", padding: "56px 20px" }}>
           <header style={{ marginBottom: "32px" }}>
             <h1
               style={{
                 fontSize: "28px",
                 fontWeight: 500,
-                color: "#171717",
+                color: "var(--color-ink)",
                 letterSpacing: "-0.42px",
                 margin: 0,
               }}
             >
               Discover Contributors
             </h1>
-            <p style={{ fontSize: "15px", color: "#707070", margin: "8px 0 0 0" }}>
+            <p style={{ fontSize: "15px", color: "var(--color-ink-mute)", margin: "8px 0 0 0" }}>
               Search profiles by name, username, or language. Filter by score and sort by what matters
               to you.
             </p>
