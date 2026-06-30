@@ -99,9 +99,7 @@ export function sanitizeObject<T extends Record<string, unknown>>(
 }
 
 function stripHtml(str: string): string {
-  return str
-    .replace(/<[^>]*>/g, "")
-    .replace(/[<>&"']/g, (c) => {
+  return str.replace(/[<>&"']/g, (c) => {
       switch (c) {
         case "<": return "&lt;";
         case ">": return "&gt;";
