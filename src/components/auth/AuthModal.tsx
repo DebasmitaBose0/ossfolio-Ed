@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -18,7 +18,6 @@ export function AuthModal({ open, onClose, defaultMode = "signin" }: AuthModalPr
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const overlayRef = useRef<HTMLDivElement>(null);
-  const firstFocusableRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -30,17 +29,6 @@ export function AuthModal({ open, onClose, defaultMode = "signin" }: AuthModalPr
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
-
-  useEffect(() => {
-    if (open) {
-      setMode(defaultMode);
-      setError("");
-      setEmail("");
-      setPassword("");
-      setName("");
-      setTimeout(() => firstFocusableRef.current?.focus(), 100);
-    }
-  }, [open, defaultMode]);
 
   useEffect(() => {
     if (!open) return;
@@ -149,7 +137,6 @@ export function AuthModal({ open, onClose, defaultMode = "signin" }: AuthModalPr
       >
         {/* Close */}
         <button
-          ref={firstFocusableRef}
           onClick={onClose}
           aria-label="Close sign in dialog"
           style={{
