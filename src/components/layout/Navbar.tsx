@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Menu, X, Sun, Moon } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { useTheme } from "@/hooks/useTheme";
 
 // useLayoutEffect runs synchronously before the browser paints (client only);
 // fall back to useEffect on the server to avoid React's SSR warning. This lets
@@ -87,51 +88,12 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
   const [mounted, setMounted] = useState(false);
+  const { isDarkMode, toggleTheme } = useTheme();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
-
-  // Theme state drives only the toggle glyph (Sun/Moon). All navbar colours are
-  // CSS-variable driven (see styles below), so the bar follows the `.dark` class
-  // on <html> from the very first paint - no SSR/hydration colour mismatch.
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (typeof window !== "undefined") {
-      const savedTheme = localStorage.getItem("theme");
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-      const shouldBeDark = savedTheme === "dark" || (!savedTheme && prefersDark);
-
-      if (shouldBeDark) {
-        document.documentElement.classList.add("dark");
-        return true;
-      }
-    }
-    return false;
-  });
-
-  // Re-assert <html>.dark BEFORE paint, so the frame React drops during
-  // hydration never reaches the screen (eliminates the dark-mode reload flash).
-  useIsomorphicLayoutEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [isDarkMode]);
-
-  const toggleTheme = () => {
-    const newDarkMode = !isDarkMode;
-    if (newDarkMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-    setIsDarkMode(newDarkMode);
-  };
 
   // Resolve the current session on mount and keep it in sync with auth changes.
   useEffect(() => {
