@@ -137,6 +137,7 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
 
   return (
     <header
+      role="banner"
       style={{
         position: "sticky",
         top: 0,
@@ -158,7 +159,7 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
           justifyContent: "space-between",
         }}
       >
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }} aria-label="OSSfolio home">
           <Image src="/logo.png" alt="" width={28} height={28} priority style={{ borderRadius: "6px", flexShrink: 0 }} />
           <span style={{ display: "flex", alignItems: "baseline" }}>
             <span style={{ fontSize: "15px", fontWeight: 600, color: "var(--color-ink)", letterSpacing: "-0.3px" }}>OSS</span>
@@ -166,7 +167,7 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
           </span>
         </Link>
 
-        <nav style={{ display: "flex", alignItems: "center", gap: "28px" }} className="hide-on-mobile">
+        <nav aria-label="Main navigation" style={{ display: "flex", alignItems: "center", gap: "28px" }} className="hide-on-mobile">
           {navLinks.map((item) => (
             <Link
               key={item.label}
@@ -215,8 +216,101 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
           )}
         </div>
 
-        {/* Mobile menu logic... (rest of your component remains the same) */}
+        {/* Mobile menu toggle */}
+        <button
+          type="button"
+          className="show-on-mobile"
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={mobileOpen}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: "var(--color-ink-mute)",
+            padding: "8px",
+            borderRadius: "6px",
+            display: "none",
+          }}
+        >
+          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
       </div>
+
+      {/* Mobile navigation overlay */}
+      {mobileOpen && (
+        <nav
+          aria-label="Mobile navigation"
+          role="navigation"
+          style={{
+            position: "fixed",
+            top: "56px",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "var(--color-canvas)",
+            zIndex: 39,
+            padding: "20px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "12px",
+            borderTop: "1px solid var(--color-hairline)",
+          }}
+        >
+          {navLinks.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              onClick={() => setMobileOpen(false)}
+              style={{
+                fontSize: "16px",
+                fontWeight: 500,
+                color: "var(--color-ink)",
+                textDecoration: "none",
+                padding: "10px 0",
+              }}
+            >
+              {item.label}
+            </Link>
+          ))}
+          {user ? (
+            <>
+              <Link
+                href={`/${username}`}
+                onClick={() => setMobileOpen(false)}
+                style={{ fontSize: "16px", fontWeight: 500, color: "var(--color-ink)", textDecoration: "none", padding: "10px 0" }}
+              >
+                My Portfolio
+              </Link>
+              <button
+                type="button"
+                onClick={() => { handleLogout(); setMobileOpen(false); }}
+                style={{
+                  fontSize: "16px",
+                  fontWeight: 500,
+                  color: "var(--color-ink)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: "10px 0",
+                  textAlign: "left",
+                }}
+              >
+                Log out
+              </button>
+            </>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px" }}>
+              <button type="button" onClick={() => { onSignIn?.(); setMobileOpen(false); }} style={{ fontSize: "16px", fontWeight: 500, color: "var(--color-ink)", background: "transparent", border: "1px solid var(--color-hairline-strong)", cursor: "pointer", padding: "12px 16px", borderRadius: "6px" }}>
+                Sign in
+              </button>
+              <button onClick={() => { onGetStarted?.(); setMobileOpen(false); }} style={{ fontSize: "16px", fontWeight: 500, backgroundColor: tokens.primary, color: tokens.ink, padding: "12px 16px", borderRadius: "6px", border: "none", cursor: "pointer" }}>
+                Get started
+              </button>
+            </div>
+          )}
+        </nav>
+      )}
       <style>{`
         @media (min-width: 768px) { .hide-on-mobile { display: flex !important; } .show-on-mobile { display: none !important; } }
         @media (max-width: 767px) { .hide-on-mobile { display: none !important; } .show-on-mobile { display: flex !important; } }

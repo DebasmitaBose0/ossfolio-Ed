@@ -1,38 +1,49 @@
-"use client";
+import { useEffect } from "react";
 
-import { useEffect, useCallback } from "react";
-
-interface UseKeyboardShortcutsOptions {
+interface KeyboardShortcutMap {
   onSlash?: () => void;
   onEscape?: () => void;
+  onKeyD?: () => void;
+  onKeyR?: () => void;
+  onQuestionMark?: () => void;
 }
 
-export function useKeyboardShortcuts({ onSlash, onEscape }: UseKeyboardShortcutsOptions) {
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
+/**
+ * Registers global keyboard shortcuts. All handlers are wrapped in a single
+ * keydown listener so the hook can be used multiple times without duplication.
+ */
+export function useKeyboardShortcuts(handlers: KeyboardShortcutMap) {
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
       const target = e.target as HTMLElement;
-      const isTyping =
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.isContentEditable;
+      const isInput = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT" || target.isContentEditable;
 
-      const isCtrlSlash = (e.ctrlKey || e.metaKey) && e.key === "/";
-      const isBareSlash = e.key === "/" && !e.ctrlKey && !isTyping;
-
-      if (isCtrlSlash || isBareSlash) {
+      if (e.key === "/" && !isInput) {
         e.preventDefault();
-        onSlash?.();
+        handlers.onSlash?.();
       }
 
       if (e.key === "Escape") {
-        onEscape?.();
+        handlers.onEscape?.();
       }
-    },
-    [onSlash, onEscape]
-  );
 
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [handleKeyDown]);
+      if (e.key === "?" && !isInput) {
+        e.preventDefault();
+        handlers.onQuestionMark?.();
+      }
+
+      if ((e.key === "d" || e.key === "D") && !isInput && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        handlers.onKeyD?.();
+      }
+
+      if ((e.key === "r" || e.key === "R") && !isInput && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        handlers.onKeyR?.();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handlers]);
 }

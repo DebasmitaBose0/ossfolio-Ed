@@ -14,7 +14,7 @@ export default function DiscoverPage() {
   return (
     <>
       <Navbar />
-      <main style={{ backgroundColor: "#ffffff", minHeight: "100vh" }}>
+      <main id="main-content" style={{ backgroundColor: "#ffffff", minHeight: "100vh" }}>
         <div style={{ maxWidth: "72rem", margin: "0 auto", padding: "56px 20px" }}>
           <header style={{ marginBottom: "32px" }}>
             <h1
