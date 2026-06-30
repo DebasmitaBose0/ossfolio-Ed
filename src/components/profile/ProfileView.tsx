@@ -195,7 +195,18 @@ export function ProfileView({
   profileId,
   rateLimited,
   mergedPRs,
-}: { user: GitHubUser; repos: GitHubRepo[] } & ProfileExtras & { rateLimited?: boolean }) {
+  customLinks = [],
+  customizationLoaded = false,
+}: {
+  user: GitHubUser;
+  repos: GitHubRepo[];
+} &
+  ProfileExtras &
+  {
+    rateLimited?: boolean;
+    customLinks?: Array<{ label: string; url: string }>;
+    customizationLoaded?: boolean;
+  }) {
   const [copied, setCopied] = useState(false);
   const [repoSort, setRepoSort] = useState<"stars" | "forks" | "updated">("stars");
   const [isDownloading, setIsDownloading] = useState(false);
@@ -947,7 +958,7 @@ export function ProfileView({
               <button
                 key={option}
                 type="button"
-                aria-pressed={repoSort === option}
+                aria-pressed={repoSort === option ? "true" : "false"}
                 onClick={() => setRepoSort(option)}
                 style={{
                   padding: "4px 10px",
