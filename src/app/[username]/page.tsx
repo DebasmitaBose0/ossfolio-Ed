@@ -184,12 +184,14 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   let badges: any[] = [];
   let profileId: string | null = null;
   let profileRow: any = null;
+  let customizationFetchSettled = false;
   try {
     const { data } = await supabase
       .from("profiles")
       .select("id, score, updated_at, badges, headline, pinned_repos, custom_links, visibility")
       .eq("username", username)
       .maybeSingle();
+    customizationFetchSettled = true;
     profileRow = data;
     if (profileRow) {
       profileId = profileRow.id;
@@ -217,6 +219,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       }
     }
   } catch {
+    customizationFetchSettled = true;
     // Soft isolation fallback
   }
 
@@ -259,7 +262,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           rateLimited={rateLimited}
           mergedPRs={mergedPRs}
           customLinks={customization?.customLinks ?? []}
-          customizationLoaded={!!customization}
+          customizationLoaded={customizationFetchSettled}
         />
       </main>
       <Footer />

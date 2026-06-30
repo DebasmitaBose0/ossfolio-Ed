@@ -544,6 +544,7 @@ export function ProfileView({
             {user.location && (
               <span style={{ fontSize: "13px", color: "var(--color-ink-mute)", display: "flex", alignItems: "center", gap: "5px" }}>
                 <svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
                 </svg>
                 {user.location}
@@ -830,6 +831,58 @@ export function ProfileView({
             <span style={{ fontSize: "13px", color: "var(--color-ink-mute)" }}>
               <strong style={{ color: "var(--color-ink)", fontWeight: 600 }}>{user.public_repos}</strong> repos
             </span>
+          </div>
+
+          {/* Custom profile links (from Supabase custom_links) */}
+          <div style={{ marginTop: "18px" }}>
+            <h2 style={{ fontSize: "13px", fontWeight: 600, color: "var(--color-ink-mute)", margin: 0, letterSpacing: "-0.2px" }}>
+              Links
+            </h2>
+
+            {!customizationLoaded ? (
+              isOwner ? (
+                <p style={{ fontSize: "13px", color: "var(--color-ink-mute)", margin: "8px 0 0 0" }}>
+                  Loading your saved links...
+                </p>
+              ) : null
+            ) : customLinks.length > 0 ? (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "10px" }}>
+                {customLinks.map((l) => (
+                  <a
+                    key={`${l.label}-${l.url}`}
+                    href={l.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      fontSize: "13px",
+                      color: "var(--color-ink-mute)",
+                      textDecoration: "none",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "6px 10px",
+                      border: "1px solid var(--color-hairline)",
+                      borderRadius: "9999px",
+                      backgroundColor: "var(--color-canvas-soft)",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-ink)" )}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-ink-mute)" )}
+                    aria-label={`${l.label} (opens in a new tab)`}
+                  >
+                    {l.label}
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M14 3h7v7" />
+                      <path d="M10 14L21 3" />
+                      <path d="M21 14v7H3V3h7" />
+                    </svg>
+                  </a>
+                ))}
+              </div>
+            ) : isOwner ? (
+              <p style={{ fontSize: "13px", color: "var(--color-ink-mute)", margin: "8px 0 0 0" }}>
+                No custom links saved yet.
+              </p>
+            ) : null}
           </div>
 
         </div>
