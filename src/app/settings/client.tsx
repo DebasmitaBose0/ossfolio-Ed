@@ -80,11 +80,19 @@ export function SettingsClient() {
     setSaving(true);
     setSaved(false);
     setSaveError(null);
+
     const payload = {
-      ...settings,
-      pinned_repos: settings.pinned_repos.filter(Boolean),
-      custom_links: settings.custom_links.filter((l) => l.label || l.url),
+      headline: settings.headline.trim(),
+      pinned_repos: settings.pinned_repos
+        .map((r) => r.trim())
+        .filter((r) => r.length > 0),
+      custom_links: settings.custom_links.filter(
+        (l) => l.label.trim() && l.url.trim()
+      ),
+      badges: settings.badges.filter((b) => b.program.trim()),
+      visibility: settings.visibility,
     };
+
     try {
       const resp = await fetch("/api/settings", {
         method: "PUT",
@@ -94,8 +102,12 @@ export function SettingsClient() {
         },
         body: JSON.stringify(payload),
       });
-      if (resp.ok) setSaved(true);
-      else setSaveError("Failed to save. Please try again.");
+      if (resp.ok) {
+        setSaved(true);
+      } else {
+        const body = await resp.json().catch(() => ({}));
+        setSaveError(body.error || "Failed to save. Please try again.");
+      }
     } finally {
       setSaving(false);
     }
