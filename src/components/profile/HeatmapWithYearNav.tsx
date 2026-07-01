@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, memo } from "react";
 import type { HeatmapWeek } from "@/types";
 import { computeStreaks } from "@/lib/mock";
 
@@ -14,7 +14,69 @@ interface HeatmapWithYearNavProps {
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
-export function HeatmapWithYearNav({
+const YearButton = memo(function YearButton({
+  year,
+  selectedYear,
+  loading,
+  onClick,
+}: {
+  year: number;
+  selectedYear: number;
+  loading: boolean;
+  onClick: (year: number) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onClick(year)}
+      disabled={loading}
+      style={{
+        padding: "4px 10px",
+        fontSize: "12px",
+        fontWeight: selectedYear === year ? 600 : 400,
+        color: selectedYear === year ? "#171717" : "var(--color-ink-mute)",
+        backgroundColor: selectedYear === year ? "#3ecf8e" : "var(--color-canvas-soft)",
+        border: selectedYear === year ? "none" : "1px solid var(--color-hairline)",
+        borderRadius: "9999px",
+        cursor: loading ? "wait" : "pointer",
+        transition: "background-color 0.15s, color 0.15s",
+      }}
+    >
+      {year}
+    </button>
+  );
+});
+
+const StreakBadge = memo(function StreakBadge({
+  label,
+  value,
+}: {
+  label: string;
+  value: number;
+}) {
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "baseline",
+        gap: "6px",
+        padding: "6px 12px",
+        border: "1px solid var(--color-hairline)",
+        borderRadius: "9999px",
+        fontSize: "13px",
+        color: "var(--color-ink-mute)",
+        backgroundColor: "var(--color-canvas-soft)",
+      }}
+    >
+      <strong style={{ color: "var(--color-ink)", fontWeight: 600 }}>
+        {value} {value === 1 ? "day" : "days"}
+      </strong>
+      {label}
+    </span>
+  );
+});
+
+function HeatmapWithYearNavInner({
   username,
   initialWeeks,
   initialCurrentStreak,
@@ -68,54 +130,20 @@ export function HeatmapWithYearNav({
         </h2>
         <div style={{ display: "flex", gap: "6px" }}>
           {years.map((year) => (
-            <button
+            <YearButton
               key={year}
-              type="button"
-              onClick={() => fetchYear(year)}
-              disabled={loading}
-              style={{
-                padding: "4px 10px",
-                fontSize: "12px",
-                fontWeight: selectedYear === year ? 600 : 400,
-                color: selectedYear === year ? "#171717" : "var(--color-ink-mute)",
-                backgroundColor: selectedYear === year ? "#3ecf8e" : "var(--color-canvas-soft)",
-                border: selectedYear === year ? "none" : "1px solid var(--color-hairline)",
-                borderRadius: "9999px",
-                cursor: loading ? "wait" : "pointer",
-                transition: "background-color 0.15s, color 0.15s",
-              }}
-            >
-              {year}
-            </button>
+              year={year}
+              selectedYear={selectedYear}
+              loading={loading}
+              onClick={fetchYear}
+            />
           ))}
         </div>
       </div>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", margin: "0 0 12px 0" }}>
-        {[
-          { label: "Current streak", value: currentStreak },
-          { label: "Longest streak", value: longestStreak },
-        ].map(({ label, value }) => (
-          <span
-            key={label}
-            style={{
-              display: "inline-flex",
-              alignItems: "baseline",
-              gap: "6px",
-              padding: "6px 12px",
-              border: "1px solid var(--color-hairline)",
-              borderRadius: "9999px",
-              fontSize: "13px",
-              color: "var(--color-ink-mute)",
-              backgroundColor: "var(--color-canvas-soft)",
-            }}
-          >
-            <strong style={{ color: "var(--color-ink)", fontWeight: 600 }}>
-              {value} {value === 1 ? "day" : "days"}
-            </strong>
-            {label}
-          </span>
-        ))}
+        <StreakBadge label="Current streak" value={currentStreak} />
+        <StreakBadge label="Longest streak" value={longestStreak} />
       </div>
 
       <div
@@ -166,3 +194,5 @@ export function HeatmapWithYearNav({
     </div>
   );
 }
+
+export const HeatmapWithYearNav = memo(HeatmapWithYearNavInner);

@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { sanitizeString, validatePagination, validateSortBy, createApiResponse, createErrorResponse } from "@/lib/api-validation";
 
 export const runtime = "edge";
 
@@ -10,13 +11,13 @@ const VALID_SORT = ["score", "contributions", "followers"] as const;
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
-  const query = (searchParams.get("q") || "").trim().slice(0, 100);
-  const lang = (searchParams.get("lang") || "").trim();
-  const minScore = Math.min(2147483647, Math.max(0, parseInt(searchParams.get("min_score") || "0", 10) || 0));
-  const sortBy = VALID_SORT.includes(searchParams.get("sort") as typeof VALID_SORT[number])
-    ? searchParams.get("sort")!
-    : "score";
-  const page = Math.min(MAX_PAGE, Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1));
+  const query = sanitizeString(searchParams.get("q"), 100);
+  const lang = sanitizeString(searchParams.get("lang"), 50);
+  const rawMinScore = searchParams.get("min_score") || "0";
+  const minScore = Math.min(2147483647, Math.max(0, parseInt(rawMinScore, 10) || 0));
+  const sortBy = validateSortBy(searchParams.get("sort"), VALID_SORT, "score");
+
+  const { page } = validatePagination(searchParams.get("page"), null, MAX_PAGE);
   const offset = (page - 1) * PAGE_SIZE;
 
   try {
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error("[discover] search_profiles RPC error:", error);
-      return NextResponse.json({ error: "Failed to fetch profiles" }, { status: 500 });
+      return createErrorResponse("Failed to fetch profiles", 500);
     }
 
     const results = (data || []) as Array<{
@@ -50,13 +51,13 @@ export async function GET(request: NextRequest) {
     const hasNext = page < MAX_PAGE && results.length > PAGE_SIZE;
     const profiles = results.slice(0, PAGE_SIZE);
 
-    return NextResponse.json({
+    return createApiResponse({
       profiles,
       page,
       hasNext,
       hasPrev: page > 1,
     });
   } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return createErrorResponse("Internal server error", 500);
   }
 }
