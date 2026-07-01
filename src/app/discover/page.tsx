@@ -14,21 +14,21 @@ export default function DiscoverPage() {
   return (
     <>
       <Navbar />
-      <main id="main-content" style={{ backgroundColor: "#ffffff", minHeight: "100vh" }}>
+      <main id="main-content" style={{ backgroundColor: "var(--color-canvas)", minHeight: "100vh" }}>
         <div style={{ maxWidth: "72rem", margin: "0 auto", padding: "56px 20px" }}>
           <header style={{ marginBottom: "32px" }}>
             <h1
               style={{
                 fontSize: "28px",
                 fontWeight: 500,
-                color: "#171717",
+                color: "var(--color-ink)",
                 letterSpacing: "-0.42px",
                 margin: 0,
               }}
             >
               Discover Contributors
             </h1>
-            <p style={{ fontSize: "15px", color: "#707070", margin: "8px 0 0 0" }}>
+            <p style={{ fontSize: "15px", color: "var(--color-ink-mute)", margin: "8px 0 0 0" }}>
               Search profiles by name, username, or language. Filter by score and sort by what matters
               to you.
             </p>
@@ -46,8 +46,8 @@ export default function DiscoverPage() {
 function DiscoverSkeleton() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-      <div style={{ height: "48px", borderRadius: "8px", backgroundColor: "#f5f5f5" }} />
-      <div style={{ height: "40px", borderRadius: "6px", backgroundColor: "#f5f5f5", width: "60%" }} />
+      <div style={{ height: "48px", borderRadius: "8px", backgroundColor: "var(--color-hairline-cool)" }} />
+      <div style={{ height: "40px", borderRadius: "6px", backgroundColor: "var(--color-hairline-cool)", width: "60%" }} />
       <div
         style={{
           display: "grid",
@@ -62,8 +62,8 @@ function DiscoverSkeleton() {
             style={{
               height: "180px",
               borderRadius: "12px",
-              backgroundColor: "#fafafa",
-              border: "1px solid #ededed",
+              backgroundColor: "var(--color-canvas-soft)",
+              border: "1px solid var(--color-hairline)",
             }}
           />
         ))}
