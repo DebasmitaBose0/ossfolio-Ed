@@ -258,6 +258,7 @@ Everyone who has helped build OSSfolio — code, design, docs, ideas, all of it.
 <a href="https://edulinkup.dev/elusoc/profile/PRODHOSH">
   <img src="https://edulinkup.dev/elusoc/images/ticket/overseer.png" width="60" alt="Overseer" />
   <img src="https://edulinkup.dev/elusoc/images/ticket/warden.png" width="60" alt="Warden" />
+  <img src="https://www.edulinkup.dev/elusoc/images/ticket/commander.png" width="60" alt="Commander" />
 </a>
 
 ## License

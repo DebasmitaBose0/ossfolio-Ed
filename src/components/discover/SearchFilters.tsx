@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const SORT_OPTIONS = [
   { value: "score", label: "Score" },
@@ -28,8 +29,9 @@ export function SearchFilters() {
 
   const [query, setQuery] = useState(searchParams.get("q") || "");
   const [minScoreInput, setMinScoreInput] = useState(searchParams.get("min_score") || "");
-  const queryDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const scoreDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debouncedQuery = useDebounce(query, 300);
+  const debouncedMinScore = useDebounce(minScoreInput, 500);
+  const initialRender = useRef(true);
 
   const lang = searchParams.get("lang") || "";
   const sort = searchParams.get("sort") || "score";
@@ -38,48 +40,46 @@ export function SearchFilters() {
   const pushParams = useCallback(
     (overrides: Record<string, string>) => {
       const params = new URLSearchParams();
-      const merged = { q: query, lang, sort, min_score: minScore, ...overrides };
+      const merged = { q: debouncedQuery, lang, sort, min_score: debouncedMinScore, ...overrides };
       Object.entries(merged).forEach(([key, val]) => {
         if (val) params.set(key, val);
       });
       router.replace(`/discover?${params.toString()}`);
     },
-    [query, lang, sort, minScore, router]
+    [debouncedQuery, lang, sort, debouncedMinScore, router]
   );
 
-  const handleQueryChange = (value: string) => {
-    setQuery(value);
-    if (queryDebounceRef.current) clearTimeout(queryDebounceRef.current);
-    queryDebounceRef.current = setTimeout(() => {
-      pushParams({ q: value, page: "" });
-    }, 300);
-  };
+  useEffect(() => {
+    if (initialRender.current) {
+      initialRender.current = false;
+      return;
+    }
+    pushParams({ q: debouncedQuery, page: "" });
+  }, [debouncedQuery, pushParams]);
 
   useEffect(() => {
-    return () => {
-      if (queryDebounceRef.current) clearTimeout(queryDebounceRef.current);
-      if (scoreDebounceRef.current) clearTimeout(scoreDebounceRef.current);
-    };
-  }, []);
+    if (initialRender.current) return;
+    pushParams({ min_score: debouncedMinScore, page: "" });
+  }, [debouncedMinScore, pushParams]);
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
     fontSize: "15px",
     padding: "12px 16px",
-    border: "1px solid #ededed",
+    border: "1px solid var(--color-hairline)",
     borderRadius: "6px",
     outline: "none",
-    backgroundColor: "#fafafa",
-    color: "#171717",
+    backgroundColor: "var(--color-canvas-soft)",
+    color: "var(--color-ink)",
   };
 
   const selectStyle: React.CSSProperties = {
     fontSize: "14px",
     padding: "8px 12px",
-    border: "1px solid #ededed",
+    border: "1px solid var(--color-hairline)",
     borderRadius: "6px",
-    backgroundColor: "#ffffff",
-    color: "#171717",
+    backgroundColor: "var(--color-canvas)",
+    color: "var(--color-ink)",
     cursor: "pointer",
   };
 
@@ -89,7 +89,7 @@ export function SearchFilters() {
         type="text"
         placeholder="Search by username, name, or language..."
         value={query}
-        onChange={(e) => handleQueryChange(e.target.value)}
+        onChange={(e) => setQuery(e.target.value)}
         style={inputStyle}
         aria-label="Search profiles"
       />
@@ -98,7 +98,10 @@ export function SearchFilters() {
         <select
           value={lang}
           onChange={(e) => {
-            pushParams({ lang: e.target.value, page: "" });
+            const params = new URLSearchParams(searchParams.toString());
+            params.set("lang", e.target.value);
+            params.delete("page");
+            router.replace(`/discover?${params.toString()}`);
           }}
           style={selectStyle}
           aria-label="Filter by language"
@@ -114,7 +117,10 @@ export function SearchFilters() {
         <select
           value={sort}
           onChange={(e) => {
-            pushParams({ sort: e.target.value, page: "" });
+            const params = new URLSearchParams(searchParams.toString());
+            params.set("sort", e.target.value);
+            params.delete("page");
+            router.replace(`/discover?${params.toString()}`);
           }}
           style={selectStyle}
           aria-label="Sort by"
@@ -130,13 +136,7 @@ export function SearchFilters() {
           type="number"
           placeholder="Min score"
           value={minScoreInput}
-          onChange={(e) => {
-            setMinScoreInput(e.target.value);
-            if (scoreDebounceRef.current) clearTimeout(scoreDebounceRef.current);
-            scoreDebounceRef.current = setTimeout(() => {
-              pushParams({ min_score: e.target.value, page: "" });
-            }, 500);
-          }}
+          onChange={(e) => setMinScoreInput(e.target.value)}
           min={0}
           style={{ ...selectStyle, width: "100px" }}
           aria-label="Minimum score filter"
@@ -152,7 +152,7 @@ export function SearchFilters() {
             style={{
               fontSize: "13px",
               fontWeight: 500,
-              color: "#707070",
+              color: "var(--color-ink-mute)",
               background: "none",
               border: "none",
               cursor: "pointer",

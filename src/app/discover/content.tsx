@@ -75,9 +75,9 @@ export function DiscoverContent() {
   const pagerStyle: React.CSSProperties = {
     fontSize: "14px",
     fontWeight: 500,
-    color: "#171717",
-    backgroundColor: "#ffffff",
-    border: "1px solid #c7c7c7",
+    color: "var(--color-ink)",
+    backgroundColor: "var(--color-canvas)",
+    border: "1px solid var(--color-hairline-strong)",
     borderRadius: "6px",
     padding: "8px 16px",
     textDecoration: "none",
@@ -85,8 +85,8 @@ export function DiscoverContent() {
 
   const pagerDisabledStyle: React.CSSProperties = {
     ...pagerStyle,
-    color: "#b2b2b2",
-    borderColor: "#ededed",
+    color: "var(--color-ink-faint)",
+    borderColor: "var(--color-hairline)",
     pointerEvents: "none",
   };
 
@@ -115,8 +115,8 @@ export function DiscoverContent() {
               style={{
                 height: "180px",
                 borderRadius: "12px",
-                backgroundColor: "#fafafa",
-                border: "1px solid #ededed",
+                backgroundColor: "var(--color-canvas-soft)",
+                border: "1px solid var(--color-hairline)",
                 animation: "pulse 1.5s ease-in-out infinite",
               }}
             />
@@ -127,30 +127,30 @@ export function DiscoverContent() {
       {error && (
         <div
           style={{
-            border: "1px solid #fca5a5",
+            border: "1px solid rgba(252, 165, 165, 0.5)",
             borderRadius: "12px",
             padding: "24px",
             textAlign: "center",
-            backgroundColor: "#fef2f2",
+            backgroundColor: "rgba(252, 165, 165, 0.1)",
           }}
         >
-          <p style={{ fontSize: "14px", color: "#b91c1c", margin: 0 }}>{error}</p>
+          <p style={{ fontSize: "14px", color: "var(--color-ink)", margin: 0 }}>{error}</p>
         </div>
       )}
 
       {!loading && !error && data && data.profiles.length === 0 && (
         <div
           style={{
-            border: "1px solid #ededed",
+            border: "1px solid var(--color-hairline)",
             borderRadius: "12px",
             padding: "48px 24px",
             textAlign: "center",
           }}
         >
-          <p style={{ fontSize: "15px", fontWeight: 500, color: "#171717", margin: 0 }}>
+          <p style={{ fontSize: "15px", fontWeight: 500, color: "var(--color-ink)", margin: 0 }}>
             No contributors found
           </p>
-          <p style={{ fontSize: "14px", color: "#9a9a9a", margin: "6px 0 0 0" }}>
+          <p style={{ fontSize: "14px", color: "var(--color-ink-mute-2)", margin: "6px 0 0 0" }}>
             Try adjusting your search or filters.
           </p>
         </div>
@@ -184,6 +184,7 @@ export function DiscoverContent() {
 
           {(data.hasPrev || data.hasNext) && (
             <nav
+              aria-label="Pagination"
               style={{
                 marginTop: "24px",
                 display: "flex",
@@ -199,7 +200,7 @@ export function DiscoverContent() {
               ) : (
                 <span style={pagerDisabledStyle}>Previous</span>
               )}
-              <span style={{ fontSize: "13px", color: "#9a9a9a" }}>Page {currentPage}</span>
+              <span style={{ fontSize: "13px", color: "var(--color-ink-mute-2)" }}>Page {currentPage}</span>
               {data.hasNext ? (
                 <Link href={buildPageUrl(currentPage + 1)} style={pagerStyle}>
                   Next
