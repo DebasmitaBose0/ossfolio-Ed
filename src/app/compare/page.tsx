@@ -129,6 +129,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       <>
         <Navbar />
         <main
+          id="main-content"
           style={{
             backgroundColor: "var(--color-canvas)",
             color: "var(--color-ink)",

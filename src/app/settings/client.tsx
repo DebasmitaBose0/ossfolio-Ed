@@ -80,11 +80,19 @@ export function SettingsClient() {
     setSaving(true);
     setSaved(false);
     setSaveError(null);
+
     const payload = {
-      ...settings,
-      pinned_repos: settings.pinned_repos.filter(Boolean),
-      custom_links: settings.custom_links.filter((l) => l.label || l.url),
+      headline: settings.headline.trim(),
+      pinned_repos: settings.pinned_repos
+        .map((r) => r.trim())
+        .filter((r) => r.length > 0),
+      custom_links: settings.custom_links.filter(
+        (l) => l.label.trim() && l.url.trim()
+      ),
+      badges: settings.badges.filter((b) => b.program.trim()),
+      visibility: settings.visibility,
     };
+
     try {
       const resp = await fetch("/api/settings", {
         method: "PUT",
@@ -94,8 +102,12 @@ export function SettingsClient() {
         },
         body: JSON.stringify(payload),
       });
-      if (resp.ok) setSaved(true);
-      else setSaveError("Failed to save. Please try again.");
+      if (resp.ok) {
+        setSaved(true);
+      } else {
+        const body = await resp.json().catch(() => ({}));
+        setSaveError(body.error || "Failed to save. Please try again.");
+      }
     } finally {
       setSaving(false);
     }
@@ -109,20 +121,20 @@ export function SettingsClient() {
   };
 
   if (loading) {
-    return <p style={{ color: "#9a9a9a", fontSize: "14px" }}>Loading...</p>;
+    return <p style={{ color: "var(--color-ink-mute-2)", fontSize: "14px" }}>Loading...</p>;
   }
 
   if (!session) {
     return (
-      <div style={{ border: "1px solid #ededed", borderRadius: "12px", padding: "48px 24px", textAlign: "center" }}>
-        <p style={{ fontSize: "15px", fontWeight: 500, color: "#171717", margin: "0 0 16px 0" }}>
+      <div style={{ border: "1px solid var(--color-hairline)", borderRadius: "12px", padding: "48px 24px", textAlign: "center" }}>
+        <p style={{ fontSize: "15px", fontWeight: 500, color: "var(--color-ink)", margin: "0 0 16px 0" }}>
           Sign in to customize your profile
         </p>
         <button
           onClick={handleLogin}
           style={{
-            fontSize: "14px", fontWeight: 500, color: "#ffffff",
-            backgroundColor: "#171717", border: "none", borderRadius: "6px",
+            fontSize: "14px", fontWeight: 500, color: "var(--color-on-dark)",
+            backgroundColor: "var(--color-ink)", border: "none", borderRadius: "6px",
             padding: "10px 20px", cursor: "pointer",
           }}
         >
@@ -134,15 +146,17 @@ export function SettingsClient() {
 
   const inputStyle: React.CSSProperties = {
     width: "100%", fontSize: "15px", padding: "10px 14px",
-    border: "1px solid #ededed", borderRadius: "6px", backgroundColor: "#fafafa", color: "#171717",
+    border: "1px solid var(--color-hairline)", borderRadius: "6px",
+    backgroundColor: "var(--color-canvas-soft)", color: "var(--color-ink)",
   };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: "14px", fontWeight: 500, color: "#171717", display: "block", marginBottom: "6px",
+    fontSize: "14px", fontWeight: 500, color: "var(--color-ink)", display: "block", marginBottom: "6px",
   };
 
   const sectionStyle: React.CSSProperties = {
-    marginBottom: "32px", paddingBottom: "32px", borderBottom: "1px solid #ededed",
+    marginBottom: "32px", paddingBottom: "32px",
+    borderBottom: "1px solid var(--color-hairline)",
   };
 
   return (
@@ -158,14 +172,14 @@ export function SettingsClient() {
           style={inputStyle}
           aria-label="Custom headline"
         />
-        <p style={{ fontSize: "12px", color: "#9a9a9a", marginTop: "4px" }}>
+        <p style={{ fontSize: "12px", color: "var(--color-ink-mute-2)", marginTop: "4px" }}>
           {settings.headline.length}/160 characters
         </p>
       </div>
 
       <div style={sectionStyle}>
         <label style={labelStyle}>Pinned Repositories (up to 6)</label>
-        <p style={{ fontSize: "13px", color: "#707070", margin: "0 0 8px 0" }}>
+        <p style={{ fontSize: "13px", color: "var(--color-ink-mute)", margin: "0 0 8px 0" }}>
           Enter repo names (e.g. &quot;my-project&quot;) to pin on your profile.
         </p>
         {Array.from({ length: 6 }).map((_, i) => (
@@ -206,9 +220,9 @@ export function SettingsClient() {
                 }}
                 style={{
                   fontSize: "13px", padding: "6px 12px", borderRadius: "6px", cursor: "pointer",
-                  border: isSelected ? "1px solid #24b47e" : "1px solid #ededed",
-                  backgroundColor: isSelected ? "#e6f9f1" : "#ffffff",
-                  color: isSelected ? "#24b47e" : "#707070", fontWeight: 500,
+                  border: isSelected ? "1px solid var(--color-primary-deep)" : "1px solid var(--color-hairline)",
+                  backgroundColor: isSelected ? "rgba(62, 207, 142, 0.1)" : "var(--color-canvas)",
+                  color: isSelected ? "var(--color-primary-deep)" : "var(--color-ink-mute)", fontWeight: 500,
                 }}
                 aria-pressed={isSelected}
               >
@@ -273,7 +287,7 @@ export function SettingsClient() {
         disabled={saving || !loaded}
         style={{
           fontSize: "14px", fontWeight: 500, color: "#ffffff",
-          backgroundColor: "#24b47e", border: "none", borderRadius: "6px",
+          backgroundColor: "var(--color-primary-deep)", border: "none", borderRadius: "6px",
           padding: "12px 24px", cursor: saving ? "wait" : "pointer",
           opacity: saving ? 0.7 : 1,
         }}
@@ -281,7 +295,7 @@ export function SettingsClient() {
         {saving ? "Saving..." : "Save Changes"}
       </button>
       {saved && (
-        <span style={{ fontSize: "13px", color: "#24b47e", marginLeft: "12px" }}>
+        <span style={{ fontSize: "13px", color: "var(--color-primary-deep)", marginLeft: "12px" }}>
           Saved successfully!
         </span>
       )}

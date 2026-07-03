@@ -92,8 +92,8 @@ export function DiscoverContent() {
               style={{
                 height: "180px",
                 borderRadius: "12px",
-                backgroundColor: "#fafafa",
-                border: "1px solid #ededed",
+                backgroundColor: "var(--color-canvas-soft)",
+                border: "1px solid var(--color-hairline)",
                 animation: "pulse 1.5s ease-in-out infinite",
               }}
             />
@@ -104,14 +104,14 @@ export function DiscoverContent() {
       {error && (
         <div
           style={{
-            border: "1px solid #fca5a5",
+            border: "1px solid rgba(252, 165, 165, 0.5)",
             borderRadius: "12px",
             padding: "24px",
             textAlign: "center",
-            backgroundColor: "#fef2f2",
+            backgroundColor: "rgba(252, 165, 165, 0.1)",
           }}
         >
-          <p style={{ fontSize: "14px", color: "#b91c1c", margin: 0 }}>{error}</p>
+          <p style={{ fontSize: "14px", color: "var(--color-ink)", margin: 0 }}>{error}</p>
         </div>
       )}
 

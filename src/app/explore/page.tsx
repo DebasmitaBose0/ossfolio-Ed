@@ -88,7 +88,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   return (
     <>
       <Navbar />
-      <main style={{ backgroundColor: "var(--color-canvas)", color: "var(--color-ink)", minHeight: "100vh", transition: "background-color 0.2s ease, color 0.2s ease" }}>
+      <main id="main-content" style={{ backgroundColor: "var(--color-canvas)", color: "var(--color-ink)", minHeight: "100vh", transition: "background-color 0.2s ease, color 0.2s ease" }}>
         <div style={{ maxWidth: "56rem", margin: "0 auto", padding: "56px 20px" }}>
           {/* Header */}
           <header style={{ marginBottom: "32px" }}>

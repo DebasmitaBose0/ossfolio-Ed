@@ -30,6 +30,28 @@ export function AuthModal({ open, onClose, defaultMode = "signin" }: AuthModalPr
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  useEffect(() => {
+    if (!open) return;
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== "Tab" || !overlayRef.current) return;
+      const focusable = overlayRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener("keydown", handleTab);
+    return () => window.removeEventListener("keydown", handleTab);
+  }, [open]);
+
   if (!open) return null;
 
   const handleGitHubSignIn = async () => {
@@ -53,6 +75,20 @@ export function AuthModal({ open, onClose, defaultMode = "signin" }: AuthModalPr
     setLoading(true);
     setError("");
 
+    // Form inputs client side validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address.");
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long.");
+      setLoading(false);
+      return;
+    }
+
     if (mode === "signin") {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
@@ -62,6 +98,11 @@ export function AuthModal({ open, onClose, defaultMode = "signin" }: AuthModalPr
         onClose();
       }
     } else {
+      if (!name.trim()) {
+        setError("Please enter your full name.");
+        setLoading(false);
+        return;
+      }
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -95,6 +136,9 @@ export function AuthModal({ open, onClose, defaultMode = "signin" }: AuthModalPr
   return (
     <div
       ref={overlayRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label={mode === "signin" ? "Sign in to OSSfolio" : "Create your OSSfolio profile"}
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ backgroundColor: "rgba(0, 0, 0, 0.65)", backdropFilter: "blur(4px)" }}
       onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
@@ -113,6 +157,7 @@ export function AuthModal({ open, onClose, defaultMode = "signin" }: AuthModalPr
         {/* Close */}
         <button
           onClick={onClose}
+          aria-label="Close sign in dialog"
           style={{
             position: "absolute",
             right: "20px",

@@ -46,8 +46,8 @@ export default function DiscoverPage() {
 function DiscoverSkeleton() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-      <div style={{ height: "48px", borderRadius: "8px", backgroundColor: "#f5f5f5" }} />
-      <div style={{ height: "40px", borderRadius: "6px", backgroundColor: "#f5f5f5", width: "60%" }} />
+      <div style={{ height: "48px", borderRadius: "8px", backgroundColor: "var(--color-hairline-cool)" }} />
+      <div style={{ height: "40px", borderRadius: "6px", backgroundColor: "var(--color-hairline-cool)", width: "60%" }} />
       <div
         style={{
           display: "grid",
@@ -62,8 +62,8 @@ function DiscoverSkeleton() {
             style={{
               height: "180px",
               borderRadius: "12px",
-              backgroundColor: "#fafafa",
-              border: "1px solid #ededed",
+              backgroundColor: "var(--color-canvas-soft)",
+              border: "1px solid var(--color-hairline)",
             }}
           />
         ))}
