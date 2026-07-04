@@ -26,7 +26,7 @@ export default function HomePage() {
         onGetStarted={() => openAuth("signup")}
       />
 
-      <main>
+      <main id="main-content">
         <Hero onGetStarted={() => openAuth("signup")} />
         <Features />
         <HowItWorks />

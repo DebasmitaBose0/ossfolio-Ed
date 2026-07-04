@@ -1,0 +1,35 @@
+name: PR Welcome Responder
+
+on:
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  welcome:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Welcome message
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const creator = context.payload.sender.login;
+            const message = `### Welcome to OSSfolio, @${creator}! 🎉
+
+            Thank you for opening this pull request and contributing to the open-source community! 🚀
+
+            To ensure a smooth review process, please make sure you have:
+            - Checked that your changes work locally and compile cleanly.
+            - Followed the guidelines outlined in [CONTRIBUTING.md](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/CONTRIBUTING.md).
+            - Linked your PR to an open issue (e.g. \`Closes #ISSUE_NUMBER\`).
+            
+            We will review your PR as soon as possible. Happy coding! 💻✨`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: message
+            });

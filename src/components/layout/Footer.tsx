@@ -25,6 +25,8 @@ const links: Record<string, { label: string; href: string; badge?: string }[]> =
 export function Footer() {
   return (
     <footer 
+      role="contentinfo"
+      aria-label="Site footer"
       style={{ 
         backgroundColor: "var(--color-canvas)", 
         borderTop: "1px solid var(--color-hairline-cool)",
