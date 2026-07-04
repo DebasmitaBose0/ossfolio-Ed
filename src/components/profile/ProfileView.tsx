@@ -1142,7 +1142,7 @@ export function ProfileView({
               </svg>
             </a>
           </div>
-          </>
+          
         )}
       </div>
 
