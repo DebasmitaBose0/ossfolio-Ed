@@ -253,17 +253,18 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                     >
                       {/* Rank */}
                       <span
-                          style={{
-                            minWidth: "32px",
-                            fontSize: "16px",
-                            fontWeight: 600,
-                            color: isTop ? "var(--color-primary)" : "var(--color-ink-mute)",
-                            textAlign: "center",
-                            flexShrink: 0,
-                          }}
-                        >
-                          {rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : rank}
-                        </span>
+  style={{
+    minWidth: "32px",
+    fontSize: "16px",
+    fontWeight: 600,
+    color: isTop ? "var(--color-primary)" : "var(--color-ink-mute)",
+    textAlign: "center",
+    flexShrink: 0,
+  }}
+  aria-label={`Rank ${rank}`}
+>
+  {rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : rank}
+</span>
 
                       {/* Avatar */}
                       <Image
