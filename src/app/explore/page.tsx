@@ -233,17 +233,18 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                     >
                       {/* Rank */}
                       <span
-                        style={{
-                          minWidth: "32px",
-                          fontSize: "16px",
-                          fontWeight: 600,
-                          color: isTop ? "var(--color-primary)" : "var(--color-ink-mute)",
-                          textAlign: "center",
-                          flexShrink: 0,
-                        }}
-                      >
-                        {rank}
-                      </span>
+  style={{
+    minWidth: "32px",
+    fontSize: "16px",
+    fontWeight: 600,
+    color: isTop ? "var(--color-primary)" : "var(--color-ink-mute)",
+    textAlign: "center",
+    flexShrink: 0,
+  }}
+  aria-label={`Rank ${rank}`}
+>
+  {rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : rank}
+</span>
 
                       {/* Avatar */}
                       <Image
@@ -306,12 +307,8 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                           flexShrink: 0,
                         }}
                       >
-                        <span style={{ fontSize: "18px", fontWeight: 600, color: "var(--color-ink)", lineHeight: 1 }}>
-                          {score}
-                        </span>
-                        <span style={{ fontSize: "11px", color: "var(--color-ink-mute)", marginTop: "3px" }}>
-                          score
-                        </span>
+                        <span style={{ fontSize: "24px", fontWeight: 600, color: "var(--color-primary)", lineHeight: 1 }}>{score}</span>
+                        <span style={{ fontSize: "11px", color: "var(--color-ink-mute)", marginTop: "3px" }}>score</span>
                       </span>
                     </Link>
                   </li>
