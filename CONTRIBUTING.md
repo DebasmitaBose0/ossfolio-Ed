@@ -94,7 +94,7 @@ Following it keeps the UI consistent across contributions. PRs that introduce ne
 Fork the repo on GitHub, then clone your fork:
 
 ```bash
-git clone https://github.com/<your-username>/ossfolio.git
+git clone https://github.com/prodhosh/ossfolio.git
 cd ossfolio
 ```
 
