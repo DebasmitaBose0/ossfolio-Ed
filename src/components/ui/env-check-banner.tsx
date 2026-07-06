@@ -7,7 +7,11 @@ export function EnvCheckBanner() {
   const [configured, setConfigured] = useState(true);
 
   useEffect(() => {
-    setConfigured(isSupabaseConfigured());
+    if (!isSupabaseConfigured()) {
+      setTimeout(() => {
+        setConfigured(false);
+      }, 0);
+    }
   }, []);
 
   if (configured) return null;

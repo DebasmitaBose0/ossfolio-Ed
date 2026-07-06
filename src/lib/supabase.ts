@@ -1,8 +1,8 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { isSupabaseConfigured } from "@/lib/env";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-anon-key";
 
 function warningMissingEnv() {
   if (typeof window !== "undefined" && !isSupabaseConfigured()) {
@@ -14,9 +14,9 @@ function warningMissingEnv() {
   }
 }
 
-let client: ReturnType<typeof createClient> | null = null;
+let client: SupabaseClient | null = null;
 
-export function getSupabase() {
+export function getSupabase(): SupabaseClient {
   if (!client) {
     warningMissingEnv();
     client = createClient(supabaseUrl, supabaseAnonKey);
@@ -26,7 +26,8 @@ export function getSupabase() {
 
 export const supabase = getSupabase();
 
-export function supabaseAdmin() {
+export function supabaseAdmin(): SupabaseClient {
   warningMissingEnv();
-  return createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY ?? "");
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-service-key";
+  return createClient(supabaseUrl, serviceKey);
 }
