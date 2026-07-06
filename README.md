@@ -115,7 +115,7 @@ src/lib/score.ts
 
 ```bash
 # 1. Fork the repo on GitHub, then clone your fork
-git clone https://github.com/<your-username>/ossfolio.git
+git clone https://github.com/prodhosh/ossfolio.git
 cd ossfolio
 
 # 2. Install dependencies
