@@ -19,9 +19,13 @@ import { CompareForm } from "@/components/profile/CompareForm";
 export const runtime = "edge";
 
 export const metadata: Metadata = {
-  title: "Compare Contributors - OSSfolio",
+  title: "Compare Contributors",
   description:
-    "Compare two open-source contributor profiles side by side on OSSfolio.",
+    "Compare two open-source contributor profiles side by side on OSSfolio. See who has more commits, PRs, issues, and the higher contributor score.",
+  openGraph: {
+    title: "Compare Contributors - OSSfolio",
+    description: "Side-by-side comparison of open-source contributor stats.",
+  },
 };
 
 /* -------------------------------------------------------------------------- */

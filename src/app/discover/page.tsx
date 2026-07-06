@@ -5,9 +5,13 @@ import { Footer } from "@/components/layout/Footer";
 import { DiscoverContent } from "./content";
 
 export const metadata: Metadata = {
-  title: "Discover Contributors - OSSfolio",
+  title: "Discover Contributors",
   description:
-    "Search and discover open-source contributors by username, language, or contribution score.",
+    "Search and discover open-source contributors by username, programming language, or contribution score. Find developers making an impact across GitHub.",
+  openGraph: {
+    title: "Discover Contributors - OSSfolio",
+    description: "Find and connect with top open-source contributors on OSSfolio.",
+  },
 };
 
 export default function DiscoverPage() {
