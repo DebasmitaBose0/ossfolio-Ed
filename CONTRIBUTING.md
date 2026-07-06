@@ -288,6 +288,15 @@ Not sure where to start? Open a [Discussion](../../discussions) and ask — we'l
 
 ---
 
+## Additional Resources
+
+Before diving into code, reviewing these documents can save you time:
+
+- [Architecture Overview](docs/architecture-overview.md) — System design, data flow, theming
+- [API Reference](docs/api-reference.md) — All internal API endpoints, params, and errors
+- [DESIGN.md](DESIGN.md) — Visual design tokens, component specs, spacing
+- [Database Schema](supabase/schema.sql) — Tables, policies, and search functions
+
 ## Questions?
 
 If you have any doubts, feel free to reach out. Open a [Discussion](../../discussions) for general questions, or ping once on [LinkedIn](https://www.linkedin.com/in/prodhoshvs/). Please keep it to one message and give some time for a response before following up.
