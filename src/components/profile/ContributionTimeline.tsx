@@ -35,12 +35,13 @@ export function ContributionTimeline({ mergedPRs, badges = [] }: ContributionTim
         month: "short",
         day: "numeric",
         year: "numeric",
+        timeZone: "UTC",
       });
 
       events.push({
         id: `pr-${pr.url}`,
         type: isOldest ? "first_pr" : "pr",
-        title: isOldest ? "🚀 First Merged Pull Request" : "Merged Pull Request",
+        title: isOldest ? "🚀 Earliest Merged Pull Request (recent)" : "Merged Pull Request",
         description: pr.title,
         date: pr.mergedAt,
         displayDate: formattedDate,
