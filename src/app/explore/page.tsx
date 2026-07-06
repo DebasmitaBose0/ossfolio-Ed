@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { supabase } from "@/lib/supabase";
+import { Pagination } from "@/components/ui/pagination";
 
 export const runtime = "edge";
 
@@ -83,27 +84,6 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const { rows, hasNext } = await fetchPage(page, searchQuery, sortBy);
   const hasPrev = page > 1;
   const rankOffset = (page - 1) * PAGE_SIZE;
-
-  const pagerLinkStyle = {
-    fontSize: "14px",
-    fontWeight: 500,
-    color: "#171717",
-    backgroundColor: "#ffffff",
-    border: "1px solid #c7c7c7",
-    borderRadius: "6px",
-    padding: "8px 16px",
-    textDecoration: "none",
-  };
-  const pagerDisabledStyle = {
-    fontSize: "14px",
-    fontWeight: 500,
-    color: "#b2b2b2",
-    backgroundColor: "#ffffff",
-    border: "1px solid #ededed",
-    borderRadius: "6px",
-    padding: "8px 16px",
-  };
-
 
   return (
     <>
@@ -342,37 +322,16 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
 
           {/* Pagination */}
           {(hasPrev || hasNext) && (
-            <nav
-              style={{
-                marginTop: "24px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "12px",
+            <Pagination
+              currentPage={page}
+              hasNext={hasNext}
+              hasPrev={hasPrev}
+              baseUrl="/explore"
+              searchParams={{
+                ...(searchQuery && { q: searchQuery }),
+                ...(sortBy !== "score" && { sortBy }),
               }}
-            >
-              {hasPrev ? (
-                <Link href={`/explore?page=${page - 1}&q=${encodeURIComponent(searchQuery)}&sortBy=${sortBy}`} style={pagerLinkStyle}>
-                  Previous
-                </Link>
-              ) : (
-                <span style={pagerDisabledStyle} aria-disabled="true">
-                  Previous
-                </span>
-              )}
-
-              <span style={{ fontSize: "13px", color: "var(--color-ink-mute)" }}>Page {page}</span>
-
-              {hasNext ? (
-                <Link href={`/explore?page=${page + 1}&q=${encodeURIComponent(searchQuery)}&sortBy=${sortBy}`} style={pagerLinkStyle}>
-                  Next
-                </Link>
-              ) : (
-                <span style={pagerDisabledStyle} aria-disabled="true">
-                  Next
-                </span>
-              )}
-            </nav>
+            />
           )}
         </div>
       </main>
