@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import type { MergedPR } from '@/types';
 import { LatestMergedPRs } from '@/components/profile/LatestMergedPRs';
+import { ContributionTimeline } from '@/components/profile/ContributionTimeline';
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
@@ -963,6 +964,9 @@ export function ProfileView({
           ))}
         </div>
       </div>
+
+      {/* Contribution Timeline */}
+      <ContributionTimeline mergedPRs={mergedPRs} badges={badgesList} />
 
       {/* Tech stack */}
       {techStack.length > 0 && (
