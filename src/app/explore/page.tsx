@@ -9,8 +9,9 @@ import { Pagination } from "@/components/ui/pagination";
 export const runtime = "edge";
 
 export const metadata: Metadata = {
-  title: "Explore - OSSfolio",
-  description: "The OSSfolio leaderboard - top open-source contributors and organizations.",
+  title: "Explore Contributors",
+  description:
+    "Browse the OSSfolio leaderboard of top open-source contributors ranked by contribution score. Search, filter by language, and discover active open-source developers.",
 };
 
 const PAGE_SIZE = 50;

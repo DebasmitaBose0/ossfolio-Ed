@@ -9,6 +9,7 @@ import { HowItWorks } from "@/components/home/HowItWorks";
 import { Testimonials } from "@/components/home/Testimonials";
 import { CTABanner } from "@/components/home/CTABanner";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { EnvCheckBanner } from "@/components/ui/env-check-banner";
 
 export default function HomePage() {
   const [authOpen, setAuthOpen] = useState(false);
@@ -27,6 +28,7 @@ export default function HomePage() {
       />
 
       <main id="main-content">
+        <EnvCheckBanner />
         <Hero onGetStarted={() => openAuth("signup")} />
         <Features />
         <HowItWorks />

@@ -17,6 +17,9 @@ Thank you for taking the time to contribute. OSSfolio is built entirely by contr
   - [4. Environment variables](#4-environment-variables)
   - [5. Run the dev server](#5-run-the-dev-server)
 - [Database — Making Schema Changes](#database--making-schema-changes)
+- [How Key Systems Work](#how-key-systems-work)
+  - [Auth Flow](#auth-flow)
+  - [Score Sync Pipeline](#score-sync-pipeline)
 - [Branch Naming](#branch-naming)
 - [Commit Messages](#commit-messages)
 - [Pull Request Process](#pull-request-process)
@@ -199,6 +202,69 @@ This creates `supabase/migrations/<timestamp>_describe_your_change.sql`. Write y
 Then update `supabase/schema.sql` to reflect the change so dashboard users stay in sync. Both files must be included in your PR.
 
 Reviewers will check the SQL diff before merging.
+
+---
+
+## How Key Systems Work
+
+This section explains how the two most complex systems in the codebase operate: the Supabase authentication flow and the contributor score synchronization pipeline.
+
+### Auth Flow
+
+OSSfolio uses GitHub OAuth integrated with Supabase for user authentication.
+
+#### End-to-End OAuth Lifecycle
+1. **Initiation**: The user clicks "Sign in with GitHub" in the frontend (e.g., [AuthModal.tsx](file:///c:/Users/Rushabh%20Mahajan/Documents/GitHub/ossfolio/src/components/auth/AuthModal.tsx)).
+2. **Supabase Redirection**: Supabase redirects the browser to GitHub's OAuth server.
+3. **GitHub Authentication**: The user authorizes the application, and GitHub redirects back to the configured callback URI: `/auth/callback`.
+4. **Session Resolution**: The client component at [auth/callback/page.tsx](file:///c:/Users/Rushabh%20Mahajan/Documents/GitHub/ossfolio/src/app/auth/callback/page.tsx) handles the login session.
+5. **Score Sync Trigger**: Once the session is successfully resolved, the score sync pipeline is invoked to calculate and cache the user's score.
+6. **Final Redirect**: The user is redirected to their public profile page (`/[username]`) or the home page (`/`) if the username metadata is missing.
+
+#### PKCE Flow & Client Initialization
+- **What is PKCE?**: OSSfolio uses the standard **PKCE (Proof Key for Code Exchange)** OAuth flow (default in Supabase v2). Under PKCE, the authorization code (`?code=...`) in the callback URL is exchanged client-side for an access and refresh token.
+- **Asynchronous Execution**: This code exchange happens asynchronously during the Supabase client library's initialization.
+- **`onAuthStateChange` vs `getSession`**: Because the exchange is asynchronous, calling `supabase.auth.getSession()` immediately upon page load can return `null` before the exchange completes. To prevent race conditions, the callback page subscribes to auth state changes using `supabase.auth.onAuthStateChange`. It listens for `SIGNED_IN` and `INITIAL_SESSION` events to ensure that the session is established and active before executing the score sync.
+- **Safety Net**: A safety timeout (`AUTH_WAIT_TIMEOUT_MS = 10000`) is established to redirect the user back to the home page if the PKCE exchange fails or hangs.
+
+### Score Sync Pipeline
+
+The score sync pipeline calculates the user's contributor score by pulling activity data from GitHub and caching it in the database.
+
+#### Recalculation Timing
+1. **At Login**: Calculated and stored automatically during the post-login OAuth callback phase.
+2. **On-Demand**: Regenerated when a user clicks the profile refresh/sync action (which hits `/api/[username]/refresh` endpoint).
+3. **Timeout Constraint**: During the OAuth callback, the `syncScore` pipeline is raced against a 4-second timeout (`SYNC_TIMEOUT_MS = 4000`) to guarantee that slow API requests do not block the user from accessing their profile.
+
+#### GraphQL vs REST Fallback Path
+When syncing the score, the application checks for the user's GitHub provider token (saved immediately after OAuth login):
+- **GraphQL Path (Authenticated)**: If `providerToken` is available, it queries the GitHub GraphQL API using `fetchContributorProfile`. The GraphQL API exposes the `contributionsCollection` query, which is the only source that returns the user's Pull Request review counts (`totalPullRequestReviewContributions`).
+- **REST Path (Unauthenticated Fallback)**: If the token is missing or if the GraphQL query fails (due to rate limits, expired tokens, or scope issues), the pipeline falls back to `statsFromRest(username)`. This runs three parallel REST Search API requests (`fetchLiveStats(username)`) to retrieve PR, issue, and commit counts. Because code review counts cannot be retrieved from unauthenticated REST or search APIs, the `totalReviews` count defaults to `0` in this fallback path.
+
+#### Database Profile Schema
+The calculated score and activity stats are cached in the `public.profiles` database table. The table columns are:
+- `id` (uuid, primary key): References `auth.users(id)` in Supabase auth system.
+- `username` (text, unique): User's GitHub login handle.
+- `name` (text): Display name.
+- `avatar_url` (text): GitHub avatar image URL.
+- `github_url` (text): Link to the user's GitHub profile.
+- `bio` (text): Self-written bio.
+- `followers` (integer): Number of GitHub followers.
+- `top_languages` (text[]): Array of top programming languages used by the user.
+- `score` (integer): Computed contributor score.
+- `total_commits` (integer): Total commit count.
+- `total_prs` (integer): Total PR count.
+- `total_issues` (integer): Total issue count.
+- `total_reviews` (integer): Total pull request review count (only populated/updated in the GraphQL sync path).
+- `badges` (jsonb): JSON array of claimant badge configurations.
+- `headline` (text): Custom profile headline text.
+- `pinned_repos` (text[]): List of pinned repository names.
+- `custom_links` (jsonb): User's custom profile links.
+- `visibility` (text): Visibility state (`public` or `unlisted`).
+- `search_text` (tsvector): Automatically updated English search vector for full-text profile search.
+- `created_at` / `updated_at` (timestamptz): Creation and modification timestamps.
+- `view_count` (integer): Count of user profile views.
+- `last_refreshed_at` (timestamptz): Time of the last profile sync.
 
 ---
 
