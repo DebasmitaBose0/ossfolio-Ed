@@ -5,9 +5,14 @@ import { Footer } from "@/components/layout/Footer";
 import { ScoreCalculator } from "@/components/home/ScoreCalculator";
 
 export const metadata: Metadata = {
-  title: "How Your Score Is Calculated - OSSfolio",
+  title: "How Your Score Is Calculated",
   description:
-    "A plain-language breakdown of the OSSfolio contributor score: the activities it counts, the points each one is worth, what it measures, and what it does not.",
+    "A plain-language breakdown of the OSSfolio contributor score: the activities it counts, the points each one is worth, what it measures, and what it does not. Use the interactive calculator to estimate your score.",
+  openGraph: {
+    title: "How Your Score Is Calculated - OSSfolio",
+    description:
+      "A plain-language breakdown of the OSSfolio contributor score: the activities it counts, the points each one is worth, what it measures, and what it does not. Use the interactive calculator to estimate your score.",
+  },
 };
 
 // Mirrors the weights in src/lib/score.ts so the page reads from the same source
