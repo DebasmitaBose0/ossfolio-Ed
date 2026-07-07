@@ -39,7 +39,8 @@
       "privacy": "Privacy",
       "terms": "Terms",
       "license": "License (MIT)"
-    }
+    },
+    "ariaLabel": "Site footer"
   },
   "LanguageSwitcher": {
     "label": "Language",

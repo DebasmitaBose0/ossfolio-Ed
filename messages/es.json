@@ -39,11 +39,12 @@
       "privacy": "Privacidad",
       "terms": "Términos",
       "license": "Licencia (MIT)"
-    }
+    },
+    "ariaLabel": "Pie de página"
   },
   "LanguageSwitcher": {
     "label": "Idioma",
-    "english": "English",
+    "english": "Inglés",
     "spanish": "Español"
   }
 }

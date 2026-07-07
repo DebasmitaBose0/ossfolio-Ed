@@ -215,7 +215,7 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <button type="button" onClick={() => onSignIn?.()} style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-ink)", background: "transparent", border: "1px solid var(--color-hairline-strong)", cursor: "pointer", padding: "7px 16px", borderRadius: "6px" }}>{t("signIn")}</button>
-              <button onClick={() => onGetStarted?.()} style={{ fontSize: "14px", fontWeight: 500, backgroundColor: tokens.primary, color: tokens.ink, padding: "7px 16px", borderRadius: "6px", border: "none", cursor: "pointer" }}>{t("getStarted")}</button>
+              <button type="button" onClick={() => onGetStarted?.()} style={{ fontSize: "14px", fontWeight: 500, backgroundColor: tokens.primary, color: tokens.ink, padding: "7px 16px", borderRadius: "6px", border: "none", cursor: "pointer" }}>{t("getStarted")}</button>
             </div>
           )}
         </div>
@@ -308,7 +308,7 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
               <button type="button" onClick={() => { onSignIn?.(); setMobileOpen(false); }} style={{ fontSize: "16px", fontWeight: 500, color: "var(--color-ink)", background: "transparent", border: "1px solid var(--color-hairline-strong)", cursor: "pointer", padding: "12px 16px", borderRadius: "6px" }}>
                 {t("signIn")}
               </button>
-              <button onClick={() => { onGetStarted?.(); setMobileOpen(false); }} style={{ fontSize: "16px", fontWeight: 500, backgroundColor: tokens.primary, color: tokens.ink, padding: "12px 16px", borderRadius: "6px", border: "none", cursor: "pointer" }}>
+              <button type="button" onClick={() => { onGetStarted?.(); setMobileOpen(false); }} style={{ fontSize: "16px", fontWeight: 500, backgroundColor: tokens.primary, color: tokens.ink, padding: "12px 16px", borderRadius: "6px", border: "none", cursor: "pointer" }}>
                 {t("getStarted")}
               </button>
             </div>

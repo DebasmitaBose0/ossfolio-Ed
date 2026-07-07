@@ -28,8 +28,13 @@ export function LanguageSwitcher() {
   function change(next: Locale) {
     if (next === active || isPending) return;
     startTransition(async () => {
-      await setLocale(next);
-      router.refresh();
+      try {
+        await setLocale(next);
+        router.refresh();
+      } catch {
+        // Keep the current locale if the switch fails, rather than letting the
+        // rejected server action bubble to the route error boundary.
+      }
     });
   }
 
