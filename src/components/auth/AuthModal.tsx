@@ -284,8 +284,12 @@ export function AuthModal({ open, onClose, defaultMode = "signin" }: AuthModalPr
                 required
                 autoComplete={mode === "signin" ? "current-password" : "new-password"}
                 style={{ ...inputStyle, paddingRight: "42px" }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-primary)"; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-hairline)"; }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "var(--color-primary)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "var(--color-hairline)";
+                }}
               />
               <button
                 type="button"
