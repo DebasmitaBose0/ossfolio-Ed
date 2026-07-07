@@ -1,0 +1,130 @@
+name: Create GitHub Actions Automation Issues
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-actions-issues:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+
+    steps:
+      - name: Ensure labels exist
+        run: |
+          gh label create "ADVENTURER"  --color "fb8f44" --force --repo "$REPO" || true
+          gh label create "VETERAN"     --color "d73a4a" --force --repo "$REPO" || true
+          gh label create "ELUSOC"      --color "7B2FBE" --force --repo "$REPO" || true
+          gh label create "enhancement" --color "a2eeef" --force --repo "$REPO" || true
+          gh label create "github-actions" --color "000000" --description "CI/CD & Workflows" --force --repo "$REPO" || true
+
+      - name: "Issue 1 - Auto Label"
+        continue-on-error: true
+        run: |
+          cat > /tmp/body.md << 'ENDBODY'
+          ## Problem Statement
+          Currently, maintainers have to manually attach the `ELUSOC` label to every single issue and Pull Request that comes in. This is tedious and easily forgotten.
+
+          ## Proposed Solution
+          Create a new GitHub Action workflow (`.github/workflows/auto-label-elusoc.yml`) that listens to the `issues.opened` and `pull_request.opened` events. It should use `actions/github-script` or the GitHub CLI to automatically append the `ELUSOC` label as soon as the item is created.
+
+          ## Alternatives Considered
+          Manually labeling them, which is not scalable.
+
+          ## Additional Context
+          Refer to GitHub Actions documentation for `actions/github-script`.
+          ENDBODY
+          gh issue create --repo "$REPO" --title "[FEAT] Auto-Label all new issues and PRs with ELUSOC" --label "ADVENTURER,ELUSOC,enhancement,github-actions" --body-file /tmp/body.md
+
+      - name: "Issue 2 - Auto Merge"
+        continue-on-error: true
+        run: |
+          cat > /tmp/body.md << 'ENDBODY'
+          ## Problem Statement
+          When `@PRODHOSH` approves a pull request, they still have to wait for the Vercel deployment/CI checks to finish before they can click merge, which slows down the workflow.
+
+          ## Proposed Solution
+          Enable GitHub's "Auto-merge" feature in the repository settings. Then, create a workflow listening to `pull_request_review.submitted`. If the review state is `approved` and the reviewer is `@PRODHOSH`, the workflow should automatically enable the auto-merge flag for that PR so it merges the exact second CI passes.
+
+          ## Alternatives Considered
+          Using an external bot like Mergify.
+
+          ## Additional Context
+          We want to keep this natively inside GitHub Actions to reduce third-party dependencies.
+          ENDBODY
+          gh issue create --repo "$REPO" --title "[FEAT] Auto-merge PRs immediately upon maintainer approval" --label "VETERAN,ELUSOC,enhancement,github-actions" --body-file /tmp/body.md
+
+      - name: "Issue 3 - Thank You Message"
+        continue-on-error: true
+        run: |
+          cat > /tmp/body.md << 'ENDBODY'
+          ## Problem Statement
+          Contributors take time to report bugs or request features. When an issue is closed, it's nice to give them a warm send-off automatically.
+
+          ## Proposed Solution
+          Create a workflow listening to the `issues.closed` event. If the issue is closed with the reason `completed` (meaning it wasn't closed as `not planned` or spam), the GitHub Action should drop a comment: *"This issue has been successfully resolved! Thank you for your contribution to OSSfolio 🚀."*
+
+          ## Alternatives Considered
+          Typing it out manually every time.
+
+          ## Additional Context
+          Use `actions/github-script` to post the comment.
+          ENDBODY
+          gh issue create --repo "$REPO" --title "[FEAT] Automated Thank You message when an issue is resolved" --label "ADVENTURER,ELUSOC,enhancement,github-actions" --body-file /tmp/body.md
+
+      - name: "Issue 4 - Auto Assign"
+        continue-on-error: true
+        run: |
+          cat > /tmp/body.md << 'ENDBODY'
+          ## Problem Statement
+          Maintainers spend a lot of time manually clicking through the GitHub UI to assign issues to users who want to work on them.
+
+          ## Proposed Solution
+          Create a workflow that triggers on `issue_comment.created`. If a user comments exactly "assign me", the action checks if the issue currently has 0 assignees. If it's empty, it automatically assigns the commenter to the issue and replies with *"Assigned! You can start working on this."*
+
+          ## Alternatives Considered
+          Third-party GitHub Apps.
+
+          ## Additional Context
+          We only want it to trigger if the issue is currently unassigned to prevent stealing issues.
+          ENDBODY
+          gh issue create --repo "$REPO" --title "[FEAT] Auto-Assign issues when a user comments 'assign me'" --label "VETERAN,ELUSOC,enhancement,github-actions" --body-file /tmp/body.md
+
+      - name: "Issue 5 - PR Issue Linking Check"
+        continue-on-error: true
+        run: |
+          cat > /tmp/body.md << 'ENDBODY'
+          ## Problem Statement
+          Contributors often open Pull Requests without linking the issue they are solving, which breaks the tracking flow and makes code review confusing.
+
+          ## Proposed Solution
+          Create a workflow running on `pull_request.opened` and `pull_request.edited`. It should parse the PR description using regex to look for keywords like `Fixes #` or `Closes #`. If it doesn't find one, it fails the status check and leaves a comment: *"Please update your PR description to link the issue you are solving."*
+
+          ## Alternatives Considered
+          Manual review, which is error-prone.
+
+          ## Additional Context
+          This should be a required status check before a PR can be merged.
+          ENDBODY
+          gh issue create --repo "$REPO" --title "[FEAT] Block PRs if they don't link an issue" --label "VETERAN,ELUSOC,enhancement,github-actions" --body-file /tmp/body.md
+
+      - name: "Issue 6 - Stale Issues"
+        continue-on-error: true
+        run: |
+          cat > /tmp/body.md << 'ENDBODY'
+          ## Problem Statement
+          The repository can get cluttered with PRs where the contributor vanished after receiving review feedback.
+
+          ## Proposed Solution
+          Implement the official `actions/stale` workflow. Configure it to run once a day. If a PR has seen zero activity (comments or commits) for 30 days, it adds a `stale` label and comments a warning. If 7 more days pass with no response, it automatically closes the PR.
+
+          ## Alternatives Considered
+          N/A. `actions/stale` is the industry standard.
+
+          ## Additional Context
+          The configuration should go in `.github/workflows/stale.yml`.
+          ENDBODY
+          gh issue create --repo "$REPO" --title "[FEAT] Automatically mark abandoned issues and PRs as Stale" --label "ADVENTURER,ELUSOC,enhancement,github-actions" --body-file /tmp/body.md
