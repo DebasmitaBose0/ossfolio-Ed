@@ -14,7 +14,7 @@ export const runtime = "edge";
 const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, If-None-Match, Cache-Control",
   "Access-Control-Max-Age": "86400",
 };
 
@@ -32,21 +32,33 @@ function withCors(res: NextResponse): NextResponse {
 // shared, per-key limits arrive with the API-key follow-up.
 const RATE_LIMIT_MAX = 60; // requests per window, per IP, per isolate
 const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_KEYS = 10_000; // hard cap on tracked IPs to bound memory
 const rateHits = new Map<string, { count: number; resetAt: number }>();
 
 function getClientIp(request: NextRequest): string {
+  // Prefer the platform-set header (unspoofable on Cloudflare) so a client can't
+  // forge x-forwarded-for to bypass the limiter or inflate key cardinality.
+  const cfIp = request.headers.get("cf-connecting-ip");
+  if (cfIp) return cfIp;
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp) return realIp;
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) return forwarded.split(",")[0].trim();
-  return request.headers.get("cf-connecting-ip") ?? "unknown";
+  return "unknown";
 }
 
 function checkRateLimit(ip: string): { limited: boolean; retryAfter: number } {
   const now = Date.now();
 
-  // Opportunistically drop expired entries so the map can't grow unbounded.
-  if (rateHits.size > 10_000) {
+  // Opportunistically drop expired entries, then enforce a hard cap so a flood
+  // of many unique IPs can't grow the map without bound and OOM the isolate.
+  if (rateHits.size > RATE_LIMIT_MAX_KEYS) {
     for (const [key, value] of rateHits) {
       if (now >= value.resetAt) rateHits.delete(key);
+    }
+    // Still at capacity after pruning: stop tracking new keys rather than grow.
+    if (rateHits.size > RATE_LIMIT_MAX_KEYS && !rateHits.has(ip)) {
+      return { limited: true, retryAfter: Math.ceil(RATE_LIMIT_WINDOW_MS / 1000) };
     }
   }
 
