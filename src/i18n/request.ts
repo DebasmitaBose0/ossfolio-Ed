@@ -11,12 +11,19 @@ export default getRequestConfig(async () => {
 
   let locale = isLocale(requested) ? requested : undefined;
   if (!locale) {
-    const preferred = (await headers())
-      .get("accept-language")
-      ?.split(",")[0]
-      ?.split("-")[0]
-      ?.trim();
-    locale = isLocale(preferred) ? preferred : defaultLocale;
+    // Scan the Accept-Language header in preference order and pick the first
+    // supported locale, rather than only checking the first token.
+    const header = (await headers()).get("accept-language");
+    if (header) {
+      for (const part of header.split(",")) {
+        const tag = part.split(";")[0]?.split("-")[0]?.trim();
+        if (isLocale(tag)) {
+          locale = tag;
+          break;
+        }
+      }
+    }
+    locale = locale ?? defaultLocale;
   }
 
   return {
