@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import { SkipToContent } from "@/components/ui/SkipToContent";
 import "./globals.css";
 import { JsonLd } from "@/components/ui/json-ld";
@@ -66,11 +68,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <Script
           async
@@ -131,8 +136,10 @@ export default function RootLayout({
       </head>
 
       <body className={inter.className}>
-        <SkipToContent />
-        {children}
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <SkipToContent />
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );

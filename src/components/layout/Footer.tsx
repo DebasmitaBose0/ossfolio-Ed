@@ -2,27 +2,40 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
-const links: Record<string, { label: string; href: string; badge?: string }[]> = {
-  Product: [
-    { label: "Features", href: "#features" },
-    { label: "How it works", href: "#how-it-works" },
-    { label: "Leaderboard", href: "/explore", badge: "New" },
-    { label: "How scoring works", href: "/score-explained" },
-  ],
-  Developers: [
-    { label: "GitHub", href: "https://github.com/PRODHOSH/ossfolio" },
-    { label: "Contributing", href: "https://github.com/PRODHOSH/ossfolio/blob/main/CONTRIBUTING.md" },
-    { label: "Issues", href: "https://github.com/PRODHOSH/ossfolio/issues" },
-  ],
-  Legal: [
-    { label: "Privacy", href: "/privacy" },
-    { label: "Terms", href: "/terms" },
-    { label: "License (MIT)", href: "https://github.com/PRODHOSH/ossfolio/blob/main/LICENSE" },
-  ],
-};
+const linkSections = [
+  {
+    key: "product",
+    items: [
+      { key: "features", href: "#features" },
+      { key: "howItWorks", href: "#how-it-works" },
+      { key: "leaderboard", href: "/explore", badge: true },
+      { key: "howScoringWorks", href: "/score-explained" },
+    ],
+  },
+  {
+    key: "developers",
+    items: [
+      { key: "github", href: "https://github.com/PRODHOSH/ossfolio" },
+      { key: "contributing", href: "https://github.com/PRODHOSH/ossfolio/blob/main/CONTRIBUTING.md" },
+      { key: "issues", href: "https://github.com/PRODHOSH/ossfolio/issues" },
+    ],
+  },
+  {
+    key: "legal",
+    items: [
+      { key: "privacy", href: "/privacy" },
+      { key: "terms", href: "/terms" },
+      { key: "license", href: "https://github.com/PRODHOSH/ossfolio/blob/main/LICENSE" },
+    ],
+  },
+] as const;
 
 export function Footer() {
+  const t = useTranslations("Footer");
+  const tSections = useTranslations("Footer.sections");
+  const tLinks = useTranslations("Footer.links");
   return (
     <footer 
       role="contentinfo"
@@ -59,7 +72,7 @@ export function Footer() {
               </span>
             </Link>
             <p style={{ fontSize: "13px", lineHeight: 1.6, color: "var(--color-ink-mute)", maxWidth: "180px", transition: "color 0.2s ease" }}>
-              Your open-source identity, beyond GitHub.
+              {t("tagline")}
             </p>
             <a
               href="https://github.com/PRODHOSH/ossfolio"
@@ -80,21 +93,21 @@ export function Footer() {
               <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
               </svg>
-              Star on GitHub
+              {t("starOnGitHub")}
             </a>
           </div>
 
           {/* Link cols */}
-          {Object.entries(links).map(([section, items]) => (
-            <div key={section} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {linkSections.map((section) => (
+            <div key={section.key} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               <p style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--color-ink)", transition: "color 0.2s ease" }}>
-                {section}
+                {tSections(section.key)}
               </p>
               <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "8px", padding: 0, margin: 0 }}>
-                {items.map(({ label, href, badge }) => (
-                  <li key={label}>
+                {section.items.map((item) => (
+                  <li key={item.key}>
                     <Link
-                      href={href}
+                      href={item.href}
                       style={{
                         fontSize: "13px",
                         color: "var(--color-ink-mute)",
@@ -107,8 +120,8 @@ export function Footer() {
                       onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-ink)")}
                       onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-ink-mute)")}
                     >
-                      {label}
-                      {badge && (
+                      {tLinks(item.key)}
+                      {"badge" in item && item.badge && (
                         <span
                           style={{
                             fontSize: "10px",
@@ -121,7 +134,7 @@ export function Footer() {
                             letterSpacing: "0.02em",
                           }}
                         >
-                          {badge}
+                          {t("new")}
                         </span>
                       )}
                     </Link>
@@ -147,7 +160,7 @@ export function Footer() {
           }}
         >
           <p style={{ fontSize: "12px", color: "var(--color-ink-mute-2)", transition: "color 0.2s ease" }}>
-            © {new Date().getFullYear()} OSSfolio. MIT License.
+            {t("rights", { year: new Date().getFullYear() })}
           </p>
 
           <a
@@ -169,7 +182,7 @@ export function Footer() {
               if (textSpan) textSpan.style.color = "var(--color-ink)";
             }}
           >
-            <span style={{ fontSize: "12px", color: "var(--color-ink-mute-2)", transition: "color 0.2s ease" }}>Built by</span>
+            <span style={{ fontSize: "12px", color: "var(--color-ink-mute-2)", transition: "color 0.2s ease" }}>{t("builtBy")}</span>
             <Image
               src="https://avatars.githubusercontent.com/u/213995806?v=4"
               alt="PRODHOSH V.S"

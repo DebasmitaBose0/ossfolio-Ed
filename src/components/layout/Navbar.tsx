@@ -4,9 +4,11 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu, X, Sun, Moon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { useTheme } from "@/hooks/useTheme";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 // useLayoutEffect runs synchronously before the browser paints (client only);
 // fall back to useEffect on the server to avoid React's SSR warning. This lets
@@ -20,10 +22,10 @@ interface NavbarProps {
 }
 
 const navLinks = [
-  { label: "Features", href: "/#features" },
-  { label: "How it works", href: "/#how-it-works" },
-  { label: "Leaderboard", href: "/explore" },
-];
+  { key: "features", href: "/#features" },
+  { key: "howItWorks", href: "/#how-it-works" },
+  { key: "leaderboard", href: "/explore" },
+] as const;
 
 // System Theme Design Tokens Mapping
 const tokens = {
@@ -82,6 +84,7 @@ function Avatar({ src, name, size }: { src?: string; name?: string; size: number
 }
 
 export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
+  const t = useTranslations("Nav");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -159,7 +162,7 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
           justifyContent: "space-between",
         }}
       >
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }} aria-label="OSSfolio home">
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }} aria-label={t("home")}>
           <Image src="/logo.png" alt="" width={28} height={28} priority style={{ borderRadius: "6px", flexShrink: 0 }} />
           <span style={{ display: "flex", alignItems: "baseline" }}>
             <span style={{ fontSize: "15px", fontWeight: 600, color: "var(--color-ink)", letterSpacing: "-0.3px" }}>OSS</span>
@@ -167,23 +170,24 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
           </span>
         </Link>
 
-        <nav aria-label="Main navigation" style={{ display: "flex", alignItems: "center", gap: "28px" }} className="hide-on-mobile">
+        <nav aria-label={t("mainNav")} style={{ display: "flex", alignItems: "center", gap: "28px" }} className="hide-on-mobile">
           {navLinks.map((item) => (
             <Link
-              key={item.label}
+              key={item.key}
               href={item.href}
               style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-ink-mute)", textDecoration: "none" }}
             >
-              {item.label}
+              {t(item.key)}
             </Link>
           ))}
         </nav>
 
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }} className="hide-on-mobile">
+          <LanguageSwitcher />
           <button
             type="button"
             onClick={toggleTheme}
-            aria-label={!mounted ? "Toggle theme" : isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+            aria-label={!mounted ? t("toggleTheme") : isDarkMode ? t("switchToLight") : t("switchToDark")}
             style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-ink-mute)", display: "flex", alignItems: "center", justifyContent: "center", padding: "6px", borderRadius: "6px" }}
           >
             <Moon size={18} className="nav-theme-moon" />
@@ -198,20 +202,20 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
                 style={{ display: "flex", alignItems: "center", gap: "8px", background: "var(--color-canvas-soft)", border: "1px solid var(--color-hairline-strong)", borderRadius: "9999px", padding: "4px 12px 4px 4px", cursor: "pointer" }}
               >
                 <Avatar src={avatarUrl} name={username} size={28} />
-                <span style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-ink)" }}>{username ?? "Account"}</span>
+                <span style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-ink)" }}>{username ?? t("account")}</span>
               </button>
 
               {menuOpen && (
                 <div role="menu" style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, minWidth: "180px", backgroundColor: "var(--color-canvas-soft)", border: "1px solid var(--color-hairline)", borderRadius: "8px", boxShadow: "0 4px 16px rgba(0, 0, 0, 0.08)", padding: "6px", zIndex: 50 }}>
-                  <Link href={profileHref} role="menuitem" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "8px 10px", fontSize: "14px", fontWeight: 500, color: "var(--color-ink)", textDecoration: "none" }}>My Portfolio</Link>
-                  <button type="button" role="menuitem" onClick={handleLogout} style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 10px", fontSize: "14px", fontWeight: 500, color: "var(--color-ink)", background: "none", border: "none", cursor: "pointer" }}>Log out</button>
+                  <Link href={profileHref} role="menuitem" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "8px 10px", fontSize: "14px", fontWeight: 500, color: "var(--color-ink)", textDecoration: "none" }}>{t("myPortfolio")}</Link>
+                  <button type="button" role="menuitem" onClick={handleLogout} style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 10px", fontSize: "14px", fontWeight: 500, color: "var(--color-ink)", background: "none", border: "none", cursor: "pointer" }}>{t("logOut")}</button>
                 </div>
               )}
             </div>
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <button type="button" onClick={() => onSignIn?.()} style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-ink)", background: "transparent", border: "1px solid var(--color-hairline-strong)", cursor: "pointer", padding: "7px 16px", borderRadius: "6px" }}>Sign in</button>
-              <button onClick={() => onGetStarted?.()} style={{ fontSize: "14px", fontWeight: 500, backgroundColor: tokens.primary, color: tokens.ink, padding: "7px 16px", borderRadius: "6px", border: "none", cursor: "pointer" }}>Get started</button>
+              <button type="button" onClick={() => onSignIn?.()} style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-ink)", background: "transparent", border: "1px solid var(--color-hairline-strong)", cursor: "pointer", padding: "7px 16px", borderRadius: "6px" }}>{t("signIn")}</button>
+              <button onClick={() => onGetStarted?.()} style={{ fontSize: "14px", fontWeight: 500, backgroundColor: tokens.primary, color: tokens.ink, padding: "7px 16px", borderRadius: "6px", border: "none", cursor: "pointer" }}>{t("getStarted")}</button>
             </div>
           )}
         </div>
@@ -221,7 +225,7 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
           type="button"
           className="show-on-mobile"
           onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-label={mobileOpen ? t("closeMenu") : t("openMenu")}
           aria-expanded={mobileOpen}
           style={{
             background: "none",
@@ -240,7 +244,7 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
       {/* Mobile navigation overlay */}
       {mobileOpen && (
         <nav
-          aria-label="Mobile navigation"
+          aria-label={t("mobileNav")}
           role="navigation"
           style={{
             position: "fixed",
@@ -259,7 +263,7 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
         >
           {navLinks.map((item) => (
             <Link
-              key={item.label}
+              key={item.key}
               href={item.href}
               onClick={() => setMobileOpen(false)}
               style={{
@@ -270,7 +274,7 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
                 padding: "10px 0",
               }}
             >
-              {item.label}
+              {t(item.key)}
             </Link>
           ))}
           {user ? (
@@ -280,7 +284,7 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
                 onClick={() => setMobileOpen(false)}
                 style={{ fontSize: "16px", fontWeight: 500, color: "var(--color-ink)", textDecoration: "none", padding: "10px 0" }}
               >
-                My Portfolio
+                {t("myPortfolio")}
               </Link>
               <button
                 type="button"
@@ -296,19 +300,22 @@ export function Navbar({ onSignIn, onGetStarted }: NavbarProps) {
                   textAlign: "left",
                 }}
               >
-                Log out
+                {t("logOut")}
               </button>
             </>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px" }}>
               <button type="button" onClick={() => { onSignIn?.(); setMobileOpen(false); }} style={{ fontSize: "16px", fontWeight: 500, color: "var(--color-ink)", background: "transparent", border: "1px solid var(--color-hairline-strong)", cursor: "pointer", padding: "12px 16px", borderRadius: "6px" }}>
-                Sign in
+                {t("signIn")}
               </button>
               <button onClick={() => { onGetStarted?.(); setMobileOpen(false); }} style={{ fontSize: "16px", fontWeight: 500, backgroundColor: tokens.primary, color: tokens.ink, padding: "12px 16px", borderRadius: "6px", border: "none", cursor: "pointer" }}>
-                Get started
+                {t("getStarted")}
               </button>
             </div>
           )}
+          <div style={{ marginTop: "8px", paddingTop: "12px", borderTop: "1px solid var(--color-hairline)" }}>
+            <LanguageSwitcher />
+          </div>
         </nav>
       )}
       <style>{`
