@@ -37,12 +37,17 @@ export async function refreshProfile(username: string): Promise<RefreshResult> {
   // PGRST116 = no row matched the update (either the profile doesn't exist, or
   // it exists but is still within the rate-limit window).
   if (error && error.code === "PGRST116") {
-    const { data: exists } = await supabase
+    const { data: exists, error: existsError } = await supabase
       .from("profiles")
       .select("username, last_refreshed_at")
       .eq("username", username)
       .single();
 
+    // A PGRST116 here means the row genuinely doesn't exist; any other error is
+    // an operational failure and must not be reported as "not found".
+    if (existsError && existsError.code !== "PGRST116") {
+      return { status: "error" };
+    }
     if (!exists) {
       return { status: "not_found" };
     }
