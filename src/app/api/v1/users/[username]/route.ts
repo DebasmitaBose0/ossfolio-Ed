@@ -6,8 +6,10 @@ export const runtime = "edge";
 
 // Public, cross-origin REST endpoint for third-party consumers of a profile's
 // aggregated score/stats. Reads are open because profiles are already publicly
-// viewable; responses are cached at the edge to absorb load. API-key generation
-// and per-key rate limiting are a planned follow-up (see the PR description).
+// viewable; responses are cached at the edge to absorb load. A coarse per-IP
+// rate limit (below) guards the read path so cache misses can't drive unbounded
+// Supabase reads; globally-shared per-key limiting comes with the API-key
+// follow-up (see the PR description).
 
 const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -21,6 +23,44 @@ function withCors(res: NextResponse): NextResponse {
     res.headers.set(key, value);
   }
   return res;
+}
+
+// Coarse, best-effort per-IP rate limit for the public read path. This lives in
+// the edge isolate's memory (not a globally-shared store), so it's a first line
+// against naive floods and high-cardinality scraping that would otherwise hit
+// Supabase on every cache miss — not a hard global guarantee. Proper globally-
+// shared, per-key limits arrive with the API-key follow-up.
+const RATE_LIMIT_MAX = 60; // requests per window, per IP, per isolate
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const rateHits = new Map<string, { count: number; resetAt: number }>();
+
+function getClientIp(request: NextRequest): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0].trim();
+  return request.headers.get("cf-connecting-ip") ?? "unknown";
+}
+
+function checkRateLimit(ip: string): { limited: boolean; retryAfter: number } {
+  const now = Date.now();
+
+  // Opportunistically drop expired entries so the map can't grow unbounded.
+  if (rateHits.size > 10_000) {
+    for (const [key, value] of rateHits) {
+      if (now >= value.resetAt) rateHits.delete(key);
+    }
+  }
+
+  const entry = rateHits.get(ip);
+  if (!entry || now >= entry.resetAt) {
+    rateHits.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { limited: false, retryAfter: 0 };
+  }
+
+  entry.count += 1;
+  if (entry.count > RATE_LIMIT_MAX) {
+    return { limited: true, retryAfter: Math.ceil((entry.resetAt - now) / 1000) };
+  }
+  return { limited: false, retryAfter: 0 };
 }
 
 // Columns exposed publicly. Internal fields (id, visibility, view_count,
@@ -38,6 +78,17 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ username: string }> }
 ) {
+  const { limited, retryAfter } = checkRateLimit(getClientIp(request));
+  if (limited) {
+    const res = withCors(
+      createErrorResponse("Rate limit exceeded. Please slow down.", 429, {
+        retryAfterSeconds: retryAfter,
+      })
+    );
+    res.headers.set("Retry-After", String(retryAfter));
+    return res;
+  }
+
   const { username: rawUsername } = await params;
   const username = sanitizeUsername(rawUsername);
 
