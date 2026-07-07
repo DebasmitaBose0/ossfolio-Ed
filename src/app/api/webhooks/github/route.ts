@@ -84,8 +84,10 @@ export async function POST(request: NextRequest) {
   after(async () => {
     try {
       await refreshProfile(username);
-    } catch {
-      // Best-effort: GitHub already received its 2xx.
+    } catch (err) {
+      // Best-effort: GitHub already received its 2xx. Log so failed
+      // webhook-triggered refreshes are visible in production.
+      console.error("GitHub webhook: background refresh failed", { username, err });
     }
   });
 
