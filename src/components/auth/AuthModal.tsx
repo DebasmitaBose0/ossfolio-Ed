@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X,Eye,EyeOff } from "lucide-react";
+import { X, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 interface AuthModalProps {
@@ -14,11 +14,11 @@ export function AuthModal({ open, onClose, defaultMode = "signin" }: AuthModalPr
   const [mode, setMode] = useState<"signin" | "signup">(defaultMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const overlayRef = useRef<HTMLDivElement>(null);
-const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -58,15 +58,15 @@ const [showPassword, setShowPassword] = useState(false);
   const handleGitHubSignIn = async () => {
     setLoading(true);
     setError("");
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
         scopes: "read:user user:email public_repo read:org",
       },
     });
-    if (error) {
-      setError(error.message);
+    if (oauthError) {
+      setError(oauthError.message);
       setLoading(false);
     }
   };
@@ -76,7 +76,6 @@ const [showPassword, setShowPassword] = useState(false);
     setLoading(true);
     setError("");
 
-    // Form inputs client side validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setError("Please enter a valid email address.");
@@ -91,9 +90,9 @@ const [showPassword, setShowPassword] = useState(false);
     }
 
     if (mode === "signin") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        setError(error.message);
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) {
+        setError(signInError.message);
         setLoading(false);
       } else {
         onClose();
@@ -104,13 +103,13 @@ const [showPassword, setShowPassword] = useState(false);
         setLoading(false);
         return;
       }
-      const { error } = await supabase.auth.signUp({
+      const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { full_name: name } },
       });
-      if (error) {
-        setError(error.message);
+      if (signUpError) {
+        setError(signUpError.message);
         setLoading(false);
       } else {
         setError("Check your email to confirm your account.");
@@ -155,7 +154,6 @@ const [showPassword, setShowPassword] = useState(false);
           transition: "background-color 0.2s ease, border-color 0.2s ease",
         }}
       >
-        {/* Close */}
         <button
           onClick={onClose}
           aria-label="Close sign in dialog"
@@ -179,7 +177,6 @@ const [showPassword, setShowPassword] = useState(false);
           <X size={18} />
         </button>
 
-        {/* Header */}
         <div style={{ marginBottom: "28px" }}>
           <h2 style={{ fontSize: "20px", fontWeight: 600, color: "var(--color-ink)", letterSpacing: "-0.3px", margin: 0, transition: "color 0.2s ease" }}>
             {mode === "signin" ? "Welcome back" : "Create your profile"}
@@ -191,7 +188,6 @@ const [showPassword, setShowPassword] = useState(false);
           </p>
         </div>
 
-        {/* GitHub OAuth */}
         <button
           onClick={handleGitHubSignIn}
           disabled={loading}
@@ -216,20 +212,17 @@ const [showPassword, setShowPassword] = useState(false);
           onMouseLeave={(e) => { if (!loading) e.currentTarget.style.backgroundColor = "var(--color-canvas)"; }}
         >
           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-  <path fillRule="evenodd" clipRule="evenodd" d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
-</svg>
-
+            <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+          </svg>
           {loading ? "Redirecting…" : "Continue with GitHub"}
         </button>
 
-        {/* Divider */}
         <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "24px 0" }}>
           <div style={{ flex: 1, height: "1px", backgroundColor: "var(--color-hairline-cool)" }} />
           <span style={{ fontSize: "12px", color: "var(--color-ink-mute-2)" }}>or</span>
           <div style={{ flex: 1, height: "1px", backgroundColor: "var(--color-hairline-cool)" }} />
         </div>
 
-        {/* Error / info message */}
         {error && (
           <p style={{
             marginBottom: "16px",
@@ -244,11 +237,10 @@ const [showPassword, setShowPassword] = useState(false);
           </p>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           {mode === "signup" && (
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <label style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-ink)", transition: "color 0.2s ease" }}>Full name</label>
+              <label style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-ink)" }}>Full name</label>
               <input
                 type="text"
                 placeholder="Your name"
@@ -262,7 +254,7 @@ const [showPassword, setShowPassword] = useState(false);
           )}
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <label style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-ink)", transition: "color 0.2s ease" }}>Email</label>
+            <label style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-ink)" }}>Email</label>
             <input
               type="email"
               placeholder="you@example.com"
@@ -276,46 +268,47 @@ const [showPassword, setShowPassword] = useState(false);
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-  <label style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-ink)", transition: "color 0.2s ease" }}>Password</label>
-  
-  {/* Relative wrapper context forces children layers to calculate positions relative to this box */}
-  <div style={{ position: "relative", width: "100%", display: "flex", alignItems: "center" }}>
-    <input
-      type={showPassword ? "text" : "password"}
-      placeholder="••••••••"
-      value={password}
-      onChange={(e) => setPassword(e.target.value)}
-      required
-      
-      style={{ ...inputStyle, paddingRight: "40px" }} 
-      onFocus={(e) => (e.currentTarget.style.borderColor = "var(--color-primary)")}
-      onBlur={(e) => (e.currentTarget.style.borderColor = "var(--color-hairline)")}
-    />
-    
-    {/* Absolute button layer overlays directly on top of the input canvas */}
-    <button
-      type="button"
-      onClick={() => setShowPassword(!showPassword)}
-      style={{
-        position: "absolute",
-        right: "12px", // Pushes the eye inside the right border line
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        color: "var(--color-ink-mute-2)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "4px",
-        height: "100%", // Matches the height context to stay perfectly centered vertically
-      }}
-      aria-label={showPassword ? "Hide password" : "Show password"}
-    >
-      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-    </button>
-  </div>
-</div>
-
+            <label 
+              htmlFor="auth-password" 
+              style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-ink)" }}
+            >
+              Password
+            </label>
+            <div style={{ position: "relative", width: "100%" }}>
+              <input
+                id="auth-password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                style={{ ...inputStyle, paddingRight: "42px" }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-primary)"; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-hairline)"; }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                style={{
+                  position: "absolute",
+                  right: "12px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "var(--color-ink-mute-2)",
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "4px",
+                }}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
 
           <button
             type="submit"
@@ -341,12 +334,11 @@ const [showPassword, setShowPassword] = useState(false);
           </button>
         </form>
 
-        {/* Toggle */}
-        <p style={{ marginTop: "24px", textAlign: "center", fontSize: "13px", color: "var(--color-ink-mute)", transition: "color 0.2s ease" }}>
+        <p style={{ marginTop: "24px", textAlign: "center", fontSize: "13px", color: "var(--color-ink-mute)" }}>
           {mode === "signin" ? "Don't have an account?" : "Already have an account?"}{" "}
           <button
             onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(""); }}
-            style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-ink)", background: "none", border: "none", cursor: "pointer", textDecoration: "underline", transition: "color 0.2s ease" }}
+            style={{ fontSize: "13px", fontWeight: 500, color: "var(--color-ink)", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}
             onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-primary)")}
             onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-ink)")}
           >
