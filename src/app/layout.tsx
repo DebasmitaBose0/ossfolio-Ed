@@ -6,6 +6,7 @@ import { getLocale, getMessages } from "next-intl/server";
 import { SkipToContent } from "@/components/ui/SkipToContent";
 import "./globals.css";
 import { JsonLd } from "@/components/ui/json-ld";
+import { ThemeProvider } from "@/context/ThemeContext";
 
 
 const inter = Inter({
@@ -137,8 +138,10 @@ export default async function RootLayout({
 
       <body className={inter.className}>
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <SkipToContent />
-          {children}
+          <ThemeProvider>
+            <SkipToContent />
+            {children}
+          </ThemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>

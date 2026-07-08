@@ -22,6 +22,7 @@ export default function HomePage() {
 
   return (
     <>
+      {/* HomePage mounts inside layout's ThemeProvider context */}
       <Navbar
         onSignIn={() => openAuth("signin")}
         onGetStarted={() => openAuth("signup")}
