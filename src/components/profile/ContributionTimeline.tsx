@@ -72,22 +72,17 @@ export function ContributionTimeline({ mergedPRs, badges = [] }: ContributionTim
   });
 
   // Sort events chronologically descending (newest first)
-  const sortedEvents = useMemo(
-    () =>
-      events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+  const sortedEvents = useMemo(() => {
+    // Mutate-free sort to avoid surprising updates across renders
+    return [...events].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [mergedPRs, badges]
-  );
-
-  // If no milestones exist, do not render the section
-  if (sortedEvents.length === 0) {
-    return null;
-  }
+  }, [mergedPRs, badges]);
 
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const visibleEvents = useMemo(() => sortedEvents.slice(0, visibleCount), [sortedEvents, visibleCount]);
   const hasMore = visibleCount < sortedEvents.length;
+
 
   return (
     <section style={{ marginTop: "44px" }}>
@@ -273,6 +268,7 @@ export function ContributionTimeline({ mergedPRs, badges = [] }: ContributionTim
 
       {hasMore && (
         <div style={{ marginTop: "20px", paddingLeft: "8px" }}>
+
           <button
             type="button"
             onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
@@ -299,7 +295,9 @@ export function ContributionTimeline({ mergedPRs, badges = [] }: ContributionTim
           </button>
         </div>
       )}
+      {sortedEvents.length === 0 ? null : null}
     </section>
   );
 }
+
 
