@@ -348,7 +348,7 @@ function FilterTab({ label, isActive, onClick, dotColor }: FilterTabProps) {
   return (
     <button
       type="button"
-      aria-pressed={isActive ? "true" : "false"}
+      aria-pressed={isActive}
       onClick={onClick}
       style={{
         display: "inline-flex",
