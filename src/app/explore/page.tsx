@@ -120,10 +120,13 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
           {/* Toggle Tabs */}
           <div style={{ display: "flex", gap: "24px", borderBottom: "1px solid var(--color-hairline)", marginBottom: "24px" }}>
             {["users", "organizations"].map((tab) => (
-              <Link
-                key={tab}
-                href={`/explore?type=${tab}&q=${searchQuery}&sortBy=${sortBy}`}
-                style={{
+  <Link
+    key={tab}
+    href={{
+      pathname: "/explore",
+      query: { type: tab, q: searchQuery, sortBy }
+    }}
+    style={{
                   paddingBottom: "12px",
                   fontSize: "14px",
                   fontWeight: type === tab ? 600 : 500,
@@ -165,15 +168,21 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                 const rowData = row as any;
                 const name = isOrg ? rowData.name : (rowData.name || rowData.username);
                 const sub = isOrg ? `@${rowData.slug}` : `@${rowData.username}`;
-                const avatar = rowData.avatar_url || `https://github.com/${isOrg ? rowData.slug : rowData.username}.png`;
+               // Replace line 171 with this:
+const avatar = rowData.avatar_url || `https://github.com/${isOrg ? encodeURIComponent(rowData.slug) : encodeURIComponent(rowData.username)}.png`;
                 const score = typeof rowData.score === "number" ? rowData.score : 0;
                 const isTop = rank <= 3;
 
                 return (
                   <li key={isOrg ? rowData.slug : rowData.username}>
-                    <Link href={`/${isOrg ? rowData.slug : rowData.username}`} style={{ display: "flex", alignItems: "center", gap: "16px", padding: "14px 18px", border: "1px solid var(--color-hairline)", borderRadius: "12px", textDecoration: "none", background: "var(--color-canvas-soft)" }}>
+                    <Link 
+  href={{
+    pathname: isOrg ? `/org/${encodeURIComponent(rowData.slug)}` : `/${encodeURIComponent(rowData.username)}`
+  }} 
+  style={{ display: "flex", alignItems: "center", gap: "16px", padding: "14px 18px", border: "1px solid var(--color-hairline)", borderRadius: "12px", textDecoration: "none", background: "var(--color-canvas-soft)" }}
+>
                       {/* Rank Indicator */}
-                      <span style={{ minWidth: "32px", fontSize: "16px", fontWeight: 600, color: isTop ? "var(--color-primary)" : "var(--color-ink-mute)", textAlign: "center", flexShrink: 0 }}>
+                      <span aria-label={`Rank ${rank}`} style={{ minWidth: "32px", fontSize: "16px", fontWeight: 600, color: isTop ? "var(--color-primary)" : "var(--color-ink-mute)", textAlign: "center", flexShrink: 0 }}>
                         {rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : rank}
                       </span>
 
