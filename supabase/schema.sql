@@ -91,6 +91,15 @@ create index if not exists idx_profiles_top_languages
 create index if not exists idx_profiles_score_desc
   on public.profiles (score desc nulls last);
 
+create index if not exists idx_profiles_score_username
+  on public.profiles(score desc, username asc);
+
+create index if not exists idx_organizations_login
+  on public.organizations(login);
+
+create index if not exists idx_profiles_updated_at
+  on public.profiles(updated_at desc);
+
 -- ============================================================
 -- SEARCH FUNCTION
 -- Full-text search with language filter, score threshold, and sorting.
