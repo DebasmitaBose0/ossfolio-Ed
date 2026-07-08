@@ -35,7 +35,11 @@ export function CompareForm({ defaultA = "", defaultB = "" }: CompareFormProps) 
   }
 
   return (
-    <div
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSubmit();
+      }}
       style={{
         display: "flex",
         flexWrap: "wrap",
@@ -52,7 +56,6 @@ export function CompareForm({ defaultA = "", defaultB = "" }: CompareFormProps) 
         style={inputStyle}
         onFocus={(e) => (e.currentTarget.style.borderColor = "var(--color-primary)")}
         onBlur={(e) => (e.currentTarget.style.borderColor = "var(--color-hairline)")}
-        onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
       />
       <span
         style={{
@@ -72,11 +75,9 @@ export function CompareForm({ defaultA = "", defaultB = "" }: CompareFormProps) 
         style={inputStyle}
         onFocus={(e) => (e.currentTarget.style.borderColor = "var(--color-primary)")}
         onBlur={(e) => (e.currentTarget.style.borderColor = "var(--color-hairline)")}
-        onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
       />
       <button
-        type="button"
-        onClick={handleSubmit}
+        type="submit"
         style={{
           fontSize: "14px",
           fontWeight: 500,
@@ -98,6 +99,6 @@ export function CompareForm({ defaultA = "", defaultB = "" }: CompareFormProps) 
       >
         Compare
       </button>
-    </div>
+    </form>
   );
 }

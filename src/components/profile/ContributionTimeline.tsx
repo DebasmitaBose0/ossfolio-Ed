@@ -211,8 +211,22 @@ export function ContributionTimeline({ mergedPRs, badges = [] }: ContributionTim
                       alignItems: "center",
                       gap: "4px",
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.textDecoration = "underline")}
-                    onMouseLeave={(e) => (e.currentTarget.style.textDecoration = "none")}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.textDecoration = "underline";
+                      e.currentTarget.style.color = "var(--color-primary)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.textDecoration = "none";
+                      e.currentTarget.style.color = "var(--color-ink)";
+                    }}
+                    onFocus={(e) => {
+                      e.currentTarget.style.textDecoration = "underline";
+                      e.currentTarget.style.color = "var(--color-primary)";
+                    }}
+                    onBlur={(e) => {
+                      e.currentTarget.style.textDecoration = "none";
+                      e.currentTarget.style.color = "var(--color-ink)";
+                    }}
                   >
                     {event.description}
                     <svg

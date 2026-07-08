@@ -237,7 +237,8 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   return (
     <>
       <Navbar />
-      {/* 💡 Fixed: Linked layout to design tokens and added transition curves */}
+        {/* 💡 Fixed: Linked layout to design tokens and added transition curves */}
+        {/* ProfileActions component within ProfileView handles GitHub profile sync/refresh state */}
       <main 
         style={{ 
           backgroundColor: "var(--color-canvas)", 

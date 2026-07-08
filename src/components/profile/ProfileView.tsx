@@ -13,7 +13,8 @@ import type { ContributorStats, Org, TechEntry, HeatmapWeek, BadgeItem } from "@
 import { toPng } from "html-to-image";
 import { supabase } from "@/lib/supabase";
 import { LANG_COLORS } from "@/lib/languages";
-import { ProfileShareButtons } from "@/components/profile/ProfileShareButtons";
+import { ProfileActions } from "@/components/profile/ProfileActions";
+import { OrganizationSection } from "@/components/profile/OrganizationSection";
 import { ProfileReposSection } from "@/components/profile/ProfileReposSection";
 import { ProfileBadgeModal } from "@/components/profile/ProfileBadgeModal";
 
@@ -384,6 +385,44 @@ export function ProfileView({
   useKeyboardShortcuts({ onSlash: focusSearch });
 
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const router = useRouter();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState(updatedAt);
+  const [relativeTime, setRelativeTime] = useState("...");
+
+  useEffect(() => {
+    const compute = () => {
+      if (!lastRefresh) return "Unknown";
+      const diff = Date.now() - new Date(lastRefresh).getTime();
+      const minutes = Math.floor(diff / 60000);
+      if (minutes < 1) return "Just now";
+      if (minutes < 60) return `${minutes}m ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      return `${days}d ago`;
+    };
+    setRelativeTime(compute());
+    const interval = setInterval(() => setRelativeTime(compute()), 60000);
+    return () => clearInterval(interval);
+  }, [lastRefresh]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await fetch(`/api/${user.login}/refresh`, { method: "POST" });
+      if (res.ok) {
+        const data = await res.json();
+        setLastRefresh(data.refreshedAt);
+        router.refresh();
+      } else {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload.error || "Refresh failed");
+      }
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const sanitizeBadges = (raw: any[]): BadgeItem[] => {
     if (!Array.isArray(raw)) return [];
@@ -509,7 +548,9 @@ export function ProfileView({
             </p>
           )}
 
-          <ProfileFreshness username={user.login} updatedAt={updatedAt ?? undefined} />
+          <div style={{ fontSize: "12px", color: "var(--color-ink-mute)", marginTop: "8px" }}>
+            Updated {relativeTime}
+          </div>
 
           {(() => {
             let tierName = "Bronze Contributor";
@@ -595,7 +636,12 @@ export function ProfileView({
           </div>
 
           <div style={{ marginTop: "14px" }}>
-            <ProfileShareButtons username={user.login} score={score} />
+            <ProfileActions
+              username={user.login}
+              score={score}
+              isRefreshing={isRefreshing}
+              onRefresh={handleRefresh}
+            />
           </div>
 
           <div style={{ marginTop: "14px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -1162,28 +1208,7 @@ export function ProfileView({
       )}
 
       {/* Organizations */}
-      {orgs.length > 0 && (
-        <div style={{ marginTop: "44px" }}>
-          <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--color-ink)", margin: "0 0 16px 0", letterSpacing: "-0.2px" }}>
-            Organizations
-          </h2>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
-            {orgs.map((org) => (
-              <a
-                key={org.login}
-                href={org.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                title={org.name ?? org.login}
-                aria-label={`Organization ${org.name ?? org.login} (opens in a new tab)`}
-                style={{ display: "inline-flex", borderRadius: "8px", overflow: "hidden", border: "1px solid var(--color-hairline)", transition: "border-color 0.15s" }}
-              >
-                <Image src={org.avatarUrl} alt={org.login} width={36} height={36} style={{ display: "block" }} />
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
+      <OrganizationSection orgs={orgs} />
 
       {/* Contribution heatmap with year navigation */}
       <HeatmapWithYearNav
