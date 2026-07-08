@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { SearchFilters } from "@/components/discover/SearchFilters";
 import { ProfileCard } from "@/components/discover/ProfileCard";
-import { Pagination } from "@/components/ui/pagination";
+import { DiscoverPagination } from "@/components/discover/DiscoverPagination";
 
 interface DiscoverProfile {
   username: string;
@@ -160,7 +160,7 @@ export function DiscoverContent() {
           </div>
 
           {(data.hasPrev || data.hasNext) && (
-            <Pagination
+            <DiscoverPagination
               currentPage={currentPage}
               hasNext={data.hasNext}
               hasPrev={data.hasPrev}
