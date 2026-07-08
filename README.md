@@ -237,6 +237,9 @@ Everyone who has helped build OSSfolio — code, design, docs, ideas, all of it.
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/saumyabaranwal"><img src="https://avatars.githubusercontent.com/u/157876101?v=4?s=100" width="100px;" alt="Saumya Baranwal"/><br /><sub><b>Saumya Baranwal</b></sub></a><br /><a href="https://github.com/PRODHOSH/ossfolio/commits?author=saumyabaranwal" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/AMillionDriver"><img src="https://avatars.githubusercontent.com/u/157272282?v=4?s=100" width="100px;" alt="Nanang Nurmansah"/><br /><sub><b>Nanang Nurmansah</b></sub></a><br /><a href="https://github.com/PRODHOSH/ossfolio/commits?author=AMillionDriver" title="Code">💻</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/L337tooka"><img src="https://avatars.githubusercontent.com/u/170666324?v=4?s=100" width="100px;" alt="L337tooka"/><br /><sub><b>L337tooka</b></sub></a><br /><a href="https://github.com/PRODHOSH/ossfolio/commits?author=L337tooka" title="Code">💻</a></td>
+    </tr>
   </tbody>
 </table>
 
