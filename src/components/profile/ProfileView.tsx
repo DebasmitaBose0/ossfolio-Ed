@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import type { MergedPR } from '@/types';
 import { LatestMergedPRs } from '@/components/profile/LatestMergedPRs';
 import { ContributionTimeline } from '@/components/profile/ContributionTimeline';
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import { HeatmapWithYearNav } from "@/components/profile/HeatmapWithYearNav";
+import { SkeletonCard } from "@/components/ui/skeleton-card";
 import type { ContributorStats, Org, TechEntry, HeatmapWeek, BadgeItem } from "@/types";
 import { toPng } from "html-to-image";
 import { supabase } from "@/lib/supabase";
@@ -16,6 +17,24 @@ import { LANG_COLORS } from "@/lib/languages";
 import { ProfileShareButtons } from "@/components/profile/ProfileShareButtons";
 import { ProfileReposSection } from "@/components/profile/ProfileReposSection";
 import { ProfileBadgeModal } from "@/components/profile/ProfileBadgeModal";
+
+// Code-split the contribution heatmap out of the initial ProfileView bundle.
+// ProfileView is a client component, so `ssr: false` is valid here; the heatmap
+// is client-only anyway (it fetches per-year data after mount). The SkeletonCard
+// fallback reserves the heatmap's vertical space so lazy-loading causes no
+// layout shift (CLS).
+const HeatmapWithYearNav = dynamic(
+  () => import("@/components/profile/HeatmapWithYearNav").then((mod) => mod.HeatmapWithYearNav),
+  {
+    ssr: false,
+    loading: () => (
+      <div style={{ marginTop: "44px" }} role="status" aria-live="polite" aria-busy="true">
+        <span className="sr-only">Loading contribution activity…</span>
+        <SkeletonCard variant="card" lines={7} />
+      </div>
+    ),
+  },
+);
 
 interface GitHubUser {
   login: string;
