@@ -26,6 +26,7 @@ function validateEnv() {
     }
   }
   if (missing.length > 0) {
+    // Log build-time environment warnings for local dev and CI stages
     console.warn(
       `\n⚠️  Missing required environment variables:\n   ${missing.join(", ")}\n` +
       "   Copy .env.example to .env.local and fill in the values.\n" +
