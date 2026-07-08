@@ -26,6 +26,10 @@ OSSfolio is a free, open-source platform where every contributor gets a public p
 
 No manual input. Just sign in with GitHub and your profile is ready.
 
+## Documentation
+- See [API Reference Architecture](docs/api-reference-architecture.md) for endpoint specs.
+- See [System Flow Diagrams](docs/system-diagrams.md) for database and network flows.
+
 ---
 
 ## Why does this exist?
