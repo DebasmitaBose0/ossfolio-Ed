@@ -1,0 +1,50 @@
+{
+  "Nav": {
+    "features": "Features",
+    "howItWorks": "How it works",
+    "leaderboard": "Leaderboard",
+    "signIn": "Sign in",
+    "getStarted": "Get started",
+    "myPortfolio": "My Portfolio",
+    "logOut": "Log out",
+    "account": "Account",
+    "home": "OSSfolio home",
+    "mainNav": "Main navigation",
+    "mobileNav": "Mobile navigation",
+    "openMenu": "Open navigation menu",
+    "closeMenu": "Close navigation menu",
+    "toggleTheme": "Toggle theme",
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode"
+  },
+  "Footer": {
+    "tagline": "Your open-source identity, beyond GitHub.",
+    "starOnGitHub": "Star on GitHub",
+    "builtBy": "Built by",
+    "rights": "© {year} OSSfolio. MIT License.",
+    "new": "New",
+    "sections": {
+      "product": "Product",
+      "developers": "Developers",
+      "legal": "Legal"
+    },
+    "links": {
+      "features": "Features",
+      "howItWorks": "How it works",
+      "leaderboard": "Leaderboard",
+      "howScoringWorks": "How scoring works",
+      "github": "GitHub",
+      "contributing": "Contributing",
+      "issues": "Issues",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "license": "License (MIT)"
+    },
+    "ariaLabel": "Site footer"
+  },
+  "LanguageSwitcher": {
+    "label": "Language",
+    "english": "English",
+    "spanish": "Spanish"
+  }
+}

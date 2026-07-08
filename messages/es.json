@@ -1,0 +1,50 @@
+{
+  "Nav": {
+    "features": "Funciones",
+    "howItWorks": "Cómo funciona",
+    "leaderboard": "Clasificación",
+    "signIn": "Iniciar sesión",
+    "getStarted": "Comenzar",
+    "myPortfolio": "Mi portafolio",
+    "logOut": "Cerrar sesión",
+    "account": "Cuenta",
+    "home": "Inicio de OSSfolio",
+    "mainNav": "Navegación principal",
+    "mobileNav": "Navegación móvil",
+    "openMenu": "Abrir menú de navegación",
+    "closeMenu": "Cerrar menú de navegación",
+    "toggleTheme": "Cambiar tema",
+    "switchToLight": "Cambiar a modo claro",
+    "switchToDark": "Cambiar a modo oscuro"
+  },
+  "Footer": {
+    "tagline": "Tu identidad de código abierto, más allá de GitHub.",
+    "starOnGitHub": "Destacar en GitHub",
+    "builtBy": "Creado por",
+    "rights": "© {year} OSSfolio. Licencia MIT.",
+    "new": "Nuevo",
+    "sections": {
+      "product": "Producto",
+      "developers": "Desarrolladores",
+      "legal": "Legal"
+    },
+    "links": {
+      "features": "Funciones",
+      "howItWorks": "Cómo funciona",
+      "leaderboard": "Clasificación",
+      "howScoringWorks": "Cómo funciona la puntuación",
+      "github": "GitHub",
+      "contributing": "Contribuir",
+      "issues": "Incidencias",
+      "privacy": "Privacidad",
+      "terms": "Términos",
+      "license": "Licencia (MIT)"
+    },
+    "ariaLabel": "Pie de página"
+  },
+  "LanguageSwitcher": {
+    "label": "Idioma",
+    "english": "Inglés",
+    "spanish": "Español"
+  }
+}
