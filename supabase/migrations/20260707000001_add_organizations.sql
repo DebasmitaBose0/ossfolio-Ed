@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS public.organizations (
     name TEXT NOT NULL,
     slug TEXT UNIQUE NOT NULL,
     avatar_url TEXT,
+    score INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
