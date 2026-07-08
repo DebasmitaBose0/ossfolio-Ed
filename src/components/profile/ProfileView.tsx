@@ -318,7 +318,7 @@ function ProfileDownloadCard({
                   Contributor Score
                 </div>
                 <div style={{ fontSize: "44px", fontWeight: 700, color: "#3ecf8e", marginTop: "4px", lineHeight: 1 }}>
-                  {score}
+                  {score.toLocaleString("en-US")}
                 </div>
               </div>
             </div>
