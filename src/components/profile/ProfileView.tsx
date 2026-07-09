@@ -111,6 +111,13 @@ interface ProfileExtras {
   mergedPRs: MergedPR[];
 }
 
+function formatCount(n: number): string {
+  if (n >= 1000) {
+    return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k`;
+  }
+  return n.toLocaleString("en-US");
+}
+
 function formatUpdatedAt(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -716,13 +723,13 @@ export function ProfileView({
 
           <div style={{ display: "flex", gap: "20px", marginTop: "14px" }}>
             <span style={{ fontSize: "13px", color: "var(--color-ink-mute)" }}>
-              <strong style={{ color: "var(--color-ink)", fontWeight: 600 }}>{user.followers.toLocaleString("en-US")}</strong> followers
+              <strong style={{ color: "var(--color-ink)", fontWeight: 600 }}>{formatCount(user.followers)}</strong> followers
             </span>
             <span style={{ fontSize: "13px", color: "var(--color-ink-mute)" }}>
-              <strong style={{ color: "var(--color-ink)", fontWeight: 600 }}>{user.following.toLocaleString("en-US")}</strong> following
+              <strong style={{ color: "var(--color-ink)", fontWeight: 600 }}>{formatCount(user.following)}</strong> following
             </span>
             <span style={{ fontSize: "13px", color: "var(--color-ink-mute)" }}>
-              <strong style={{ color: "var(--color-ink)", fontWeight: 600 }}>{user.public_repos}</strong> repos
+              <strong style={{ color: "var(--color-ink)", fontWeight: 600 }}>{formatCount(user.public_repos)}</strong> repos
             </span>
           </div>
 
