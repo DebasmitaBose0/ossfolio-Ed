@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { TemporaryUnavailableFallback } from "@/components/layout/TemporaryUnavailableFallback";
+
 import { ProfileView } from "@/components/profile/ProfileView";
 import {
   fetchLiveStats,
@@ -134,34 +136,14 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     // If GitHub is slow/unreachable, avoid a hard crash.
     if (isTimeoutError(e)) {
       return (
-        <>
-          <Navbar />
-          <main
-            style={{
-              backgroundColor: "var(--color-canvas)",
-              color: "var(--color-ink)",
-              minHeight: "100vh",
-              transition: "background-color 0.2s ease, color 0.2s ease",
-            }}
-          >
-            <div
-              style={{
-                maxWidth: "640px",
-                margin: "0 auto",
-                padding: "96px 20px",
-                textAlign: "center",
-              }}
-            >
-              <h1 style={{ fontSize: "22px", fontWeight: 500, margin: "0 0 12px 0" }}>
-                Temporarily Unavailable
-              </h1>
-              <p style={{ fontSize: "15px", color: "var(--color-ink-mute)", margin: 0 }}>
-                GitHub API is taking too long to respond for <strong>@{username}</strong>. Please try again in a moment.
-              </p>
-            </div>
-          </main>
-          <Footer />
-        </>
+        <TemporaryUnavailableFallback
+          heading="Temporarily Unavailable"
+          message={
+            <>
+              GitHub API is taking too long to respond for <strong>@{username}</strong>. Please try again in a moment.
+            </>
+          }
+        />
       );
     }
     user = null;
@@ -179,28 +161,15 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   if (!user && rateLimited) {
     return (
-      <>
-        <Navbar />
-        <main
-          style={{
-            backgroundColor: "var(--color-canvas)",
-            color: "var(--color-ink)",
-            minHeight: "100vh",
-            transition: "background-color 0.2s ease, color 0.2s ease",
-          }}
-        >
-          <div style={{ maxWidth: "640px", margin: "0 auto", padding: "96px 20px", textAlign: "center" }}>
-            <h1 style={{ fontSize: "22px", fontWeight: 500, margin: "0 0 12px 0" }}>
-              Temporarily Unavailable
-            </h1>
-            <p style={{ fontSize: "15px", color: "var(--color-ink-mute)", margin: 0 }}>
-              GitHub API rate limit reached. Profile data for <strong>@{username}</strong> cannot be
-              loaded right now. Please try again in a few minutes.
-            </p>
-          </div>
-        </main>
-        <Footer />
-      </>
+      <TemporaryUnavailableFallback
+        heading="Temporarily Unavailable"
+        message={
+          <>
+            GitHub API rate limit reached. Profile data for <strong>@{username}</strong> cannot be
+            loaded right now. Please try again in a few minutes.
+          </>
+        }
+      />
     );
   }
 
