@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Eye, EyeOff } from "lucide-react";
+import { X, Eye, EyeOff ,Loader2} from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 interface AuthModalProps {
@@ -326,10 +326,15 @@ export function AuthModal({ open, onClose, defaultMode = "signin" }: AuthModalPr
               cursor: loading ? "not-allowed" : "pointer",
               opacity: loading ? 0.7 : 1,
               transition: "background-color 0.2s ease",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
             }}
             onMouseEnter={(e) => { if (!loading) e.currentTarget.style.backgroundColor = "var(--color-primary-deep)"; }}
             onMouseLeave={(e) => { if (!loading) e.currentTarget.style.backgroundColor = "var(--color-primary)"; }}
           >
+             {loading && <Loader2 size={18} className="animate-spin" />}
             {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
           </button>
         </form>
