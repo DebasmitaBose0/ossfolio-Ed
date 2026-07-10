@@ -167,8 +167,8 @@ create table public.profile_score_snapshots (
 
 alter table public.profile_score_snapshots enable row level security;
 
-create policy "Snapshots are publicly viewable"
-  on public.profile_score_snapshots for select using (true);
+-- Drop public selectable policy so rows are not publicly selectable
+drop policy if exists "Snapshots are publicly viewable" on public.profile_score_snapshots;
 
 create index if not exists idx_profile_score_snapshots_date on public.profile_score_snapshots(snapshot_date);
 
@@ -176,6 +176,7 @@ create or replace function public.take_score_snapshots()
 returns void
 language plpgsql
 security definer
+set search_path = public
 as $$
 begin
   -- 1. Insert/update today's snapshot for all profiles
@@ -215,6 +216,10 @@ begin
   where p.id = sub.id;
 end;
 $$;
+
+-- Revoke EXECUTE on the take_score_snapshots function from public roles, allowing only internal roles
+revoke execute on function public.take_score_snapshots() from public, anon, authenticated;
+grant execute on function public.take_score_snapshots() to postgres, service_role;
 
 -- Enable pg_cron
 create extension if not exists pg_cron;

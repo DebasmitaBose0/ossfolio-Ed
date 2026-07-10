@@ -17,17 +17,8 @@ create table if not exists public.profile_score_snapshots (
 
 alter table public.profile_score_snapshots enable row level security;
 
-do $$
-begin
-  if not exists (
-    select 1 from pg_policies 
-    where tablename = 'profile_score_snapshots' and policyname = 'Snapshots are publicly viewable'
-  ) then
-    create policy "Snapshots are publicly viewable"
-      on public.profile_score_snapshots for select using (true);
-  end if;
-end
-$$;
+-- Drop public selectable policy so rows are not publicly selectable
+drop policy if exists "Snapshots are publicly viewable" on public.profile_score_snapshots;
 
 create index if not exists idx_profile_score_snapshots_date on public.profile_score_snapshots(snapshot_date);
 
@@ -36,6 +27,7 @@ create or replace function public.take_score_snapshots()
 returns void
 language plpgsql
 security definer
+set search_path = public
 as $$
 begin
   -- 1. Insert/update today's snapshot for all profiles
@@ -76,15 +68,78 @@ begin
 end;
 $$;
 
--- 4. Enable pg_cron extension
+-- Revoke EXECUTE on the take_score_snapshots function from public roles, allowing only internal roles
+revoke execute on function public.take_score_snapshots() from public, anon, authenticated;
+grant execute on function public.take_score_snapshots() to postgres, service_role;
+
+-- 4. Drop and recreate public.search_profiles to support 30-day delta and improvement sort
+drop function if exists public.search_profiles(text, text, integer, text, integer, integer);
+
+create or replace function public.search_profiles(
+  query text default '',
+  lang text default '',
+  min_score integer default 0,
+  sort_by text default 'score',
+  page_size integer default 20,
+  page_offset integer default 0
+)
+returns table (
+  username text,
+  name text,
+  avatar_url text,
+  bio text,
+  score integer,
+  total_prs integer,
+  total_commits integer,
+  total_issues integer,
+  followers integer,
+  top_languages text[],
+  score_delta_30_days integer
+)
+language plpgsql security definer set search_path = public
+as $$
+begin
+  return query
+    select
+      p.username,
+      p.name,
+      p.avatar_url,
+      p.bio,
+      p.score,
+      p.total_prs,
+      p.total_commits,
+      p.total_issues,
+      p.followers,
+      p.top_languages,
+      p.score_delta_30_days
+    from public.profiles p
+    where
+      (query = '' or p.search_text @@ plainto_tsquery('english', query))
+      and (lang = '' or p.top_languages @> array[lang])
+      and p.score >= min_score
+    order by
+      case when sort_by = 'score' then p.score else 0 end desc,
+      case when sort_by = 'contributions' then (p.total_prs + p.total_commits + p.total_issues) else 0 end desc,
+      case when sort_by = 'followers' then p.followers else 0 end desc,
+      case when sort_by = 'improvement' then p.score_delta_30_days else 0 end desc,
+      p.username asc
+    limit least(page_size, 100)
+    offset least(page_offset, 1000);
+end;
+$$;
+
+-- Reapply required execute grants for public.search_profiles
+grant execute on function public.search_profiles(text, text, integer, text, integer, integer) to public, anon, authenticated;
+
+-- 5. Enable pg_cron extension
 create extension if not exists pg_cron;
 
--- 5. Schedule the cron job to run daily at midnight
+-- 6. Schedule the cron job to run daily at midnight
 select cron.schedule(
   'daily-score-snapshot',
   '0 0 * * *',
   'select public.take_score_snapshots();'
 );
 
--- 6. Run once immediately to seed today's snapshots and compute initial deltas
+-- 7. Run once immediately to seed today's snapshots and compute initial deltas
 select public.take_score_snapshots();

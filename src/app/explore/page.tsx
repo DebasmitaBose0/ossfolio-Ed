@@ -212,7 +212,7 @@ const avatar = rowData.avatar_url || `https://github.com/${isOrg ? encodeURIComp
                         <span style={{ fontSize: "24px", fontWeight: 600, color: "var(--color-primary)", lineHeight: 1 }}>{score}</span>
                         {sortBy === "improvement" && typeof rowData.score_delta_30_days === "number" ? (
                           <span style={{ fontSize: "11px", color: rowData.score_delta_30_days > 0 ? "#10b981" : "var(--color-ink-mute)", fontWeight: 600, marginTop: "4px", display: "flex", alignItems: "center", gap: "2px" }} title="Improvement over last 30 days">
-                            {rowData.score_delta_30_days > 0 ? "📈" : "➖"} +{rowData.score_delta_30_days}
+                            {rowData.score_delta_30_days > 0 ? `📈 +${rowData.score_delta_30_days}` : `➖ ${rowData.score_delta_30_days}`}
                           </span>
                         ) : (
                           <span style={{ fontSize: "11px", color: "var(--color-ink-mute)", marginTop: "3px" }}>score</span>
