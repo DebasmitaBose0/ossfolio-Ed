@@ -6,6 +6,7 @@ import { getLocale, getMessages } from "next-intl/server";
 import { SkipToContent } from "@/components/layout/SkipToContent";
 import "./globals.css";
 import { JsonLd } from "@/components/ui/json-ld";
+import { ThemeProvider } from "@/context/ThemeContext";
 import { EnvValidationBanner } from "@/components/ui/EnvValidationBanner";
 
 
@@ -138,6 +139,10 @@ export default async function RootLayout({
 
       <body className={inter.className}>
         <NextIntlClientProvider locale={locale} messages={messages}>
+          <ThemeProvider>
+            <SkipToContent />
+            {children}
+          </ThemeProvider>
           <SkipToContent />
           <EnvValidationBanner />
           {children}
