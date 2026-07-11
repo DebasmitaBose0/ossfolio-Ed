@@ -13,7 +13,12 @@ create table if not exists public.profile_snapshots (
   username text primary key,
   snapshot jsonb,
   synced_at timestamptz,
-  sync_started_at timestamptz not null default now()
+  sync_started_at timestamptz not null default now(),
+  -- Every reader and writer normalizes with `.toLowerCase()`, but `text` collates
+  -- case-sensitively, so nothing stops a future caller inserting "Octocat" alongside
+  -- "octocat" — two rows for one account, with split caches that never converge.
+  -- Enforce the invariant here rather than trusting every call site to remember it.
+  constraint profile_snapshots_username_lowercase check (username = lower(username))
 );
 
 comment on table public.profile_snapshots is

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { ContributorStats } from "@/types";
 import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -112,14 +113,26 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     after(() => syncProfileSnapshot(username));
   }
 
+  // ProfileSnapshot types every field, so no casts are needed. Array-shaped fields all
+  // get the same `?? []` default: an older row written before a field existed would
+  // otherwise arrive undefined and throw when mapped.
   const snapshot = stored.snapshot;
   const rateLimited = snapshot.rateLimited;
   const user = snapshot.user;
-  const repos = snapshot.repos as any;
-  const liveStats = snapshot.liveStats as any;
-  const mergedPRs = (snapshot.mergedPRs ?? []) as any[];
-  const orgs = snapshot.orgs as any;
-  const contributionCalendar = snapshot.contributionCalendar as any;
+  const repos = snapshot.repos ?? [];
+  // ContributorStats requires every field, and fetchLiveStats already degrades to zeros
+  // rather than throwing — so a null (failed) snapshot value degrades the same way here,
+  // instead of spreading `null` into an object missing four required fields.
+  const liveStats: ContributorStats = snapshot.liveStats ?? {
+    totalCommits: 0,
+    totalPRs: 0,
+    totalIssues: 0,
+    totalReviews: 0,
+    totalContributions: 0,
+  };
+  const mergedPRs = snapshot.mergedPRs ?? [];
+  const orgs = snapshot.orgs ?? [];
+  const contributionCalendar = snapshot.contributionCalendar ?? null;
 
   if (!user && !rateLimited) return notFound();
 

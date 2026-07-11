@@ -8,8 +8,10 @@ import {
   fetchOrganizations,
   fetchMergedPRs,
   type GitHubUser,
+  type GitHubRepoPayload,
 } from "@/lib/profile-data";
-import { fetchContributionCalendar } from "@/lib/github";
+import { fetchContributionCalendar, type ContributionCalendar } from "@/lib/github";
+import type { ContributorStats, Org, MergedPR } from "@/types";
 
 /**
  * DB-first profile data.
@@ -38,12 +40,12 @@ const SYNC_LOCK_MS = 2 * 60 * 1000; // 2 minutes
 
 export interface ProfileSnapshot {
   user: GitHubUser | null;
-  repos: unknown[];
-  liveStats: unknown;
-  mergedPRs: unknown[];
-  orgs: unknown[];
-  contributionCalendar: unknown;
-  /** True when the sync completed but GitHub rate-limited some of the calls. */
+  repos: GitHubRepoPayload[];
+  liveStats: ContributorStats | null;
+  mergedPRs: MergedPR[];
+  orgs: Org[];
+  contributionCalendar: ContributionCalendar | null;
+  /** True when GitHub rate-limited any of the calls. Such a snapshot is never stored. */
   rateLimited: boolean;
 }
 
@@ -114,6 +116,15 @@ async function claimSync(admin: SupabaseClient, username: string): Promise<boole
   // No conflict: the row is new and we just created it, so the claim is ours.
   if (!insertError) return true;
 
+  // Only a unique violation (23505) means the row already existed. Any other insert
+  // failure is a real problem — a transient DB or network error, say — and must not
+  // be silently reinterpreted as "another sync owns the claim", which would skip this
+  // sync without a trace.
+  if (insertError.code !== "23505") {
+    console.error("[snapshot] could not claim sync:", insertError.message);
+    return false;
+  }
+
   // A row already existed. Take the claim only if the previous sync is stale.
   const { data } = await admin
     .from("profile_snapshots")
@@ -170,10 +181,21 @@ export async function syncProfileSnapshot(rawUsername: string): Promise<void> {
     wasRateLimited
   );
 
-  // A rate-limited user fetch tells us nothing about whether the account exists, so
-  // storing `user: null` would cache a false 404. Leave the snapshot alone and let
-  // the next attempt try again.
-  if (user.status === "rejected" && wasRateLimited(user)) {
+  // ANY failed user fetch — rate limit, 10s timeout, DNS failure, connection reset —
+  // tells us nothing about whether the account exists. `fetchWithTimeout` throws
+  // FetchTimeoutError on timeout and rethrows other transport errors, so narrowing this
+  // to the rate-limit case would let a single transient blip persist `user: null` with a
+  // fresh `synced_at` — caching a false 404 for a real account for a full TTL hour.
+  if (user.status === "rejected") {
+    return;
+  }
+
+  // Likewise, never persist a rate-limited (and therefore degraded) snapshot: it would
+  // be stored as "fresh" and serve an empty profile for an hour. GitHub applies its rate
+  // limit across all calls from the same IP/token, and all six run concurrently here, so
+  // a limit hit by any of them means the whole snapshot is untrustworthy. Leaving the row
+  // unwritten keeps the page in its syncing state, which then retries — the honest outcome.
+  if (rateLimited) {
     return;
   }
 
