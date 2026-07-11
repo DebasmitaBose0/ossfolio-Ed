@@ -15,6 +15,7 @@ interface ProfileCardProps {
   totalIssues: number;
   followers: number;
   topLanguages: string[];
+  scoreDelta30Days?: number | null;
 }
 
 function ProfileCardInner({
@@ -28,6 +29,7 @@ function ProfileCardInner({
   totalIssues,
   followers,
   topLanguages,
+  scoreDelta30Days,
 }: ProfileCardProps) {
   const displayName = name || username;
   const avatar =
@@ -48,7 +50,15 @@ function ProfileCardInner({
         borderRadius: "12px",
         textDecoration: "none",
         backgroundColor: "var(--color-canvas)",
-        transition: "border-color 0.15s, background-color 0.2s",
+        transition: "border-color 0.15s, background-color 0.2s, box-shadow 0.2s ease",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = "var(--color-primary)";
+        e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.05)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "var(--color-hairline)";
+        e.currentTarget.style.boxShadow = "none";
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
@@ -90,7 +100,13 @@ function ProfileCardInner({
           <p style={{ fontSize: "20px", fontWeight: 600, color: "var(--color-ink)", margin: 0, lineHeight: 1 }}>
             {score}
           </p>
-          <p style={{ fontSize: "11px", color: "var(--color-ink-mute-2)", margin: "2px 0 0 0" }}>score</p>
+          {typeof scoreDelta30Days === "number" && scoreDelta30Days > 0 ? (
+            <p style={{ fontSize: "11px", color: "#10b981", fontWeight: 600, margin: "2px 0 0 0" }} title="Improvement over last 30 days">
+              📈 +{scoreDelta30Days}
+            </p>
+          ) : (
+            <p style={{ fontSize: "11px", color: "var(--color-ink-mute-2)", margin: "2px 0 0 0" }}>score</p>
+          )}
         </div>
       </div>
 

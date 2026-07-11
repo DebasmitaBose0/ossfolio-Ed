@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { SearchFilters } from "@/components/discover/SearchFilters";
 import { ProfileCard } from "@/components/discover/ProfileCard";
-import { Pagination } from "@/components/ui/pagination";
+import { DiscoverPagination } from "@/components/discover/DiscoverPagination";
 
 interface DiscoverProfile {
   username: string;
@@ -17,6 +17,7 @@ interface DiscoverProfile {
   total_issues: number;
   followers: number;
   top_languages: string[];
+  score_delta_30_days?: number | null;
 }
 
 interface DiscoverResponse {
@@ -155,12 +156,13 @@ export function DiscoverContent() {
                 totalIssues={profile.total_issues}
                 followers={profile.followers}
                 topLanguages={profile.top_languages}
+                scoreDelta30Days={profile.score_delta_30_days}
               />
             ))}
           </div>
 
           {(data.hasPrev || data.hasNext) && (
-            <Pagination
+            <DiscoverPagination
               currentPage={currentPage}
               hasNext={data.hasNext}
               hasPrev={data.hasPrev}
