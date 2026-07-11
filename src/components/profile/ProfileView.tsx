@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import { AnimatePresence, motion } from "framer-motion";
 import type { MergedPR } from '@/types';
 import { LatestMergedPRs } from '@/components/profile/LatestMergedPRs';
 import { ContributionTimeline } from '@/components/profile/ContributionTimeline';
@@ -460,6 +461,50 @@ export function ProfileView({
   const searchRef = useRef<HTMLInputElement>(null);
   const [repoFilter, setRepoFilter] = useState("");
   const [activeLanguage, setActiveLanguage] = useState<string>("All");
+  const [activeTab, setActiveTab] = useState<"repos" | "stats" | "prs" | "timeline">("repos");
+
+  const profileTabs = [
+    { key: "repos" as const, label: "Repos" },
+    { key: "stats" as const, label: "Stats" },
+    { key: "prs" as const, label: "PRs" },
+    { key: "timeline" as const, label: "Timeline" },
+  ];
+
+  const tabTransition = { duration: 0.18, ease: [0.25, 0.1, 0.25, 1.0] as const };
+  const tabInitial = { opacity: 0, y: 6 };
+  const tabAnimate = { opacity: 1, y: 0, transition: tabTransition };
+  const tabExit = { opacity: 0, y: -6, transition: { duration: 0.12, ease: "easeIn" as const } };
+
+  const handleTabKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLButtonElement>) => {
+      const keys = profileTabs.map((t) => t.key);
+      const currentIndex = keys.indexOf(activeTab);
+      let nextIndex: number | null = null;
+
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        nextIndex = (currentIndex + 1) % keys.length;
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        nextIndex = (currentIndex - 1 + keys.length) % keys.length;
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        nextIndex = 0;
+      } else if (e.key === "End") {
+        e.preventDefault();
+        nextIndex = keys.length - 1;
+      }
+
+      if (nextIndex !== null && nextIndex !== currentIndex) {
+        const nextKey = keys[nextIndex];
+        setActiveTab(nextKey);
+        // Focus the destination button by its stable DOM id
+        const btn = document.getElementById(`profile-tab-${nextKey}`);
+        if (btn) (btn as HTMLButtonElement).focus();
+      }
+    },
+    [activeTab],
+  );
 
   const uniqueLanguages = useMemo(() => {
     return Array.from(
@@ -883,8 +928,74 @@ export function ProfileView({
         </div>
       )}
 
+      {/* Tab navigation */}
+      <div
+        role="tablist"
+        aria-label="Profile sections"
+        style={{
+          display: "flex",
+          gap: "4px",
+          marginTop: "40px",
+          borderBottom: "1px solid var(--color-hairline)",
+          paddingBottom: "0",
+          position: "relative",
+        }}
+      >
+        {profileTabs.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            role="tab"
+            id={`profile-tab-${tab.key}`}
+            aria-selected={activeTab === tab.key}
+            aria-controls={`profile-tabpanel-${tab.key}`}
+            tabIndex={activeTab === tab.key ? 0 : -1}
+            onClick={() => setActiveTab(tab.key)}
+            onKeyDown={handleTabKeyDown}
+            style={{
+              position: "relative",
+              padding: "10px 18px",
+              fontSize: "13px",
+              fontWeight: activeTab === tab.key ? 600 : 400,
+              color: activeTab === tab.key ? "var(--color-ink)" : "var(--color-ink-mute)",
+              background: "none",
+              border: "none",
+              borderBottom: "2px solid",
+              borderBottomColor: activeTab === tab.key ? "#3ecf8e" : "transparent",
+              cursor: "pointer",
+              transition: "color 0.15s ease, border-color 0.15s ease",
+              marginBottom: "-1px",
+            }}
+            onMouseEnter={(e) => {
+              if (activeTab !== tab.key) {
+                e.currentTarget.style.color = "var(--color-ink)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== tab.key) {
+                e.currentTarget.style.color = "var(--color-ink-mute)";
+              }
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content with animated transitions */}
+      <AnimatePresence mode="wait">
+        {activeTab === "repos" && (
+          <motion.div
+            key="repos"
+            role="tabpanel"
+            id="profile-tabpanel-repos"
+            aria-labelledby="profile-tab-repos"
+            initial={tabInitial}
+            animate={tabAnimate}
+            exit={tabExit}
+          >
       {/* Repos */}
-      <div style={{ marginTop: "40px" }}>
+      <div style={{ marginTop: "24px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 12px 0", flexWrap: "wrap", gap: "12px" }}>
           <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--color-ink)", margin: 0, letterSpacing: "-0.2px" }}>
             Popular repositories
@@ -1061,9 +1172,21 @@ export function ProfileView({
           </>
         )}
       </div>
+          </motion.div>
+        )}
 
+        {activeTab === "stats" && (
+          <motion.div
+            key="stats"
+            role="tabpanel"
+            id="profile-tabpanel-stats"
+            aria-labelledby="profile-tab-stats"
+            initial={tabInitial}
+            animate={tabAnimate}
+            exit={tabExit}
+          >
       {/* Contribution stats */}
-      <div style={{ marginTop: "44px" }}>
+      <div style={{ marginTop: "24px" }}>
         <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--color-ink)", margin: "0 0 16px 0", letterSpacing: "-0.2px" }}>
           Contribution stats
         </h2>
@@ -1108,9 +1231,39 @@ export function ProfileView({
           ))}
         </div>
       </div>
+          </motion.div>
+        )}
 
+        {activeTab === "prs" && (
+          <motion.div
+            key="prs"
+            role="tabpanel"
+            id="profile-tabpanel-prs"
+            aria-labelledby="profile-tab-prs"
+            initial={tabInitial}
+            animate={tabAnimate}
+            exit={tabExit}
+            style={{ marginTop: "24px" }}
+          >
+            <LatestMergedPRs mergedPRs={mergedPRs} />
+          </motion.div>
+        )}
+
+        {activeTab === "timeline" && (
+          <motion.div
+            key="timeline"
+            role="tabpanel"
+            id="profile-tabpanel-timeline"
+            aria-labelledby="profile-tab-timeline"
+            initial={tabInitial}
+            animate={tabAnimate}
+            exit={tabExit}
+          >
       {/* Contribution Timeline */}
       <ContributionTimeline mergedPRs={mergedPRs} badges={badgesList} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Tech stack */}
       {techStack.length > 0 && (
