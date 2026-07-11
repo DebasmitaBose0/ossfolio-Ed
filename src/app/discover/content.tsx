@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { SearchFilters } from "@/components/discover/SearchFilters";
 import { ProfileCard } from "@/components/discover/ProfileCard";
-import { Pagination } from "@/components/ui/pagination";
+import { DiscoverPagination } from "@/components/discover/DiscoverPagination";
 import { SearchAccessibilityAnnouncer } from "@/components/discover/SearchAccessibilityAnnouncer";
 
 interface DiscoverProfile {
