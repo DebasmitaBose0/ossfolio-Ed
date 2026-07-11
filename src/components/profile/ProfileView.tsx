@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
+import { AnimatePresence, motion } from "framer-motion";
 import type { MergedPR } from '@/types';
 import { LatestMergedPRs } from '@/components/profile/LatestMergedPRs';
 import { ContributionTimeline } from '@/components/profile/ContributionTimeline';
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import { HeatmapWithYearNav } from "@/components/profile/HeatmapWithYearNav";
+import { SkeletonCard } from "@/components/ui/skeleton-card";
 import type { ContributorStats, Org, TechEntry, HeatmapWeek, BadgeItem } from "@/types";
 import { toPng } from "html-to-image";
 import { supabase } from "@/lib/supabase";
@@ -16,6 +18,24 @@ import { LANG_COLORS } from "@/lib/languages";
 import { ProfileShareButtons } from "@/components/profile/ProfileShareButtons";
 import { ProfileReposSection } from "@/components/profile/ProfileReposSection";
 import { ProfileBadgeModal } from "@/components/profile/ProfileBadgeModal";
+
+// Code-split the contribution heatmap out of the initial ProfileView bundle.
+// ProfileView is a client component, so `ssr: false` is valid here; the heatmap
+// is client-only anyway (it fetches per-year data after mount). The SkeletonCard
+// fallback reserves the heatmap's vertical space so lazy-loading causes no
+// layout shift (CLS).
+const HeatmapWithYearNav = dynamic(
+  () => import("@/components/profile/HeatmapWithYearNav").then((mod) => mod.HeatmapWithYearNav),
+  {
+    ssr: false,
+    loading: () => (
+      <div style={{ marginTop: "44px" }} role="status" aria-live="polite" aria-busy="true">
+        <span className="sr-only">Loading contribution activity…</span>
+        <SkeletonCard variant="card" lines={7} />
+      </div>
+    ),
+  },
+);
 
 interface GitHubUser {
   login: string;
@@ -90,6 +110,13 @@ interface ProfileExtras {
   profileId: string | null;
   rateLimited?: boolean;
   mergedPRs: MergedPR[];
+}
+
+function formatCount(n: number): string {
+  if (n >= 1000) {
+    return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k`;
+  }
+  return n.toLocaleString("en-US");
 }
 
 function formatUpdatedAt(iso: string): string {
@@ -279,12 +306,15 @@ function ProfileDownloadCard({
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "24px" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
               <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-                <img
+                <Image
                   src={user.avatar_url}
                   alt={displayName}
+                  width={64}
+                  height={64}
+                  unoptimized
                   style={{ width: "64px", height: "64px", borderRadius: "9999px", border: "1px solid rgba(255, 255, 255, 0.15)", objectFit: "cover" }}
-                  crossOrigin="anonymous"
                 />
+
                 <div>
                   <div style={{ fontSize: "18px", fontWeight: 600, color: "#ffffff", letterSpacing: "-0.3px", lineHeight: 1.2 }}>
                     {displayName}
@@ -299,7 +329,7 @@ function ProfileDownloadCard({
                   Contributor Score
                 </div>
                 <div style={{ fontSize: "44px", fontWeight: 700, color: "#3ecf8e", marginTop: "4px", lineHeight: 1 }}>
-                  {score}
+                  {score.toLocaleString("en-US")}
                 </div>
               </div>
             </div>
@@ -338,6 +368,66 @@ function ProfileDownloadCard({
   );
 }
 
+interface FilterTabProps {
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+  dotColor?: string;
+}
+
+function FilterTab({ label, isActive, onClick, dotColor }: FilterTabProps) {
+  return (
+      <button
+        type="button"
+        aria-pressed="false"
+        data-aria-pressed={isActive}
+
+
+        onClick={onClick}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "6px",
+        padding: "6px 12px",
+        fontSize: "13px",
+        fontWeight: isActive ? 600 : 400,
+        color: isActive ? "var(--color-ink)" : "var(--color-ink-mute)",
+        backgroundColor: isActive ? "var(--color-canvas-soft)" : "transparent",
+        border: "1px solid",
+        borderColor: isActive ? "var(--color-hairline-strong)" : "transparent",
+        borderRadius: "6px",
+        cursor: "pointer",
+        transition: "all 0.15s ease",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.color = "var(--color-ink)";
+        if (!isActive) {
+          e.currentTarget.style.backgroundColor = "var(--color-canvas-soft)";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isActive) {
+          e.currentTarget.style.color = "var(--color-ink-mute)";
+          e.currentTarget.style.backgroundColor = "transparent";
+        }
+      }}
+    >
+      {dotColor && (
+        <span
+          style={{
+            width: "8px",
+            height: "8px",
+            borderRadius: "50%",
+            backgroundColor: dotColor,
+            display: "inline-block",
+          }}
+        />
+      )}
+      {label}
+    </button>
+  );
+}
+
 export function ProfileView({
   user,
   repos,
@@ -371,14 +461,71 @@ export function ProfileView({
   const searchRef = useRef<HTMLInputElement>(null);
   const [repoFilter, setRepoFilter] = useState("");
   const [activeLanguage, setActiveLanguage] = useState<string>("All");
+  const [activeTab, setActiveTab] = useState<"repos" | "stats" | "prs" | "timeline">("repos");
 
-  const uniqueLanguages = Array.from(
-    new Set(
-      repos
-        .map((r) => r.language)
-        .filter((l): l is string => typeof l === "string" && l.trim() !== "")
-    )
-  ).sort();
+  const profileTabs = [
+    { key: "repos" as const, label: "Repos" },
+    { key: "stats" as const, label: "Stats" },
+    { key: "prs" as const, label: "PRs" },
+    { key: "timeline" as const, label: "Timeline" },
+  ];
+
+  const tabTransition = { duration: 0.18, ease: [0.25, 0.1, 0.25, 1.0] as const };
+  const tabInitial = { opacity: 0, y: 6 };
+  const tabAnimate = { opacity: 1, y: 0, transition: tabTransition };
+  const tabExit = { opacity: 0, y: -6, transition: { duration: 0.12, ease: "easeIn" as const } };
+
+  const handleTabKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLButtonElement>) => {
+      const keys = profileTabs.map((t) => t.key);
+      const currentIndex = keys.indexOf(activeTab);
+      let nextIndex: number | null = null;
+
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        nextIndex = (currentIndex + 1) % keys.length;
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        nextIndex = (currentIndex - 1 + keys.length) % keys.length;
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        nextIndex = 0;
+      } else if (e.key === "End") {
+        e.preventDefault();
+        nextIndex = keys.length - 1;
+      }
+
+      if (nextIndex !== null && nextIndex !== currentIndex) {
+        const nextKey = keys[nextIndex];
+        setActiveTab(nextKey);
+        // Focus the destination button by its stable DOM id
+        const btn = document.getElementById(`profile-tab-${nextKey}`);
+        if (btn) (btn as HTMLButtonElement).focus();
+      }
+    },
+    [activeTab],
+  );
+
+  const uniqueLanguages = useMemo(() => {
+    return Array.from(
+      new Set(
+        repos
+          .map((r) => r.language)
+          .filter((l): l is string => typeof l === "string" && l.trim() !== "")
+      )
+    ).sort();
+  }, [repos]);
+
+  const filteredRepos = useMemo(() => {
+    return [...repos]
+      .sort((a, b) => {
+        if (repoSort === "forks") return b.forks_count - a.forks_count;
+        if (repoSort === "updated") return (b.pushed_at || "").localeCompare(a.pushed_at || "");
+        return b.stargazers_count - a.stargazers_count;
+      })
+      .filter((repo) => !repoFilter || repo.name.toLowerCase().includes(repoFilter.toLowerCase()) || (repo.description || "").toLowerCase().includes(repoFilter.toLowerCase()))
+      .filter((repo) => activeLanguage === "All" || repo.language === activeLanguage);
+  }, [repos, repoSort, repoFilter, activeLanguage]);
 
   const focusSearch = useCallback(() => searchRef.current?.focus(), []);
   useKeyboardShortcuts({ onSlash: focusSearch });
@@ -621,13 +768,13 @@ export function ProfileView({
 
           <div style={{ display: "flex", gap: "20px", marginTop: "14px" }}>
             <span style={{ fontSize: "13px", color: "var(--color-ink-mute)" }}>
-              <strong style={{ color: "var(--color-ink)", fontWeight: 600 }}>{user.followers.toLocaleString("en-US")}</strong> followers
+              <strong style={{ color: "var(--color-ink)", fontWeight: 600 }}>{formatCount(user.followers)}</strong> followers
             </span>
             <span style={{ fontSize: "13px", color: "var(--color-ink-mute)" }}>
-              <strong style={{ color: "var(--color-ink)", fontWeight: 600 }}>{user.following.toLocaleString("en-US")}</strong> following
+              <strong style={{ color: "var(--color-ink)", fontWeight: 600 }}>{formatCount(user.following)}</strong> following
             </span>
             <span style={{ fontSize: "13px", color: "var(--color-ink-mute)" }}>
-              <strong style={{ color: "var(--color-ink)", fontWeight: 600 }}>{user.public_repos}</strong> repos
+              <strong style={{ color: "var(--color-ink)", fontWeight: 600 }}>{formatCount(user.public_repos)}</strong> repos
             </span>
           </div>
 
@@ -781,8 +928,74 @@ export function ProfileView({
         </div>
       )}
 
+      {/* Tab navigation */}
+      <div
+        role="tablist"
+        aria-label="Profile sections"
+        style={{
+          display: "flex",
+          gap: "4px",
+          marginTop: "40px",
+          borderBottom: "1px solid var(--color-hairline)",
+          paddingBottom: "0",
+          position: "relative",
+        }}
+      >
+        {profileTabs.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            role="tab"
+            id={`profile-tab-${tab.key}`}
+            aria-selected={activeTab === tab.key}
+            aria-controls={`profile-tabpanel-${tab.key}`}
+            tabIndex={activeTab === tab.key ? 0 : -1}
+            onClick={() => setActiveTab(tab.key)}
+            onKeyDown={handleTabKeyDown}
+            style={{
+              position: "relative",
+              padding: "10px 18px",
+              fontSize: "13px",
+              fontWeight: activeTab === tab.key ? 600 : 400,
+              color: activeTab === tab.key ? "var(--color-ink)" : "var(--color-ink-mute)",
+              background: "none",
+              border: "none",
+              borderBottom: "2px solid",
+              borderBottomColor: activeTab === tab.key ? "#3ecf8e" : "transparent",
+              cursor: "pointer",
+              transition: "color 0.15s ease, border-color 0.15s ease",
+              marginBottom: "-1px",
+            }}
+            onMouseEnter={(e) => {
+              if (activeTab !== tab.key) {
+                e.currentTarget.style.color = "var(--color-ink)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== tab.key) {
+                e.currentTarget.style.color = "var(--color-ink-mute)";
+              }
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content with animated transitions */}
+      <AnimatePresence mode="wait">
+        {activeTab === "repos" && (
+          <motion.div
+            key="repos"
+            role="tabpanel"
+            id="profile-tabpanel-repos"
+            aria-labelledby="profile-tab-repos"
+            initial={tabInitial}
+            animate={tabAnimate}
+            exit={tabExit}
+          >
       {/* Repos */}
-      <div style={{ marginTop: "40px" }}>
+      <div style={{ marginTop: "24px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 12px 0", flexWrap: "wrap", gap: "12px" }}>
           <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--color-ink)", margin: 0, letterSpacing: "-0.2px" }}>
             Popular repositories
@@ -835,195 +1048,110 @@ export function ProfileView({
                   paddingBottom: "12px",
                 }}
               >
-                <button
-                  type="button"
-                  aria-pressed={activeLanguage === "All" ? "true" : "false"}
+                <FilterTab
+                  label="All"
+                  isActive={activeLanguage === "All"}
                   onClick={() => setActiveLanguage("All")}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    padding: "6px 12px",
-                    fontSize: "13px",
-                    fontWeight: activeLanguage === "All" ? 600 : 400,
-                    color: activeLanguage === "All" ? "var(--color-ink)" : "var(--color-ink-mute)",
-                    backgroundColor: activeLanguage === "All" ? "var(--color-canvas-soft)" : "transparent",
-                    border: "1px solid",
-                    borderColor: activeLanguage === "All" ? "var(--color-hairline-strong)" : "transparent",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    transition: "all 0.15s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = "var(--color-ink)";
-                    if (activeLanguage !== "All") {
-                      e.currentTarget.style.backgroundColor = "var(--color-canvas-soft)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (activeLanguage !== "All") {
-                      e.currentTarget.style.color = "var(--color-ink-mute)";
-                      e.currentTarget.style.backgroundColor = "transparent";
-                    }
-                  }}
-                >
-                  All
-                </button>
-                {uniqueLanguages.map((lang) => {
-                  const isActive = activeLanguage === lang;
-                  const dotColor = LANG_COLORS[lang] ?? "#9a9a9a";
-                  return (
-                    <button
-                      key={lang}
-                      type="button"
-                      aria-pressed={isActive ? "true" : "false"}
-                      onClick={() => setActiveLanguage(lang)}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        padding: "6px 12px",
-                        fontSize: "13px",
-                        fontWeight: isActive ? 600 : 400,
-                        color: isActive ? "var(--color-ink)" : "var(--color-ink-mute)",
-                        backgroundColor: isActive ? "var(--color-canvas-soft)" : "transparent",
-                        border: "1px solid",
-                        borderColor: isActive ? "var(--color-hairline-strong)" : "transparent",
-                        borderRadius: "6px",
-                        cursor: "pointer",
-                        transition: "all 0.15s ease",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.color = "var(--color-ink)";
-                        if (!isActive) {
-                          e.currentTarget.style.backgroundColor = "var(--color-canvas-soft)";
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isActive) {
-                          e.currentTarget.style.color = "var(--color-ink-mute)";
-                          e.currentTarget.style.backgroundColor = "transparent";
-                        }
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: "8px",
-                          height: "8px",
-                          borderRadius: "50%",
-                          backgroundColor: dotColor,
-                          display: "inline-block",
-                        }}
-                      />
-                      {lang}
-                    </button>
-                  );
-                })}
+                />
+                {uniqueLanguages.map((lang) => (
+                  <FilterTab
+                    key={lang}
+                    label={lang}
+                    isActive={activeLanguage === lang}
+                    onClick={() => setActiveLanguage(lang)}
+                    dotColor={LANG_COLORS[lang] ?? "#9a9a9a"}
+                  />
+                ))}
               </div>
             )}
 
-            {(() => {
-              const filtered = [...repos]
-                .sort((a, b) => {
-                  if (repoSort === "forks") return b.forks_count - a.forks_count;
-                  if (repoSort === "updated") return (b.pushed_at || "").localeCompare(a.pushed_at || "");
-                  return b.stargazers_count - a.stargazers_count;
-                })
-                .filter((repo) => !repoFilter || repo.name.toLowerCase().includes(repoFilter.toLowerCase()) || (repo.description || "").toLowerCase().includes(repoFilter.toLowerCase()))
-                .filter((repo) => activeLanguage === "All" || repo.language === activeLanguage);
-
-              if (filtered.length === 0) {
-                return (
-                  <div style={{ padding: "40px", border: "1px dashed var(--color-hairline-strong)", borderRadius: "12px", textAlign: "center", backgroundColor: "var(--color-canvas-soft)", margin: "16px 0" }}>
-                    <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--color-ink)", margin: 0 }}>No matching repositories found</p>
-                    <p style={{ fontSize: "13px", color: "var(--color-ink-mute)", margin: "4px 0 0 0" }}>Try adjusting your search or language filter.</p>
-                  </div>
-                );
-              }
-
-              return (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
-                  {filtered.map((repo) => (
-                    <a
-                      key={repo.id}
-                      href={repo.html_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "8px",
-                        padding: "20px",
-                        border: "1px solid var(--color-hairline)",
-                        borderRadius: "12px",
-                        textDecoration: "none",
-                        backgroundColor: "var(--color-canvas-soft)",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = "var(--color-hairline-strong)";
-                        e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.12)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = "var(--color-hairline)";
-                        e.currentTarget.style.boxShadow = "none";
-                      }}
-                    >
-                      <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--color-ink)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {repo.name}
-                      </p>
-                      <p style={{ fontSize: "13px", color: "var(--color-ink-mute)", margin: 0, lineHeight: 1.45, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", minHeight: "38px" }}>
-                        {repo.description || "No description"}
-                      </p>
-                      {repo.topics && repo.topics.length > 0 && (
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "8px" }}>
-                          {repo.topics.slice(0, 3).map((topic) => (
-                            <span
-                              key={topic}
-                              style={{
-                                fontSize: "11px",
-                                padding: "2px 8px",
-                                borderRadius: "9999px",
-                                backgroundColor: "var(--color-canvas-soft)",
-                                color: "var(--color-ink-mute)",
-                                border: "1px solid var(--color-hairline)",
-                              }}
-                            >
-                              {topic}
-                            </span>
-                          ))}
-                          {repo.topics.length > 3 && (
-                            <span style={{ fontSize: "11px", padding: "2px 6px", color: "var(--color-ink-mute)" }}>
-                              +{repo.topics.length - 3} more
-                            </span>
-                          )}
-                        </div>
-                      )}
-                      <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "auto", paddingTop: "8px" }}>
-                        {repo.language && (
-                          <span style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "12px", color: "var(--color-ink-mute)" }}>
-                            <span style={{ width: "10px", height: "10px", borderRadius: "9999px", backgroundColor: LANG_COLORS[repo.language] ?? "#9a9a9a", flexShrink: 0 }} />
-                            {repo.language}
+            {filteredRepos.length === 0 ? (
+              <div style={{ padding: "40px", border: "1px dashed var(--color-hairline-strong)", borderRadius: "12px", textAlign: "center", backgroundColor: "var(--color-canvas-soft)", margin: "16px 0" }}>
+                <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--color-ink)", margin: 0 }}>No matching repositories found</p>
+                <p style={{ fontSize: "13px", color: "var(--color-ink-mute)", margin: "4px 0 0 0" }}>Try adjusting your search or language filter.</p>
+              </div>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
+                {filteredRepos.map((repo) => (
+                  <a
+                    key={repo.id}
+                    href={repo.html_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "8px",
+                      padding: "20px",
+                      border: "1px solid var(--color-hairline)",
+                      borderRadius: "12px",
+                      textDecoration: "none",
+                      backgroundColor: "var(--color-canvas-soft)",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = "var(--color-hairline-strong)";
+                      e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.12)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = "var(--color-hairline)";
+                      e.currentTarget.style.boxShadow = "none";
+                    }}
+                  >
+                    <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--color-ink)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {repo.name}
+                    </p>
+                    <p style={{ fontSize: "13px", color: "var(--color-ink-mute)", margin: 0, lineHeight: 1.45, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden", minHeight: "38px" }}>
+                      {repo.description || "No description"}
+                    </p>
+                    {repo.topics && repo.topics.length > 0 && (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "8px" }}>
+                        {repo.topics.slice(0, 3).map((topic) => (
+                          <span
+                            key={topic}
+                            style={{
+                              fontSize: "11px",
+                              padding: "2px 8px",
+                              borderRadius: "9999px",
+                              backgroundColor: "var(--color-canvas-soft)",
+                              color: "var(--color-ink-mute)",
+                              border: "1px solid var(--color-hairline)",
+                            }}
+                          >
+                            {topic}
+                          </span>
+                        ))}
+                        {repo.topics.length > 3 && (
+                          <span style={{ fontSize: "11px", padding: "2px 6px", color: "var(--color-ink-mute)" }}>
+                            +{repo.topics.length - 3} more
                           </span>
                         )}
-                        <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "var(--color-ink-mute)" }}>
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                          </svg>
-                          {repo.stargazers_count.toLocaleString("en-US")}
-                        </span>
-                        <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "var(--color-ink-mute)" }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="12" cy="18" r="3" /><circle cx="6" cy="6" r="3" /><circle cx="18" cy="6" r="3" />
-                            <path d="M18 9a9 9 0 0 1-9 9M6 9a9 9 0 0 0 9 9" />
-                          </svg>
-                          {repo.forks_count.toLocaleString("en-US")}
-                        </span>
                       </div>
-                    </a>
-                  ))}
-                </div>
-              );
-            })()}
+                    )}
+                    <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "auto", paddingTop: "8px" }}>
+                      {repo.language && (
+                        <span style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "12px", color: "var(--color-ink-mute)" }}>
+                          <span style={{ width: "10px", height: "10px", borderRadius: "9999px", backgroundColor: LANG_COLORS[repo.language] ?? "#9a9a9a", flexShrink: 0 }} />
+                          {repo.language}
+                        </span>
+                      )}
+                      <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "var(--color-ink-mute)" }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                        </svg>
+                        {repo.stargazers_count.toLocaleString("en-US")}
+                      </span>
+                      <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "var(--color-ink-mute)" }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="18" r="3" /><circle cx="6" cy="6" r="3" /><circle cx="18" cy="6" r="3" />
+                          <path d="M18 9a9 9 0 0 1-9 9M6 9a9 9 0 0 0 9 9" />
+                        </svg>
+                        {repo.forks_count.toLocaleString("en-US")}
+                      </span>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            )}
 
             <div style={{ marginTop: "20px" }}>
               <a
@@ -1044,9 +1172,21 @@ export function ProfileView({
           </>
         )}
       </div>
+          </motion.div>
+        )}
 
+        {activeTab === "stats" && (
+          <motion.div
+            key="stats"
+            role="tabpanel"
+            id="profile-tabpanel-stats"
+            aria-labelledby="profile-tab-stats"
+            initial={tabInitial}
+            animate={tabAnimate}
+            exit={tabExit}
+          >
       {/* Contribution stats */}
-      <div style={{ marginTop: "44px" }}>
+      <div style={{ marginTop: "24px" }}>
         <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--color-ink)", margin: "0 0 16px 0", letterSpacing: "-0.2px" }}>
           Contribution stats
         </h2>
@@ -1091,9 +1231,39 @@ export function ProfileView({
           ))}
         </div>
       </div>
+          </motion.div>
+        )}
 
+        {activeTab === "prs" && (
+          <motion.div
+            key="prs"
+            role="tabpanel"
+            id="profile-tabpanel-prs"
+            aria-labelledby="profile-tab-prs"
+            initial={tabInitial}
+            animate={tabAnimate}
+            exit={tabExit}
+            style={{ marginTop: "24px" }}
+          >
+            <LatestMergedPRs mergedPRs={mergedPRs} />
+          </motion.div>
+        )}
+
+        {activeTab === "timeline" && (
+          <motion.div
+            key="timeline"
+            role="tabpanel"
+            id="profile-tabpanel-timeline"
+            aria-labelledby="profile-tab-timeline"
+            initial={tabInitial}
+            animate={tabAnimate}
+            exit={tabExit}
+          >
       {/* Contribution Timeline */}
       <ContributionTimeline mergedPRs={mergedPRs} badges={badgesList} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Tech stack */}
       {techStack.length > 0 && (
