@@ -42,6 +42,7 @@ function ProfileCardInner({
   return (
     <Link
       href={`/${encodeURIComponent(username)}`}
+      aria-label={`View ${displayName}'s profile, score is ${score}`}
       style={{
         display: "flex",
         flexDirection: "column",
@@ -147,11 +148,11 @@ function ProfileCardInner({
         </div>
       )}
 
-      <div style={{ display: "flex", gap: "16px", fontSize: "12px", color: "var(--color-ink-mute-2)" }}>
-        <span>{totalPrs} PRs</span>
-        <span>{totalCommits} commits</span>
-        <span>{totalIssues} issues</span>
-        <span>{followers} followers</span>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", fontSize: "12px", color: "var(--color-ink-mute-2)" }}>
+        <span aria-label={`${totalPrs} merged pull requests`}>{totalPrs} PRs</span>
+        <span aria-label={`${totalCommits} commits`}>{totalCommits} commits</span>
+        <span aria-label={`${totalIssues} issues`}>{totalIssues} issues</span>
+        <span aria-label={`${followers} followers`}>{followers} followers</span>
       </div>
     </Link>
   );

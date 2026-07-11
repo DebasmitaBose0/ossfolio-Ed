@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { SearchFilters } from "@/components/discover/SearchFilters";
 import { ProfileCard } from "@/components/discover/ProfileCard";
 import { DiscoverPagination } from "@/components/discover/DiscoverPagination";
+import { SearchAccessibilityAnnouncer } from "@/components/discover/SearchAccessibilityAnnouncer";
 
 interface DiscoverProfile {
   username: string;
@@ -77,6 +78,7 @@ export function DiscoverContent() {
 
   return (
     <>
+      <SearchAccessibilityAnnouncer resultsCount={data?.profiles.length || 0} isLoading={loading} />
       <SearchFilters />
 
       {loading && (
