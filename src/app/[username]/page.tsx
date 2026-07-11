@@ -6,86 +6,41 @@ import { TemporaryUnavailableFallback } from "@/components/layout/TemporaryUnava
 
 import { ProfileView } from "@/components/profile/ProfileView";
 import {
-  fetchLiveStats,
-  fetchOrganizations,
   deriveTechStack,
   mapRepos,
-  fetchMergedPRs,
+  type GitHubUser,
 } from "@/lib/profile-data";
+import {
+  getProfileSnapshot,
+  isSnapshotStale,
+  syncProfileSnapshot,
+} from "@/lib/profile-snapshot";
+import { ProfileSyncing } from "@/components/profile/ProfileSyncing";
+import { after } from "next/server";
 import { generateMockHeatmap, computeStreaks } from "@/lib/mock";
 import { fetchContributionCalendar } from "@/lib/github";
 import { calculateScore } from "@/lib/score";
 import { supabase } from "@/lib/supabase";
-import { fetchWithTimeout, isTimeoutError } from "@/lib/fetch-with-timeout";
 
 
 export const runtime = "edge";
 
-interface GitHubUser {
-  login: string;
-  name: string | null;
-  bio: string | null;
-  avatar_url: string;
-  html_url: string;
-  public_repos: number;
-  followers: number;
-  following: number;
-  blog: string | null;
-  location: string | null;
-  twitter_username: string | null;
-}
 
 interface ProfilePageProps {
   params: Promise<{ username: string }>;
 }
 
-async function fetchGitHubUser(username: string): Promise<GitHubUser | null> {
-  const res = await fetchWithTimeout(
-    `https://api.github.com/users/${username}`,
-    {
-      headers: { Accept: "application/vnd.github.v3+json" },
-      next: { revalidate: 3600 },
-    },
-    10_000
-  );
-  if (!res.ok) {
-    try {
-      const err = await res.json();
-      if (err.message && err.message.toLowerCase().includes("rate limit")) {
-        throw new Error("RateLimit");
-      }
-    } catch (e) {
-      if (e instanceof Error && e.message === "RateLimit") throw e;
-    }
-    return null;
-  }
-
-  return res.json() as Promise<GitHubUser>;
-}
-
-async function fetchGitHubRepos(username: string) {
-  const res = await fetchWithTimeout(
-    `https://api.github.com/users/${username}/repos?sort=stars&per_page=100&type=owner`,
-    {
-      headers: { Accept: "application/vnd.github.mercy-preview+json" },
-      next: { revalidate: 3600 },
-    },
-    10_000
-  );
-  if (!res.ok) return [];
-  const repos = await res.json();
-  return repos.filter((r: { fork: boolean }) => !r.fork).slice(0, 6);
-}
-
-
 export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
   const { username } = await params;
-  let user: GitHubUser | null = null;
-  try {
-    user = await fetchGitHubUser(username);
-  } catch {
-    // Rate limit or network error - fall back to minimal metadata
-  }
+  // Read the same snapshot the page body renders from, rather than calling GitHub
+  // again here. `generateMetadata` blocks the response head, so a live fetch here
+  // would put a GitHub round-trip back on the critical path and undo the TTFB win.
+  // `getProfileSnapshot` is `cache()`d, so this shares one query with the page body.
+  // A profile that hasn't synced yet simply falls through to the minimal metadata
+  // below, and gets the rich card on its next render once the snapshot lands.
+  const stored = await getProfileSnapshot(username);
+  const user: GitHubUser | null = stored?.snapshot?.user ?? null;
+
   if (!user) {
     const fallbackDescription = `Open-source profile for ${username}.`;
     return {
@@ -139,41 +94,32 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
 export default async function ProfilePage({ params }: ProfilePageProps) {
   const { username } = await params;
 
-  // Base profile + repos (already-working live data) plus the new live extras.
-  let rateLimited = false;
-  let user: GitHubUser | null = null;
-  let repos: any = [];
-  let liveStats: any = null;
-  let orgs: any = [];
-  let contributionCalendar: any = null;
+  // DB-first: one query, instead of six sequential GitHub calls in the render path.
+  const stored = await getProfileSnapshot(username);
 
-  try {
-    user = await fetchGitHubUser(username);
-  } catch (e) {
-    if (e instanceof Error && e.message === "RateLimit") rateLimited = true;
-    // If GitHub is slow/unreachable, avoid a hard crash.
-    if (isTimeoutError(e)) {
-      return (
-        <TemporaryUnavailableFallback
-          heading="Temporarily Unavailable"
-          message={
-            <>
-              GitHub API is taking too long to respond for <strong>@{username}</strong>. Please try again in a moment.
-            </>
-          }
-        />
-      );
-    }
-    user = null;
+  // Cold profile — nothing stored yet. Kick the sync off behind the response and
+  // show a syncing state; `after()` runs once this response has already been sent,
+  // so it costs the user nothing. The claim inside syncProfileSnapshot() means the
+  // client polling this page cannot stampede GitHub with repeat syncs.
+  if (!stored?.snapshot) {
+    after(() => syncProfileSnapshot(username));
+    return <ProfileSyncing username={username} />;
   }
 
-  // Other fetches can also error on rate limit; we treat them similarly.
-  try { repos = await fetchGitHubRepos(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
-  try { liveStats = await fetchLiveStats(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
-  let mergedPRs: any[] = [];
-  try { mergedPRs = await fetchMergedPRs(username, 10); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
-  try { orgs = await fetchOrganizations(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
-  try { contributionCalendar = await fetchContributionCalendar(username); } catch (e) { if (e instanceof Error && e.message === "RateLimit") rateLimited = true; }
+  // Warm profile — render from the snapshot. If it's past its TTL, refresh it in the
+  // background: the visitor still gets the stored copy instantly (stale-while-revalidate).
+  if (isSnapshotStale(stored.syncedAt)) {
+    after(() => syncProfileSnapshot(username));
+  }
+
+  const snapshot = stored.snapshot;
+  const rateLimited = snapshot.rateLimited;
+  const user = snapshot.user;
+  const repos = snapshot.repos as any;
+  const liveStats = snapshot.liveStats as any;
+  const mergedPRs = (snapshot.mergedPRs ?? []) as any[];
+  const orgs = snapshot.orgs as any;
+  const contributionCalendar = snapshot.contributionCalendar as any;
 
   if (!user && !rateLimited) return notFound();
 

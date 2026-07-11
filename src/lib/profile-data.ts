@@ -170,3 +170,60 @@ export async function fetchMergedPRs(username: string, limit: number = 10): Prom
     return [];
   }
 }
+
+/**
+ * The GitHub user object. Previously defined inside the profile page; lifted here
+ * so the background snapshot sync can fetch exactly what the page renders, rather
+ * than a second, drifting copy of the same request.
+ */
+export interface GitHubUser {
+  login: string;
+  name: string | null;
+  bio: string | null;
+  avatar_url: string;
+  html_url: string;
+  public_repos: number;
+  followers: number;
+  following: number;
+  blog: string | null;
+  location: string | null;
+  twitter_username: string | null;
+}
+
+export async function fetchGitHubUser(username: string): Promise<GitHubUser | null> {
+  const res = await fetchWithTimeout(
+    `https://api.github.com/users/${username}`,
+    {
+      headers: { Accept: "application/vnd.github.v3+json" },
+      next: { revalidate: 3600 },
+    },
+    10_000
+  );
+  if (!res.ok) {
+    try {
+      const err = await res.json();
+      if (err.message && err.message.toLowerCase().includes("rate limit")) {
+        throw new Error("RateLimit");
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message === "RateLimit") throw e;
+    }
+    return null;
+  }
+
+  return res.json() as Promise<GitHubUser>;
+}
+
+export async function fetchGitHubRepos(username: string) {
+  const res = await fetchWithTimeout(
+    `https://api.github.com/users/${username}/repos?sort=stars&per_page=100&type=owner`,
+    {
+      headers: { Accept: "application/vnd.github.mercy-preview+json" },
+      next: { revalidate: 3600 },
+    },
+    10_000
+  );
+  if (!res.ok) return [];
+  const repos = await res.json();
+  return repos.filter((r: { fork: boolean }) => !r.fork).slice(0, 6);
+}
