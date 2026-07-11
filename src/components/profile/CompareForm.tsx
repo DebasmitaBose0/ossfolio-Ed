@@ -49,6 +49,7 @@ export function CompareForm({ defaultA = "", defaultB = "" }: CompareFormProps) 
         onChange={(e) => setA(e.target.value)}
         placeholder="Username A"
         aria-label="First GitHub username"
+        autoComplete="off"
         style={inputStyle}
         onFocus={(e) => (e.currentTarget.style.borderColor = "var(--color-primary)")}
         onBlur={(e) => (e.currentTarget.style.borderColor = "var(--color-hairline)")}
@@ -69,6 +70,7 @@ export function CompareForm({ defaultA = "", defaultB = "" }: CompareFormProps) 
         onChange={(e) => setB(e.target.value)}
         placeholder="Username B"
         aria-label="Second GitHub username"
+        autoComplete="off"
         style={inputStyle}
         onFocus={(e) => (e.currentTarget.style.borderColor = "var(--color-primary)")}
         onBlur={(e) => (e.currentTarget.style.borderColor = "var(--color-hairline)")}
