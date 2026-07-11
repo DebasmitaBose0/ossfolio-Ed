@@ -43,13 +43,21 @@ const tokens = {
 
 /** Circular GitHub avatar with a graceful initial-letter fallback. */
 function Avatar({ src, name, size }: { src?: string; name?: string; size: number }) {
-  if (src) {
+  // A `src` can be present but still fail to load (e.g. the GitHub avatar URL
+  // 404s), which previously rendered a broken-image icon. Remember *which* src
+  // failed rather than a bare boolean: that way a new avatar URL is retried
+  // automatically (failedSrc no longer matches), with no reset effect needed.
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const failed = src !== undefined && failedSrc === src;
+
+  if (src && !failed) {
     return (
       <Image
         src={src}
         alt={name ?? "Profile"}
         width={size}
         height={size}
+        onError={() => setFailedSrc(src)}
         style={{ 
           borderRadius: "50%", 
           border: "1px solid var(--color-hairline-strong)", 
