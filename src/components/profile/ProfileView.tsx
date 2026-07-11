@@ -402,9 +402,12 @@ export function ProfileView({
       const days = Math.floor(hours / 24);
       return `${days}d ago`;
     };
-    setRelativeTime(compute());
+    const initialUpdate = setTimeout(() => setRelativeTime(compute()), 0);
     const interval = setInterval(() => setRelativeTime(compute()), 60000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(initialUpdate);
+    };
   }, [lastRefresh]);
 
   const handleRefresh = async () => {
