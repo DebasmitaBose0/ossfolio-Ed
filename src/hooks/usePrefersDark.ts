@@ -7,7 +7,7 @@ export function usePrefersDark(): boolean {
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    setPrefersDark(mediaQuery.matches);
+    setTimeout(() => setPrefersDark(mediaQuery.matches), 0);
 
     const handler = (e: MediaQueryListEvent) => setPrefersDark(e.matches);
     mediaQuery.addEventListener("change", handler);
