@@ -475,6 +475,37 @@ export function ProfileView({
   const tabAnimate = { opacity: 1, y: 0, transition: tabTransition };
   const tabExit = { opacity: 0, y: -6, transition: { duration: 0.12, ease: "easeIn" as const } };
 
+  const handleTabKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLButtonElement>) => {
+      const keys = profileTabs.map((t) => t.key);
+      const currentIndex = keys.indexOf(activeTab);
+      let nextIndex: number | null = null;
+
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        nextIndex = (currentIndex + 1) % keys.length;
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        nextIndex = (currentIndex - 1 + keys.length) % keys.length;
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        nextIndex = 0;
+      } else if (e.key === "End") {
+        e.preventDefault();
+        nextIndex = keys.length - 1;
+      }
+
+      if (nextIndex !== null && nextIndex !== currentIndex) {
+        const nextKey = keys[nextIndex];
+        setActiveTab(nextKey);
+        // Focus the destination button by its stable DOM id
+        const btn = document.getElementById(`profile-tab-${nextKey}`);
+        if (btn) (btn as HTMLButtonElement).focus();
+      }
+    },
+    [activeTab],
+  );
+
   const uniqueLanguages = useMemo(() => {
     return Array.from(
       new Set(
@@ -918,7 +949,9 @@ export function ProfileView({
             id={`profile-tab-${tab.key}`}
             aria-selected={activeTab === tab.key}
             aria-controls={`profile-tabpanel-${tab.key}`}
+            tabIndex={activeTab === tab.key ? 0 : -1}
             onClick={() => setActiveTab(tab.key)}
+            onKeyDown={handleTabKeyDown}
             style={{
               position: "relative",
               padding: "10px 18px",
