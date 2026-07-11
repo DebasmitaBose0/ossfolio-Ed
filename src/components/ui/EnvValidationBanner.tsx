@@ -8,7 +8,7 @@ export function EnvValidationBanner() {
 
   useEffect(() => {
     if (!isSupabaseConfigured()) {
-      setConfigured(false);
+      setTimeout(() => setConfigured(false), 0);
     }
   }, []);
 
