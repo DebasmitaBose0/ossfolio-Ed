@@ -1,0 +1,30 @@
+name: Bulk Create Advanced Issues
+on:
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  create-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Create Issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Starting bulk issue creation..."
+          jq -c '.[]' .github/scripts/issues.json | while read i; do
+            title=$(echo "$i" | jq -r '.title')
+            body=$(echo "$i" | jq -r '.body')
+            labels=$(echo "$i" | jq -r '.labels | join(",")')
+            
+            echo "Creating issue: $title"
+            gh issue create --title "$title" --body "$body" --label "$labels"
+            
+            # Sleep to avoid hitting GitHub API rate limits for issue creation
+            sleep 3
+          done
+          echo "Finished creating all issues!"
