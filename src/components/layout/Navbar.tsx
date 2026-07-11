@@ -70,7 +70,8 @@ function Avatar({ src, name, size }: { src?: string; name?: string; size: number
   const initial = (name?.charAt(0) ?? "U").toUpperCase();
   return (
     <span
-      aria-hidden="true"
+      role="img"
+      aria-label={name ?? "Profile"}
       style={{
         width: size,
         height: size,
