@@ -118,7 +118,7 @@ export function DiscoverPagination({
               {page === currentPage && (
                 <motion.div
                   layoutId="active-page"
-                  className="absolute inset-0 bg-[#3ecf8e] rounded-md z-[-1]"
+                  className="absolute inset-0 bg-primary rounded-sm z-[-1]"
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
               )}

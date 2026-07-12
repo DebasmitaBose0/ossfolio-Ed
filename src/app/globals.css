@@ -1,6 +1,21 @@
 @import "tailwindcss";
 
-:root {
+/* ─────────────────────────────────────────────────────────────────────────────
+   Design tokens — Tailwind v4 CSS-first configuration.
+
+   These moved from `:root` into `@theme`. The values are byte-for-byte unchanged;
+   what changes is that Tailwind can finally see them. Sitting in `:root` they were
+   invisible to it, so no utilities were generated from them at all — which is why
+   the codebase reaches for inline `style={{ }}` and hardcoded hexes like
+   `bg-[#3ecf8e]`: there was simply no `bg-primary` to use.
+
+   From `@theme`, Tailwind generates the full utility set from these same tokens —
+   `bg-canvas`, `text-ink`, `border-hairline`, `text-primary`, `rounded-sm`,
+   `font-sans`, and so on — and still emits every token as a CSS variable on
+   `:root`, so all existing `var(--color-…)` usages keep working untouched.
+   ───────────────────────────────────────────────────────────────────────────── */
+@theme {
+
   /* Brand Constants */
   --color-primary: #3ecf8e;
   --color-primary-deep: #24b47e;
@@ -115,19 +130,13 @@ dialog::backdrop {
   }
 }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
+/* `.sr-only` was hand-rolled here, byte-identical to the one Tailwind already ships.
+   Removed — Tailwind generates it, and an unlayered copy only shadowed it. */
 
-/* Smooth global transitions for theme color variables */
-.theme-transition {
+/* Smooth global transitions for theme color variables.
+   Declared with `@utility` — Tailwind v4's way of registering a custom utility, so it
+   lands in the utilities layer and composes with variants (`hover:`, `dark:`, ...)
+   instead of being an unlayered class that outranks everything. */
+@utility theme-transition {
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, fill 0.2s ease, stroke 0.2s ease;
 }

@@ -24,7 +24,7 @@ export function ContributionHeatmap({ weeks, totalContributions }: ContributionH
                 <div
                   key={di}
                   title={`${day.count} contributions on ${day.date}`}
-                  className="h-3 w-3 rounded-sm"
+                  className="h-3 w-3 rounded-xs"
                   style={{ backgroundColor: day.color }}
                 />
               ))}
