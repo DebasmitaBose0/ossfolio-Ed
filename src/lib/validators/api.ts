@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { sanitizeString } from "../sanitizer";
 
 export function sanitizeUsername(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -32,14 +31,6 @@ export function validateYear(value: unknown): number | null {
   return parsed;
 }
 
-export function validateEmail(value: unknown): string | null {
-  if (typeof value !== "string") return null;
-  const trimmed = value.trim().toLowerCase();
-  if (trimmed.length > 254) return null;
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return null;
-  return trimmed;
-}
-
 export function validatePagination(
   page: unknown,
   pageSize: unknown,
@@ -61,37 +52,6 @@ export function validateSortBy<T extends string>(
 ): T {
   if (typeof value !== "string") return fallback;
   return (allowed as readonly string[]).includes(value) ? (value as T) : fallback;
-}
-
-export function sanitizeObject<T extends Record<string, unknown>>(
-  obj: T,
-  schema: Record<string, { type: "string" | "number" | "boolean" | "array" | "object"; maxLength?: number; required?: boolean }>
-): { data: Partial<T>; errors: string[] } {
-  const data: Partial<T> = {};
-  const errors: string[] = [];
-
-  for (const [key, rule] of Object.entries(schema)) {
-    const value = obj[key as keyof T];
-    if (value === undefined || value === null) {
-      if (rule.required) errors.push(`${key} is required`);
-      continue;
-    }
-    if (rule.type === "string" && typeof value === "string") {
-      data[key as keyof T] = sanitizeString(value, rule.maxLength ?? 500) as T[keyof T];
-    } else if (rule.type === "number" && typeof value === "number") {
-      data[key as keyof T] = value;
-    } else if (rule.type === "boolean" && typeof value === "boolean") {
-      data[key as keyof T] = value;
-    } else if (rule.type === "array" && Array.isArray(value)) {
-      data[key as keyof T] = value.slice(0, rule.maxLength ?? 50) as T[keyof T];
-    } else if (rule.type === "object" && typeof value === "object" && !Array.isArray(value)) {
-      data[key as keyof T] = value;
-    } else {
-      errors.push(`${key} has invalid type`);
-    }
-  }
-
-  return { data, errors };
 }
 
 export function createApiResponse<T>(data: T, status = 200, extraHeaders?: Record<string, string>): NextResponse {
@@ -128,14 +88,4 @@ export function createErrorResponse(
   );
 }
 
-export const COMMON_SCHEMAS = {
-  pagination: {
-    page: { type: "number" as const },
-    pageSize: { type: "number" as const },
-  },
-  profile: {
-    headline: { type: "string" as const, maxLength: 160 },
-    bio: { type: "string" as const, maxLength: 500 },
-    location: { type: "string" as const, maxLength: 100 },
-  },
-};
+
