@@ -55,5 +55,29 @@ grant insert (id, username, name, avatar_url, github_url, bio,
 -- DELETE stays revoked. Nothing in the app deletes a profile from the client, and
 -- `on delete cascade` from auth.users already removes the row when an account is deleted.
 
+-- ── updated_at ────────────────────────────────────────────────────────────────
+--
+-- `updated_at` is deliberately NOT granted, even though the settings route writes it today.
+-- `src/app/explore/page.tsx` orders profiles by `updated_at desc`, so a client that can write
+-- the column could set it to a far-future date and pin itself to the top of Explore forever —
+-- the same class of forgery this migration exists to close, and one that is possible today.
+--
+-- Instead the database maintains it. Every writer already sets it to `now()` on update
+-- (`refresh-profile.ts` does exactly `update({ last_refreshed_at: now, updated_at: now })`),
+-- so this changes no behaviour — it just moves the assignment somewhere a client cannot forge.
+-- The settings route drops its manual assignment accordingly.
+create or replace function public.profiles_touch_updated_at()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+drop trigger if exists profiles_set_updated_at on public.profiles;
+create trigger profiles_set_updated_at
+  before update on public.profiles
+  for each row execute function public.profiles_touch_updated_at();
+
 comment on table public.profiles is
   'Public profile. Presentation columns (headline, pinned_repos, custom_links, visibility, badges) are user-writable; score, total_*, flagged and flag_reason are server-computed and writable only with the service-role key.';

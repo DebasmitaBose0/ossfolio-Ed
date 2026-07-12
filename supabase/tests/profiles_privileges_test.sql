@@ -18,6 +18,7 @@ declare
   v_flagged boolean;
   v_headline text;
   v_id uuid;
+  v_touched timestamptz;
   blocked boolean;
 begin
   -- Seed two profiles with the service role (bypasses RLS, as the server does).
@@ -120,6 +121,51 @@ begin
   select score, flagged into v_score, v_flagged from public.profiles where id = alice;
   if v_score <> 321 or v_flagged then
     raise exception 'FAIL 7: the server can no longer write the score. The sync route is broken.';
+  end if;
+
+  ---------------------------------------------------------------------------
+  -- 8. The settings route's REAL payload must still succeed.
+  --    Check 6 only tried `headline` on its own, which is exactly why it missed that
+  --    api/settings also writes `updated_at` on every save — with column-level grants
+  --    that would have failed the whole statement and broken profile editing outright.
+  ---------------------------------------------------------------------------
+  set local role authenticated;
+  update public.profiles
+     set headline = 'from settings',
+         pinned_repos = '[]'::jsonb,
+         custom_links = '[]'::jsonb,
+         visibility = 'unlisted',
+         badges = '[]'::jsonb
+   where id = alice;
+  reset role;
+  select headline into v_headline from public.profiles where id = alice;
+  if v_headline <> 'from settings' then
+    raise exception 'FAIL 8: the settings route payload is rejected. Profile editing is broken.';
+  end if;
+
+  ---------------------------------------------------------------------------
+  -- 9. `updated_at` must not be forgeable. Explore orders by it, so a writable
+  --    timestamp would let a user pin themselves to the top of the list forever.
+  ---------------------------------------------------------------------------
+  set local role authenticated;
+  blocked := false;
+  begin
+    update public.profiles set updated_at = '3000-01-01'::timestamptz where id = alice;
+  exception when insufficient_privilege then
+    blocked := true;
+  end;
+  reset role;
+  if not blocked then
+    raise exception 'FAIL 9: a user could write `updated_at` and pin themselves atop Explore.';
+  end if;
+
+  ---------------------------------------------------------------------------
+  -- 10. ...but the database must still maintain it on every update (the trigger).
+  ---------------------------------------------------------------------------
+  update public.profiles set updated_at = '2000-01-01'::timestamptz where id = alice;
+  select updated_at into v_touched from public.profiles where id = alice;
+  if v_touched < now() - interval '1 minute' then
+    raise exception 'FAIL 10: profiles_set_updated_at did not maintain updated_at.';
   end if;
 
   delete from public.profiles where id in (alice, bob);

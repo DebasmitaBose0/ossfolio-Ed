@@ -4,9 +4,13 @@ import { fetchContributorProfile, contributorToScoreInputs } from "@/lib/github"
 import { mapRepos, fetchLiveStats } from "@/lib/profile-data";
 import { scoreWithAnomalyCheck } from "@/lib/anomaly";
 import { createApiResponse, createErrorResponse } from "@/lib/validators/api";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import type { ContributorStats, Repo } from "@/types";
 
 export const runtime = "edge";
+
+/** Bound every outbound GitHub call so a slow upstream cannot pin an edge invocation open. */
+const GITHUB_TIMEOUT_MS = 8000;
 
 /**
  * POST /api/profile/sync
@@ -41,9 +45,13 @@ function extractToken(request: NextRequest): string | null {
 async function statsFromRest(
   username: string
 ): Promise<{ stats: ContributorStats; repos: Repo[] }> {
-  const reposRes = await fetch(
+  // Bounded: this runs inside an edge invocation. The client stops waiting after
+  // SYNC_TIMEOUT_MS and redirects, but the invocation itself would otherwise keep running
+  // until GitHub answers, so the request is aborted rather than merely abandoned.
+  const reposRes = await fetchWithTimeout(
     `https://api.github.com/users/${encodeURIComponent(username)}/repos?sort=stars&per_page=12&type=owner`,
-    { headers: { Accept: "application/vnd.github.v3+json" }, cache: "no-store" }
+    { headers: { Accept: "application/vnd.github.v3+json" }, cache: "no-store" },
+    GITHUB_TIMEOUT_MS
   );
   const rawRepos = reposRes.ok ? await reposRes.json() : [];
   const filtered = Array.isArray(rawRepos)
