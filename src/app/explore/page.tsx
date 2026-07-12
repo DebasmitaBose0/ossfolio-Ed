@@ -100,8 +100,10 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const { page: pageParam, q: qParam, sortBy: sortByParam, type: typeParam } = await searchParams;
   const page = Math.max(1, Math.floor(Number(pageParam)) || 1);
   const searchQuery = typeof qParam === "string" ? qParam.trim() : "";
-  const sortBy = typeof sortByParam === "string" ? sortByParam : "score";
-  const type = typeParam === "organizations" ? "organizations" : "users";
+  const VALID_SORT_OPTIONS = new Set(["score", "prs", "commits", "issues", "improvement"]);
+  const sortBy = typeof sortByParam === "string" && VALID_SORT_OPTIONS.has(sortByParam) ? sortByParam : "score";
+  const VALID_TYPES = new Set(["users", "organizations"]);
+  const type = typeof typeParam === "string" && VALID_TYPES.has(typeParam) ? typeParam : "users";
 
   const { rows, hasNext } = await fetchPage(page, searchQuery, sortBy, type);
   const hasPrev = page > 1;
