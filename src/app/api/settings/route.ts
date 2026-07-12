@@ -121,7 +121,9 @@ export async function PUT(request: NextRequest) {
     return createErrorResponse("No valid fields to update", 400);
   }
 
-  updates.updated_at = new Date().toISOString();
+  // `updated_at` is maintained by the `profiles_set_updated_at` trigger. The client is not
+  // granted the column (Explore orders by it, so a writable timestamp is forgeable), and
+  // writing it here would now fail with `permission denied`.
 
   const { error } = await supabase
     .from("profiles")
