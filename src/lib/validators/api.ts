@@ -106,7 +106,15 @@ export function createApiResponse<T>(data: T, status = 200, extraHeaders?: Recor
   });
 }
 
-export function createErrorResponse(error: string, status = 400, extra?: Record<string, unknown>): NextResponse {
+export function createErrorResponse(
+  error: string,
+  status = 400,
+  extra?: Record<string, unknown>,
+  // Optional extra response headers. Added so a 429 can carry the standard `Retry-After`
+  // header, which well-behaved clients, crawlers and proxies honour without needing to
+  // parse the body. Existing callers are unaffected.
+  headers?: Record<string, string>
+): NextResponse {
   return NextResponse.json(
     { error, ...extra },
     {
@@ -114,6 +122,7 @@ export function createErrorResponse(error: string, status = 400, extra?: Record<
       headers: {
         "X-Content-Type-Options": "nosniff",
         "X-Frame-Options": "DENY",
+        ...headers,
       },
     }
   );
