@@ -11,6 +11,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { SkeletonCard } from "@/components/ui/skeleton-card";
+import { evaluateAchievements, countUnlocked } from "@/lib/achievements";
+import { AchievementsGrid } from "@/components/profile/AchievementsGrid";
 import type { ContributorStats, Org, TechEntry, HeatmapWeek, BadgeItem } from "@/types";
 import { toPng } from "html-to-image";
 import { supabase } from "@/lib/supabase";
@@ -466,6 +468,16 @@ export function ProfileView({
     customLinks?: Array<{ label: string; url: string }>;
     customizationLoaded?: boolean;
   }) {
+  // Derived from stats the page already fetched and passed down, so the whole feature
+  // costs no extra GitHub calls and no extra database queries. `useMemo` keeps the array
+  // referentially stable across the many re-renders this component does (tab switches,
+  // repo filtering, sorting), so the cards don't rebuild on every keystroke.
+  const achievements = useMemo(
+    () => evaluateAchievements({ stats, longestStreak }),
+    [stats, longestStreak]
+  );
+  const unlockedCount = useMemo(() => countUnlocked(achievements), [achievements]);
+
   const [copied, setCopied] = useState(false);
   const [repoSort, setRepoSort] = useState<"stars" | "forks" | "updated">("stars");
   const [isDownloading, setIsDownloading] = useState(false);
@@ -1014,6 +1026,9 @@ export function ProfileView({
           )}
         </div>
       )}
+
+      {/* Achievements — auto-earned milestones, distinct from the self-declared badges above */}
+      <AchievementsGrid achievements={achievements} unlockedCount={unlockedCount} />
 
       {/* Tab navigation */}
       <div
