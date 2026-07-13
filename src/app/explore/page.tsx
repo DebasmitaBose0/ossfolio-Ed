@@ -67,7 +67,11 @@ async function fetchPage(
     } else {
       query = supabase
         .from("profiles")
-        .select("username, name, avatar_url, score, total_prs, total_issues, total_commits, score_delta_30_days");
+        .select("username, name, avatar_url, score, total_prs, total_issues, total_commits, score_delta_30_days")
+        // Explore is a listing, so only public profiles belong in it. `unlisted` and `private` have
+        // both opted out of being found — until now the setting saved and this query ignored it, so
+        // a user who chose "unlisted" stayed on the leaderboard anyway.
+        .eq("visibility", "public");
       
       if (searchQuery) {
         query = query.or(`username.ilike.%${searchQuery}%,name.ilike.%${searchQuery}%`);

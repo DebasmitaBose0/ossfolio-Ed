@@ -181,6 +181,17 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       .maybeSingle();
     customizationFetchSettled = true;
     profileRow = data;
+
+    // `private` means the page does not exist. This has to be an explicit check rather than an RLS
+    // policy: ossfolio renders /[username] for any GitHub account, signed up or not, so a null
+    // `profileRow` is the ordinary case, not an error. If RLS hid private rows, this code could not
+    // tell "private" from "never signed up" — it would fall through and render the public GitHub
+    // data instead of 404ing, so the setting would look like it worked while doing nothing. That is
+    // precisely the bug this change exists to fix, so it would be a poor trade.
+    if (profileRow?.visibility === "private") {
+      return notFound();
+    }
+
     if (profileRow) {
       profileId = profileRow.id;
       if (typeof profileRow.score === "number") {

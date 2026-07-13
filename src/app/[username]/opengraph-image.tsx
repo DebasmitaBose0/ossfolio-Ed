@@ -63,6 +63,8 @@ export default async function OGImage({ params }: OGImageProps) {
     supabase
       .from("profiles")
       .select("score, total_commits, total_prs, total_issues, total_reviews")
+      // Same reasoning as the page: a private profile should not have a shareable social card.
+      .neq("visibility", "private")
       .eq("username", username)
       .maybeSingle()
       .then((r) => r.data),

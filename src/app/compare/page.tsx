@@ -101,6 +101,9 @@ async function fetchProfile(username: string): Promise<ProfileData> {
     const { data: profileRow } = await supabase
       .from("profiles")
       .select("score")
+        // A private profile has no page; it should not be comparable either — otherwise the
+        // data it is meant to hide is reachable through /compare instead.
+        .neq("visibility", "private")
       .eq("username", username)
       .maybeSingle();
     if (profileRow && typeof profileRow.score === "number") {

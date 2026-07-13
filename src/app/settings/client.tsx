@@ -19,7 +19,7 @@ interface ProfileSettings {
   pinned_repos: string[];
   custom_links: CustomLink[];
   badges: Badge[];
-  visibility: "public" | "unlisted";
+  visibility: "public" | "unlisted" | "private";
 }
 
 const AVAILABLE_BADGES = [
@@ -273,12 +273,18 @@ export function SettingsClient() {
         <label style={labelStyle}>Profile Visibility</label>
         <select
           value={settings.visibility}
-          onChange={(e) => setSettings((s) => ({ ...s, visibility: e.target.value as "public" | "unlisted" }))}
+          onChange={(e) =>
+            setSettings((s) => ({
+              ...s,
+              visibility: e.target.value as "public" | "unlisted" | "private",
+            }))
+          }
           style={{ ...inputStyle, width: "auto", cursor: "pointer" }}
           aria-label="Profile visibility"
         >
           <option value="public">Public (visible on Discover)</option>
           <option value="unlisted">Unlisted (only accessible via direct link)</option>
+          <option value="private">Private (profile page returns 404)</option>
         </select>
       </div>
 
