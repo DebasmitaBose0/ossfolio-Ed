@@ -58,15 +58,24 @@ export default async function OGImage({ params }: OGImageProps) {
   ]);
 
   // Fetch user data and the stored profile summary in parallel
-  const [user, profileRow] = await Promise.all([
+  const [user, profileResult] = await Promise.all([
     fetchGitHubUser(username),
     supabase
       .from("profiles")
       .select("score, total_commits, total_prs, total_issues, total_reviews, visibility")
       .eq("username", username)
-      .maybeSingle()
-      .then((r) => r.data),
+      .maybeSingle(),
   ]);
+
+  // Fail closed. This previously did `.then((r) => r.data)`, which discards the error — and the
+  // Supabase client resolves with `{ data: null, error }` rather than throwing, so any database
+  // failure left `profileRow` null, the private check below passed, and a private profile got a
+  // fully rendered, fully shareable social card.
+  if (profileResult.error) {
+    return new Response(null, { status: 404 });
+  }
+
+  const profileRow = profileResult.data;
 
   // A private profile has no page, so it must not have a social card either.
   //

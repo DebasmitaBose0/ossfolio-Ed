@@ -98,13 +98,20 @@ async function fetchProfile(username: string): Promise<ProfileData> {
 
   let score = liveScore;
   let visibility: string | null = null;
+  let visibilityUnknown = false;
   try {
-    const { data: profileRow } = await supabase
+    const { data: profileRow, error } = await supabase
       .from("profiles")
       .select("score, visibility")
       .eq("username", username)
       .maybeSingle();
-    if (profileRow) {
+
+    // The Supabase client resolves with `{ data: null, error }` rather than throwing, so the catch
+    // below never sees a query failure — reading only `data` would leave `visibility` null on a
+    // database error and the private check would quietly pass. A privacy gate has to fail closed.
+    if (error) {
+      visibilityUnknown = true;
+    } else if (profileRow) {
       visibility =
         typeof profileRow.visibility === "string" ? profileRow.visibility : null;
       if (typeof profileRow.score === "number") {
@@ -112,6 +119,7 @@ async function fetchProfile(username: string): Promise<ProfileData> {
       }
     }
   } catch {
+    visibilityUnknown = true;
     // Soft fallback to live score
   }
 
@@ -126,6 +134,15 @@ async function fetchProfile(username: string): Promise<ProfileData> {
   //
   // Same message as the not-found case on purpose, so /compare cannot be used to discover that a
   // private profile exists — which is the same reasoning api/v1 already applies to unlisted ones.
+  if (visibilityUnknown) {
+    // Distinct message from the not-found case below, because this genuinely is different: the
+    // profile may be perfectly fine and the database simply unreachable. Telling the user to retry
+    // is honest; claiming the account doesn't exist would not be.
+    throw new Error(
+      `Could not verify profile visibility for "${username}". Please try again.`
+    );
+  }
+
   if (visibility === "private") {
     throw new Error(`GitHub user "${username}" not found`);
   }
