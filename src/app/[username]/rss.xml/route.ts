@@ -94,11 +94,28 @@ export async function GET(
   // `unlisted` is deliberately still served. It means "don't list me", not "don't exist": the
   // profile page itself still renders for anyone holding the link, and the feed follows the page
   // rather than inventing a stricter rule of its own.
-  const { data: profileRow } = await supabase
+  const { data: profileRow, error: visibilityError } = await supabase
     .from("profiles")
     .select("visibility")
     .eq("username", username)
     .maybeSingle();
+
+  // Fail closed. The Supabase client resolves with `{ data: null, error }` rather than throwing, so
+  // discarding the error would leave `profileRow` null on any database failure — the private check
+  // below would pass, and the feed would be served. That is precisely the content the setting exists
+  // to withhold, handed out because a query happened to fail.
+  //
+  // 503 rather than 404, for the same reason as the cold-profile branch: a 404 tells a reader the
+  // feed is dead and it should unsubscribe. A transient database blip is not that.
+  if (visibilityError) {
+    return new Response("Temporarily unavailable", {
+      status: 503,
+      headers: {
+        "Retry-After": "60",
+        "Cache-Control": "no-store",
+      },
+    });
+  }
 
   if (profileRow?.visibility === "private") {
     return new Response("Not found", { status: 404 });
