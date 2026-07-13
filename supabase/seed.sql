@@ -20,7 +20,27 @@
 -- project at all — looking at an empty Explore, an empty Discover, and a /compare with nobody to
 -- compare. This gives them something to develop against.
 --
--- Idempotent: `on conflict do nothing` means `supabase db reset` can be run repeatedly.
+-- Sign-in
+-- -------
+-- Each seeded user also gets a row in `auth.identities`. Without one, GoTrue will not authenticate
+-- them: the account exists, shows up on Explore, and simply cannot be logged into — which would make
+-- this file useful for looking at and useless for testing anything behind auth.
+--
+-- The identities use the `email` provider rather than `github`, because a GitHub identity cannot be
+-- seeded honestly — there is no real OAuth grant behind it. AuthModal offers
+-- `signInWithPassword` alongside GitHub OAuth, so an email identity means these accounts sign in
+-- through the app's own UI:
+--
+--     ada@example.dev / password123     (same password for all five)
+--
+-- That's what makes /settings, the visibility toggle and account deletion testable locally without
+-- configuring GitHub OAuth at all.
+--
+-- `raw_user_meta_data` still carries GitHub-shaped fields, because that is what handle_new_user()
+-- reads to build the profile. The two are different things: app_meta records how the user
+-- authenticates, user_meta records who they are.
+--
+-- Idempotent: `on conflict do nothing` throughout, so `supabase db reset` can be run repeatedly.
 
 -- ---------------------------------------------------------------------------------------------
 -- Auth users. The trigger on auth.users creates the matching public.profiles row.
@@ -42,7 +62,7 @@ values
     now(),
     now() - interval '400 days',
     now(),
-    '{"provider":"github","providers":["github"]}'::jsonb,
+    '{"provider":"email","providers":["email"]}'::jsonb,
     '{"user_name":"ada-dev","full_name":"Ada Rivera","avatar_url":"https://avatars.githubusercontent.com/u/1?v=4","html_url":"https://github.com/ada-dev"}'::jsonb
   ),
   (
@@ -55,7 +75,7 @@ values
     now(),
     now() - interval '300 days',
     now(),
-    '{"provider":"github","providers":["github"]}'::jsonb,
+    '{"provider":"email","providers":["email"]}'::jsonb,
     '{"user_name":"kenji-builds","full_name":"Kenji Watanabe","avatar_url":"https://avatars.githubusercontent.com/u/2?v=4","html_url":"https://github.com/kenji-builds"}'::jsonb
   ),
   (
@@ -68,7 +88,7 @@ values
     now(),
     now() - interval '200 days',
     now(),
-    '{"provider":"github","providers":["github"]}'::jsonb,
+    '{"provider":"email","providers":["email"]}'::jsonb,
     '{"user_name":"priya-codes","full_name":"Priya Nair","avatar_url":"https://avatars.githubusercontent.com/u/3?v=4","html_url":"https://github.com/priya-codes"}'::jsonb
   ),
   (
@@ -81,7 +101,7 @@ values
     now(),
     now() - interval '120 days',
     now(),
-    '{"provider":"github","providers":["github"]}'::jsonb,
+    '{"provider":"email","providers":["email"]}'::jsonb,
     '{"user_name":"tomas-oss","full_name":"Tomás Herrera","avatar_url":"https://avatars.githubusercontent.com/u/4?v=4","html_url":"https://github.com/tomas-oss"}'::jsonb
   ),
   (
@@ -94,10 +114,77 @@ values
     now(),
     now() - interval '30 days',
     now(),
-    '{"provider":"github","providers":["github"]}'::jsonb,
+    '{"provider":"email","providers":["email"]}'::jsonb,
     '{"user_name":"lena-ships","full_name":"Lena Novak","avatar_url":"https://avatars.githubusercontent.com/u/5?v=4","html_url":"https://github.com/lena-ships"}'::jsonb
   )
 on conflict (id) do nothing;
+
+-- ---------------------------------------------------------------------------------------------
+-- Identities.
+--
+-- GoTrue resolves a login through `auth.identities`, not `auth.users` — a user row on its own cannot
+-- be signed into. `identity_data` must carry `sub` (the user's id); GoTrue reads it back out, and a
+-- missing `sub` produces an authentication failure that gives no hint as to why.
+--
+-- `provider_id` is the user id for the email provider, and (provider, provider_id) is unique — which
+-- is also what makes the conflict guard below work.
+-- ---------------------------------------------------------------------------------------------
+insert into auth.identities (
+  id, user_id, identity_data, provider, provider_id,
+  last_sign_in_at, created_at, updated_at
+)
+values
+  (
+    gen_random_uuid(),
+    '11111111-1111-1111-1111-111111111111',
+    '{"sub":"11111111-1111-1111-1111-111111111111","email":"ada@example.dev","email_verified":true,"phone_verified":false}'::jsonb,
+    'email',
+    '11111111-1111-1111-1111-111111111111',
+    now(),
+    now(),
+    now()
+  ),
+  (
+    gen_random_uuid(),
+    '22222222-2222-2222-2222-222222222222',
+    '{"sub":"22222222-2222-2222-2222-222222222222","email":"kenji@example.dev","email_verified":true,"phone_verified":false}'::jsonb,
+    'email',
+    '22222222-2222-2222-2222-222222222222',
+    now(),
+    now(),
+    now()
+  ),
+  (
+    gen_random_uuid(),
+    '33333333-3333-3333-3333-333333333333',
+    '{"sub":"33333333-3333-3333-3333-333333333333","email":"priya@example.dev","email_verified":true,"phone_verified":false}'::jsonb,
+    'email',
+    '33333333-3333-3333-3333-333333333333',
+    now(),
+    now(),
+    now()
+  ),
+  (
+    gen_random_uuid(),
+    '44444444-4444-4444-4444-444444444444',
+    '{"sub":"44444444-4444-4444-4444-444444444444","email":"tomas@example.dev","email_verified":true,"phone_verified":false}'::jsonb,
+    'email',
+    '44444444-4444-4444-4444-444444444444',
+    now(),
+    now(),
+    now()
+  ),
+  (
+    gen_random_uuid(),
+    '55555555-5555-5555-5555-555555555555',
+    '{"sub":"55555555-5555-5555-5555-555555555555","email":"lena@example.dev","email_verified":true,"phone_verified":false}'::jsonb,
+    'email',
+    '55555555-5555-5555-5555-555555555555',
+    now(),
+    now(),
+    now()
+  )
+on conflict (provider, provider_id) do nothing;
 
 -- ---------------------------------------------------------------------------------------------
 -- Stats.
