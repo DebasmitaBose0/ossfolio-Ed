@@ -21,9 +21,16 @@
 alter table public.profiles
   drop constraint if exists profiles_visibility_check;
 
+-- `not valid` so adding the constraint does not take a full table scan under a lock that blocks
+-- writes to `profiles` for its duration. That scan buys nothing here: the new constraint is a strict
+-- superset of the old one (it only adds 'private'), so every existing row already satisfies it by
+-- construction. The validate below then confirms that without holding writes.
 alter table public.profiles
   add constraint profiles_visibility_check
-  check (visibility in ('public', 'unlisted', 'private'));
+  check (visibility in ('public', 'unlisted', 'private')) not valid;
+
+alter table public.profiles
+  validate constraint profiles_visibility_check;
 
 -- ---------------------------------------------------------------------------------------------
 -- 2. Exclude non-public profiles from search_profiles.

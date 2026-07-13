@@ -62,13 +62,22 @@ export default async function OGImage({ params }: OGImageProps) {
     fetchGitHubUser(username),
     supabase
       .from("profiles")
-      .select("score, total_commits, total_prs, total_issues, total_reviews")
-      // Same reasoning as the page: a private profile should not have a shareable social card.
-      .neq("visibility", "private")
+      .select("score, total_commits, total_prs, total_issues, total_reviews, visibility")
       .eq("username", username)
       .maybeSingle()
       .then((r) => r.data),
   ]);
+
+  // A private profile has no page, so it must not have a social card either.
+  //
+  // This has to short-circuit rather than filter the row, which is what it did before. Everything on
+  // the card below — avatar, display name, @username, the OSSfolio branding and the profile URL — is
+  // built from the GitHub response, not from `profileRow`. Excluding the row only zeroed the stored
+  // stats: the card still rendered, still carried the person's face and handle, and was still
+  // shareable. It just claimed a score of 0. That is not privacy, it is a worse-looking leak.
+  if (profileRow?.visibility === "private") {
+    return new Response(null, { status: 404 });
+  }
 
   const displayName = user?.name || username;
   const avatarUrl = user?.avatar_url || `https://github.com/${username}.png`;

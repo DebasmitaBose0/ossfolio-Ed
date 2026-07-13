@@ -97,20 +97,37 @@ async function fetchProfile(username: string): Promise<ProfileData> {
   const liveScore = calculateScore(stats, mappedRepos);
 
   let score = liveScore;
+  let visibility: string | null = null;
   try {
     const { data: profileRow } = await supabase
       .from("profiles")
-      .select("score")
-        // A private profile has no page; it should not be comparable either — otherwise the
-        // data it is meant to hide is reachable through /compare instead.
-        .neq("visibility", "private")
+      .select("score, visibility")
       .eq("username", username)
       .maybeSingle();
-    if (profileRow && typeof profileRow.score === "number") {
-      score = profileRow.score;
+    if (profileRow) {
+      visibility =
+        typeof profileRow.visibility === "string" ? profileRow.visibility : null;
+      if (typeof profileRow.score === "number") {
+        score = profileRow.score;
+      }
     }
   } catch {
     // Soft fallback to live score
+  }
+
+  // Deliberately outside the try above. That catch exists to fall back to the live score when
+  // Supabase is unreachable, and it would happily swallow this throw and compare the profile anyway.
+  //
+  // It also has to throw rather than filter the row. Everything returned below — the user, their
+  // stats, their repos — is rebuilt from the GitHub API, so excluding the profiles row alone would
+  // not have hidden anything: it would simply have compared them using the live score instead of the
+  // stored one. A private profile has no page, and it should not be reachable through /compare
+  // either.
+  //
+  // Same message as the not-found case on purpose, so /compare cannot be used to discover that a
+  // private profile exists — which is the same reasoning api/v1 already applies to unlisted ones.
+  if (visibility === "private") {
+    throw new Error(`GitHub user "${username}" not found`);
   }
 
   return { user, stats, repos: mappedRepos, score };
