@@ -27,7 +27,7 @@ create table public.profiles (
   headline       text,
   pinned_repos   text[] not null default '{}',
   custom_links   jsonb not null default '[]'::jsonb,
-  visibility     text not null default 'public' check (visibility in ('public', 'unlisted')),
+  visibility     text not null default 'public' check (visibility in ('public', 'unlisted', 'private')),
   search_text    tsvector generated always as (
     to_tsvector('english',
       coalesce(username, '') || ' ' ||
@@ -148,6 +148,10 @@ begin
       (query = '' or p.search_text @@ plainto_tsquery('english', query))
       and (lang = '' or p.top_languages @> array[lang])
       and p.score >= min_score
+      -- Discover is a listing: 'unlisted' opted out of being found, 'private' opted out entirely.
+      -- This filter lives inside the function on purpose — search_profiles is `security definer`,
+      -- so RLS does not apply to the rows it reads and a policy on `profiles` would be bypassed.
+      and p.visibility = 'public'
     order by
       case when sort_by = 'score' then p.score else 0 end desc,
       case when sort_by = 'contributions' then (p.total_prs + p.total_commits + p.total_issues) else 0 end desc,

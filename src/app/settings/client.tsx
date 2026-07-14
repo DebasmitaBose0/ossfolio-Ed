@@ -19,7 +19,7 @@ interface ProfileSettings {
   pinned_repos: string[];
   custom_links: CustomLink[];
   badges: Badge[];
-  visibility: "public" | "unlisted";
+  visibility: "public" | "unlisted" | "private";
 }
 
 const AVAILABLE_BADGES = [
@@ -33,6 +33,13 @@ export function SettingsClient() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Account deletion. `deleteConfirm` holds what the user has typed into the confirmation box: the
+  // button stays disabled until it matches their username exactly, so this cannot be triggered by a
+  // stray click on an irreversible action.
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [settings, setSettings] = useState<ProfileSettings>({
     headline: "",
@@ -112,6 +119,35 @@ export function SettingsClient() {
       setSaving(false);
     }
   }, [session, settings, loaded]);
+
+  const handleDelete = useCallback(async () => {
+    if (!session || deleting) return;
+    setDeleting(true);
+    setDeleteError(null);
+
+    try {
+      const resp = await fetch("/api/settings", {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (!resp.ok) {
+        const body = await resp.json().catch(() => ({}));
+        setDeleteError(body.error || "Failed to delete account. Please try again.");
+        setDeleting(false);
+        return;
+      }
+
+      // The account is gone, so the session in localStorage now points at a user that no longer
+      // exists. Signing out clears it; a hard navigation rather than a router push, because every
+      // cached server component on this origin was rendered for a user who has just ceased to be.
+      await supabase.auth.signOut();
+      window.location.href = "/";
+    } catch {
+      setDeleteError("Failed to delete account. Please try again.");
+      setDeleting(false);
+    }
+  }, [session, deleting]);
 
   const handleLogin = async () => {
     await supabase.auth.signInWithOAuth({
@@ -273,12 +309,18 @@ export function SettingsClient() {
         <label style={labelStyle}>Profile Visibility</label>
         <select
           value={settings.visibility}
-          onChange={(e) => setSettings((s) => ({ ...s, visibility: e.target.value as "public" | "unlisted" }))}
+          onChange={(e) =>
+            setSettings((s) => ({
+              ...s,
+              visibility: e.target.value as "public" | "unlisted" | "private",
+            }))
+          }
           style={{ ...inputStyle, width: "auto", cursor: "pointer" }}
           aria-label="Profile visibility"
         >
           <option value="public">Public (visible on Discover)</option>
           <option value="unlisted">Unlisted (only accessible via direct link)</option>
+          <option value="private">Private (profile page returns 404)</option>
         </select>
       </div>
 
@@ -304,6 +346,98 @@ export function SettingsClient() {
           {saveError}
         </span>
       )}
+
+      {/*
+        Danger zone. Kept visually and structurally apart from the settings above, because every
+        control up there is reversible and this one is not.
+
+        The confirmation is a typed word rather than a second "are you sure?" dialog: a dialog is
+        dismissed by reflex, typing is not. It asks for DELETE rather than the username because this
+        component has no username prop — it would have to be dug out of `user_metadata`, whose shape
+        depends on the OAuth provider, and a confirmation that silently fails to match is worse than
+        one that's slightly less personal.
+      */}
+      <div
+        style={{
+          marginTop: "48px",
+          paddingTop: "24px",
+          borderTop: "1px solid var(--color-border)",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "16px",
+            fontWeight: 600,
+            color: "#b91c1c",
+            margin: "0 0 4px",
+          }}
+        >
+          Danger zone
+        </h2>
+        <p
+          style={{
+            fontSize: "13px",
+            color: "var(--color-ink-soft)",
+            margin: "0 0 16px",
+            lineHeight: 1.6,
+          }}
+        >
+          Deleting your account removes your OSSfolio profile, score and settings permanently. Your
+          GitHub account is not affected. This cannot be undone.
+        </p>
+
+        <label
+          htmlFor="delete-confirm"
+          style={{
+            display: "block",
+            fontSize: "13px",
+            color: "var(--color-ink)",
+            marginBottom: "6px",
+          }}
+        >
+          Type <strong>DELETE</strong> to confirm
+        </label>
+        <input
+          id="delete-confirm"
+          type="text"
+          value={deleteConfirm}
+          onChange={(e) => setDeleteConfirm(e.target.value)}
+          disabled={deleting}
+          autoComplete="off"
+          style={{ ...inputStyle, maxWidth: "220px", marginBottom: "12px" }}
+        />
+
+        <div>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleteConfirm !== "DELETE" || deleting || !session}
+            style={{
+              padding: "8px 16px",
+              borderRadius: "8px",
+              border: "1px solid #b91c1c",
+              backgroundColor: deleteConfirm === "DELETE" && !deleting ? "#b91c1c" : "transparent",
+              color: deleteConfirm === "DELETE" && !deleting ? "#fff" : "#b91c1c",
+              fontSize: "14px",
+              fontWeight: 500,
+              cursor:
+                deleteConfirm === "DELETE" && !deleting && session ? "pointer" : "not-allowed",
+              opacity: deleteConfirm === "DELETE" && !deleting && session ? 1 : 0.5,
+            }}
+          >
+            {deleting ? "Deleting…" : "Delete my account"}
+          </button>
+
+          {deleteError && (
+            <span
+              role="alert"
+              style={{ fontSize: "13px", color: "#b91c1c", marginLeft: "12px" }}
+            >
+              {deleteError}
+            </span>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

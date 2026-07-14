@@ -70,22 +70,50 @@ export function createErrorResponse(
   error: string,
   status = 400,
   extra?: Record<string, unknown>,
-  // Optional extra response headers. Added so a 429 can carry the standard `Retry-After`
-  // header, which well-behaved clients, crawlers and proxies honour without needing to
-  // parse the body. Existing callers are unaffected.
   headers?: Record<string, string>
 ): NextResponse {
-  return NextResponse.json(
-    { error, ...extra },
-    {
-      status,
-      headers: {
-        "X-Content-Type-Options": "nosniff",
-        "X-Frame-Options": "DENY",
-        ...headers,
-      },
-    }
-  );
+  const body: Record<string, unknown> = {
+    error,
+    code: errorCodeForStatus(status),
+    status,
+    timestamp: new Date().toISOString(),
+    ...extra,
+  };
+  return NextResponse.json(body, {
+    status,
+    headers: {
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+      ...headers,
+    },
+  });
 }
 
 
+function errorCodeForStatus(status: number): string {
+  switch (status) {
+    case 400: return "VALIDATION_ERROR";
+    case 401: return "AUTH_ERROR";
+    case 404: return "NOT_FOUND";
+    case 429: return "RATE_LIMITED";
+    case 502: return "UPSTREAM_ERROR";
+    case 503: return "SERVICE_UNAVAILABLE";
+    default: return "INTERNAL_ERROR";
+  }
+}
+
+export function apiErrorResponse(error: AppError, extraHeaders?: Record<string, string>): NextResponse {
+  const body = toApiErrorBody(error);
+  const headers: Record<string, string> = {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    ...extraHeaders,
+  };
+  if (error.retryAfterSeconds !== undefined) {
+    headers["Retry-After"] = String(error.retryAfterSeconds);
+  }
+  return NextResponse.json(body, {
+    status: error.status,
+    headers,
+  });
+}

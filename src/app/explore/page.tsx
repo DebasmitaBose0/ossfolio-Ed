@@ -67,7 +67,11 @@ async function fetchPage(
     } else {
       query = supabase
         .from("profiles")
-        .select("username, name, avatar_url, score, total_prs, total_issues, total_commits, score_delta_30_days");
+        .select("username, name, avatar_url, score, total_prs, total_issues, total_commits, score_delta_30_days")
+        // Explore is a listing, so only public profiles belong in it. `unlisted` and `private` have
+        // both opted out of being found — until now the setting saved and this query ignored it, so
+        // a user who chose "unlisted" stayed on the leaderboard anyway.
+        .eq("visibility", "public");
       
       if (searchQuery) {
         query = query.or(`username.ilike.%${searchQuery}%,name.ilike.%${searchQuery}%`);
@@ -100,8 +104,10 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const { page: pageParam, q: qParam, sortBy: sortByParam, type: typeParam } = await searchParams;
   const page = Math.max(1, Math.floor(Number(pageParam)) || 1);
   const searchQuery = typeof qParam === "string" ? qParam.trim() : "";
-  const sortBy = typeof sortByParam === "string" ? sortByParam : "score";
-  const type = typeParam === "organizations" ? "organizations" : "users";
+  const VALID_SORT_OPTIONS = new Set(["score", "prs", "commits", "issues", "improvement"]);
+  const sortBy = typeof sortByParam === "string" && VALID_SORT_OPTIONS.has(sortByParam) ? sortByParam : "score";
+  const VALID_TYPES = new Set(["users", "organizations"]);
+  const type = typeof typeParam === "string" && VALID_TYPES.has(typeParam) ? typeParam : "users";
 
   const { rows, hasNext } = await fetchPage(page, searchQuery, sortBy, type);
   const hasPrev = page > 1;
