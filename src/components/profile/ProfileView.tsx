@@ -10,6 +10,8 @@ import { ContributionTimeline } from '@/components/profile/ContributionTimeline'
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useBroadcastChannel } from "@/hooks/useBroadcastChannel";
+import { useVisibility } from "@/hooks/useVisibility";
 import { SkeletonCard } from "@/components/ui/skeleton-card";
 import { evaluateAchievements, countUnlocked } from "@/lib/achievements";
 import { AchievementsGrid } from "@/components/profile/AchievementsGrid";
@@ -558,6 +560,7 @@ export function ProfileView({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(updatedAt);
   const [relativeTime, setRelativeTime] = useState("...");
+  const [tabVisible, setTabVisible] = useState(true);
 
   useEffect(() => {
     const compute = () => {
@@ -572,12 +575,14 @@ export function ProfileView({
       return `${days}d ago`;
     };
     const initialUpdate = setTimeout(() => setRelativeTime(compute()), 0);
-    const interval = setInterval(() => setRelativeTime(compute()), 60000);
+    const interval = setInterval(() => {
+      if (tabVisible) setRelativeTime(compute());
+    }, 60000);
     return () => {
       clearInterval(interval);
       clearTimeout(initialUpdate);
     };
-  }, [lastRefresh]);
+  }, [lastRefresh, tabVisible]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -586,6 +591,7 @@ export function ProfileView({
       if (res.ok) {
         const data = await res.json();
         setLastRefresh(data.refreshedAt);
+        postMessage({ type: "refreshed", username: user.login });
         router.refresh();
       } else {
         const payload = await res.json().catch(() => ({}));
@@ -643,6 +649,38 @@ export function ProfileView({
     return () => {
       active = false;
       sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  // Cross-tab sync: when a refresh completes in another tab, reload data.
+  const { postMessage } = useBroadcastChannel<{ type: string; username: string }>(
+    "ossfolio:refresh",
+    useCallback((data) => {
+      if (data.type === "refreshed" && data.username === user.login) {
+        router.refresh();
+      }
+    }, [user.login, router])
+  );
+
+  // Pause relative-time updates when the tab is hidden.
+  useVisibility(
+    useCallback(() => setTabVisible(true), []),
+    useCallback(() => setTabVisible(false), [])
+  );
+
+  // Debounced tab setter to prevent rapid switching from queuing
+  // multiple AnimatePresence transitions.
+  const tabDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const setActiveTabDebounced = useCallback((key: "repos" | "stats" | "prs" | "timeline") => {
+    if (tabDebounceRef.current) clearTimeout(tabDebounceRef.current);
+    tabDebounceRef.current = setTimeout(() => {
+      setActiveTab(key);
+    }, 150);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (tabDebounceRef.current) clearTimeout(tabDebounceRef.current);
     };
   }, []);
 
@@ -1052,7 +1090,7 @@ export function ProfileView({
             aria-selected={activeTab === tab.key}
             aria-controls={`profile-tabpanel-${tab.key}`}
             tabIndex={activeTab === tab.key ? 0 : -1}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => setActiveTabDebounced(tab.key)}
             onKeyDown={handleTabKeyDown}
             style={{
               position: "relative",
