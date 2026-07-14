@@ -173,14 +173,26 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   let profileId: string | null = null;
   let profileRow: any = null;
   let customizationFetchSettled = false;
+  let visibilityUnknown = false;
   try {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("profiles")
       .select("id, score, updated_at, badges, headline, pinned_repos, custom_links, visibility")
       .eq("username", username)
       .maybeSingle();
     customizationFetchSettled = true;
-    profileRow = data;
+
+    // The Supabase client resolves with `{ data: null, error }` rather than throwing, so reading
+    // only `data` would leave `profileRow` null on a database failure — indistinguishable, from
+    // here, from a profile that simply has no row. The private check below would then pass and the
+    // page would render. A privacy gate has to fail closed, so the error is captured and handled
+    // below rather than discarded.
+    if (error) {
+      visibilityUnknown = true;
+    } else {
+      profileRow = data;
+    }
+
     if (profileRow) {
       profileId = profileRow.id;
       if (typeof profileRow.score === "number") {
@@ -208,7 +220,33 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     }
   } catch {
     customizationFetchSettled = true;
+    visibilityUnknown = true;
     // Soft isolation fallback
+  }
+
+  // Both checks below are deliberately *outside* the try above, and that placement is the whole
+  // point rather than a stylistic choice.
+  //
+  // `notFound()` works by throwing. Inside that try, the bare `catch` would swallow it — the page
+  // would carry straight on and render the very profile the setting exists to hide. This is the
+  // documented reason Next tells you to call notFound()/redirect() outside try/catch, and it is a
+  // silent failure: nothing errors, the 404 simply never happens.
+  //
+  // Failing closed on an unknown visibility matters for the same reason. Note this does *not* touch
+  // the ordinary "never signed up" path: that returns no error and no row, and such a profile cannot
+  // be private (private requires a stored row), so it still renders from GitHub data exactly as
+  // before. Only a genuine database failure trips this.
+  if (visibilityUnknown) {
+    throw new Error(`Could not verify profile visibility for "${username}"`);
+  }
+
+  // `private` means the page does not exist. This is an explicit check rather than an RLS policy:
+  // ossfolio renders /[username] for any GitHub account, signed up or not, so a null `profileRow` is
+  // the ordinary case. If RLS hid private rows, this code could not tell "private" from "never
+  // signed up" — it would fall through and render the public GitHub data instead of 404ing, and the
+  // setting would look like it worked while doing nothing.
+  if (profileRow?.visibility === "private") {
+    return notFound();
   }
 
   const customization = profileRow ? {

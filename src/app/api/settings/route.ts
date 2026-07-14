@@ -113,7 +113,15 @@ export async function PUT(request: NextRequest) {
       .filter(Boolean);
   }
 
-  if (body.visibility === "public" || body.visibility === "unlisted") {
+  // 'private' is new: the column's CHECK previously rejected it, so the third state the UI is meant
+  // to offer could never be stored. Still an explicit allow-list rather than a passthrough — the
+  // value lands in a CHECK-constrained column, and a 400 from us beats a constraint violation from
+  // Postgres.
+  if (
+    body.visibility === "public" ||
+    body.visibility === "unlisted" ||
+    body.visibility === "private"
+  ) {
     updates.visibility = body.visibility;
   }
 

@@ -58,15 +58,35 @@ export default async function OGImage({ params }: OGImageProps) {
   ]);
 
   // Fetch user data and the stored profile summary in parallel
-  const [user, profileRow] = await Promise.all([
+  const [user, profileResult] = await Promise.all([
     fetchGitHubUser(username),
     supabase
       .from("profiles")
-      .select("score, total_commits, total_prs, total_issues, total_reviews")
+      .select("score, total_commits, total_prs, total_issues, total_reviews, visibility")
       .eq("username", username)
-      .maybeSingle()
-      .then((r) => r.data),
+      .maybeSingle(),
   ]);
+
+  // Fail closed. This previously did `.then((r) => r.data)`, which discards the error — and the
+  // Supabase client resolves with `{ data: null, error }` rather than throwing, so any database
+  // failure left `profileRow` null, the private check below passed, and a private profile got a
+  // fully rendered, fully shareable social card.
+  if (profileResult.error) {
+    return new Response(null, { status: 404 });
+  }
+
+  const profileRow = profileResult.data;
+
+  // A private profile has no page, so it must not have a social card either.
+  //
+  // This has to short-circuit rather than filter the row, which is what it did before. Everything on
+  // the card below — avatar, display name, @username, the OSSfolio branding and the profile URL — is
+  // built from the GitHub response, not from `profileRow`. Excluding the row only zeroed the stored
+  // stats: the card still rendered, still carried the person's face and handle, and was still
+  // shareable. It just claimed a score of 0. That is not privacy, it is a worse-looking leak.
+  if (profileRow?.visibility === "private") {
+    return new Response(null, { status: 404 });
+  }
 
   const displayName = user?.name || username;
   const avatarUrl = user?.avatar_url || `https://github.com/${username}.png`;
